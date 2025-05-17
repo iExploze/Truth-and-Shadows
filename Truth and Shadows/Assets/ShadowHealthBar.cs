@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 [ExecuteInEditMode()]
-public class ShadowHealthBar : MonoBehaviour
+public class ShadowHealthBar : MonoBehaviour, ILightHittable
 {
     // private int _max;
     //
@@ -35,7 +35,24 @@ public class ShadowHealthBar : MonoBehaviour
             takeDamage(5);
         }
     }
-    
+    // Called when the character enters the light
+    public void OnLightEnter(Light lightSource)
+    {
+        takeDamage(5);
+    }
+
+    // Called when the character exits the light
+    public void OnLightExit(Light lightSource)
+    {
+        Debug.Log("OnLightExit");
+    }
+
+    // Called while the character remains in the light
+    public void OnLightStay(Light lightSource)
+    {
+        takeDamage(5);
+    }
+
     public void takeDamage(int damage)
     {
         _health -= damage;

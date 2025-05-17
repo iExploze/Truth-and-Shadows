@@ -392,7 +392,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &705507994
 Light:
   m_ObjectHideFlags: 0
@@ -648,8 +648,8 @@ GameObject:
   - component: {fileID: 1153823462}
   - component: {fileID: 1153823461}
   m_Layer: 0
-  m_Name: Capsule
-  m_TagString: Untagged
+  m_Name: Shadow
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -879,6 +879,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1237200302}
   - component: {fileID: 1237200301}
+  - component: {fileID: 1237200303}
   m_Layer: 0
   m_Name: Spot Light
   m_TagString: Untagged
@@ -957,12 +958,24 @@ Transform:
   m_GameObject: {fileID: 1237200300}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 160.32886, y: 0, z: 168.50574}
+  m_LocalPosition: {x: 114, y: 2, z: 25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!114 &1237200303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1237200300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23623994d61854970892706e47d55ad5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1245994691
 GameObject:
   m_ObjectHideFlags: 0
@@ -974,7 +987,7 @@ GameObject:
   - component: {fileID: 1245994694}
   - component: {fileID: 1245994693}
   - component: {fileID: 1245994692}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
