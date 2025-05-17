@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class playerLightScript : ILightHittable
+public class playerLightScript : MonoBehaviour, ILightHittable
 {
     public void OnLightEnter(Light lightSource)
     {
