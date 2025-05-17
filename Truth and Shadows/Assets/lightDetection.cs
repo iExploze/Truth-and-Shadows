@@ -10,6 +10,9 @@ public class lightDetection : MonoBehaviour
 
     GameObject[] players;
 
+    // Store the light hit state of each player
+    private Dictionary<GameObject, bool> playerLightState = new Dictionary<GameObject, bool>();
+
     // Start is called before the first frame update
     void Start()
     {
@@ -17,6 +20,12 @@ public class lightDetection : MonoBehaviour
         spotLight = GetComponent<Light>();
 
         players = GameObject.FindGameObjectsWithTag("Player");
+
+        // Initialize light state for each player
+        foreach (GameObject player in players)
+        {
+            playerLightState[player] = false; // Assume all players start out of light
+        }
     }
 
     // Update is called once per frame
@@ -24,20 +33,36 @@ public class lightDetection : MonoBehaviour
     {
         foreach (GameObject player in players)
         {
-            Debug.Log(isPlayerInCone(player.transform));
+            bool isInLight = isPlayerInCone(player.transform);
+
+           // Debug.Log(isPlayerInCone(player.transform));
             // Try to get the ILightHittable component from each player
             ILightHittable playerLight = player.GetComponent<ILightHittable>();
 
             if (playerLight != null)
             {
-                // Successfully found the component, do something with it
-                Debug.Log("Found ILightHittable on player: " + player.name);
-                // Example: Trigger a hit or any other logic
-                
+                // State transitions
+                if (isInLight && !playerLightState[player])
+                {
+                    // Player just entered the light
+                    playerLight.OnLightEnter(spotLight);
+                    playerLightState[player] = true;
+                }
+                else if (isInLight && playerLightState[player])
+                {
+                    // Player stays in the light
+                    playerLight.OnLightStay(spotLight);
+                }
+                else if (!isInLight && playerLightState[player])
+                {
+                    // Player just exited the light
+                    playerLight.OnLightExit(spotLight);
+                    playerLightState[player] = false;
+                }
             }
             else
             {
-                //Debug.Log("No ILightHittable found on player: " + player.name);
+                Debug.Log("No ILightHittable found on player: " + player.name);
             }
         }
     }
@@ -65,13 +90,16 @@ public class lightDetection : MonoBehaviour
             // Check if the player is within the spotlight's range
             if (distanceToPlayer <= spotLight.range)
             {
+                int layerMask = ~LayerMask.GetMask("IgnoreLightRaycast");
+
                 // Cast a ray in the calculated direction and check for a hit
                 Ray ray = new Ray(spotLight.transform.position, directionToPlayer);
                 RaycastHit hit;
 
                 // Check if the ray hits the player and is not blocked
-                if (Physics.Raycast(ray, out hit, spotLight.range))
+                if (Physics.Raycast(ray, out hit, spotLight.range, layerMask))
                 {
+
                     if (hit.transform.CompareTag("Player"))
                     {
                         Debug.DrawLine(spotLight.transform.position, hit.point, Color.green);  // Visualize the hit
