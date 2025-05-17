@@ -38,26 +38,41 @@ public class ShadowHealthBar : MonoBehaviour, ILightHittable
     // Called when the character enters the light
     public void OnLightEnter(Light lightSource)
     {
-        takeDamage(5);
+        takeDamage(1);
     }
 
     // Called when the character exits the light
     public void OnLightExit(Light lightSource)
     {
-        Debug.Log("OnLightExit");
+        heal(50);
     }
 
     // Called while the character remains in the light
     public void OnLightStay(Light lightSource)
     {
-        takeDamage(5);
+        takeDamage(1);
     }
 
     public void takeDamage(int damage)
     {
-        _health -= damage;
-        float fill = (float) _health / (float) _maxHealth;
-        healthBar.fillAmount = fill;
+        if (_health - damage >= 0)
+        {
+            _health -= damage;
+            float fill = (float) _health / (float) _maxHealth;
+            healthBar.fillAmount = fill;
+        }
+        
+    }
+
+    public void heal(int heal)
+    {
+        if (_health + heal <= _maxHealth)
+        {
+            _health += heal;
+            float fill = (float) _health / (float) _maxHealth;
+            healthBar.fillAmount = fill;
+        }
+        
     }
 
 }
