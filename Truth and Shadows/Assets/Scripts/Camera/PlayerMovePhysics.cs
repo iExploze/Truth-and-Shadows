@@ -9,7 +9,7 @@ namespace Cinemachine.Examples
         public bool worldDirection = true;
         public bool rotatePlayer = true;
 
-        public Action spaceAction;
+        public Action eAction;
         public Action enterAction;
 
         Rigidbody rb;
@@ -50,8 +50,8 @@ namespace Cinemachine.Examples
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.Space) && spaceAction != null)
-                spaceAction();
+            if (Input.GetKeyDown(KeyCode.E) && eAction != null)
+                eAction();
             if (Input.GetKeyDown(KeyCode.Return) && enterAction != null)
                 enterAction();
 

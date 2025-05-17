@@ -21,7 +21,7 @@ namespace Cinemachine.Examples
 
         public bool RotatePlayer = true;
 
-        public Action SpaceAction;
+        public Action EAction;
         public Action EnterAction;
 
         Vector3 m_currentVleocity;
@@ -43,8 +43,8 @@ namespace Cinemachine.Examples
         {
             m_currentJumpSpeed = 0;
             m_restY = transform.position.y;
-            SpaceAction -= Jump;
-            SpaceAction += Jump;
+            EAction -= Jump;
+            EAction += Jump;
         }
 
         void Update()
@@ -103,8 +103,8 @@ namespace Cinemachine.Examples
 
             transform.position = p;
 
-            if (Input.GetKeyDown(KeyCode.Space) && SpaceAction != null)
-                SpaceAction();
+            if (Input.GetKeyDown(KeyCode.E) && EAction != null)
+                EAction();
             if (Input.GetKeyDown(KeyCode.Return) && EnterAction != null)
                 EnterAction();
 #else

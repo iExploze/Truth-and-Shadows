@@ -12,7 +12,7 @@ public class CharacterMovementNoCamera : MonoBehaviour
     public float VerticalRotMin = -80;
     public float VerticalRotMax = 80;
     public KeyCode sprintJoystick = KeyCode.JoystickButton2;
-    public KeyCode sprintKeyboard = KeyCode.Space;
+    public KeyCode sprintKeyboard = KeyCode.E;
 
     private bool isSprinting;
     private Animator anim;
