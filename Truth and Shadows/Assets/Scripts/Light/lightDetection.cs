@@ -6,6 +6,7 @@ public class lightDetection : MonoBehaviour
 {
     // Find all GameObjects with the tag "Player"
     private Light spotLight;
+    // public Image mask;
 
     GameObject[] players;
 
@@ -44,12 +45,14 @@ public class lightDetection : MonoBehaviour
                 if (isInLight && !playerLightState[player])
                 {
                     // Player just entered the light
+                    Debug.Log("enter light");
                     playerLight.OnLightEnter(spotLight);
                     playerLightState[player] = true;
                 }
                 else if (isInLight && playerLightState[player])
                 {
                     // Player stays in the light
+                    Debug.Log("stay in light");
                     playerLight.OnLightStay(spotLight);
                 }
                 else if (!isInLight && playerLightState[player])
