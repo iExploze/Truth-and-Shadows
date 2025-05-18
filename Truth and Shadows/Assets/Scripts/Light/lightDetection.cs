@@ -4,70 +4,70 @@ using UnityEngine;
 
 public class lightDetection : MonoBehaviour
 {
-    // Find all GameObjects with the tag "Player"
+    // Reference to the spotlight attached to this GameObject
     private Light spotLight;
 
-    GameObject[] players;
+    // Track current player with "Player" tag
+    private GameObject currentPlayer;
 
-    // Store the light hit state of each player
-    private Dictionary<GameObject, bool> playerLightState = new Dictionary<GameObject, bool>();
+    // Keep track of whether the player is currently in the light
+    private bool isPlayerInLight = false;
 
-    // Start is called before the first frame update
     void Start()
     {
         // Get the Light component attached to this GameObject
         spotLight = GetComponent<Light>();
 
-        players = GameObject.FindGameObjectsWithTag("Player");
-
-        // Initialize light state for each player
-        foreach (GameObject player in players)
+        if (spotLight == null || spotLight.type != LightType.Spot)
         {
-            playerLightState[player] = false; // Assume all players start out of light
+            Debug.LogError("This script requires a Spot Light assigned.");
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
-        foreach (GameObject player in players)
+        // Dynamically find the currently active player with the "Player" tag
+        currentPlayer = GameObject.FindGameObjectWithTag("Player");
+
+        if (currentPlayer == null || !currentPlayer.activeInHierarchy)
+            return;
+
+        // Determine if the current player is in the light cone
+        bool isInLight = isPlayerInCone(currentPlayer.transform);
+
+        // Try to get the ILightHittable component from the active player
+        ILightHittable playerLight = currentPlayer.GetComponent<ILightHittable>();
+
+        if (playerLight == null)
         {
-            bool isInLight = isPlayerInCone(player.transform);
+            Debug.LogWarning("No ILightHittable component on current Player.");
+            return;
+        }
 
-           // Debug.Log(isPlayerInCone(player.transform));
-            // Try to get the ILightHittable component from each player
-            ILightHittable playerLight = player.GetComponent<ILightHittable>();
-
-            if (playerLight != null)
-            {
-                // State transitions
-                if (isInLight && !playerLightState[player])
-                {
-                    // Player just entered the light
-                    playerLight.OnLightEnter(spotLight);
-                    playerLightState[player] = true;
-                }
-                else if (isInLight && playerLightState[player])
-                {
-                    // Player stays in the light
-                    playerLight.OnLightStay(spotLight);
-                }
-                else if (!isInLight && playerLightState[player])
-                {
-                    // Player just exited the light
-                    playerLight.OnLightExit(spotLight);
-                    playerLightState[player] = false;
-                }
-            }
-            else
-            {
-                Debug.Log("No ILightHittable found on player: " + player.name);
-            }
+        // State transitions
+        if (isInLight && !isPlayerInLight)
+        {
+            // Player just entered the light
+            playerLight.OnLightEnter(spotLight);
+            isPlayerInLight = true;
+        }
+        else if (isInLight && isPlayerInLight)
+        {
+            // Player stays in the light
+            playerLight.OnLightStay(spotLight);
+        }
+        else if (!isInLight && isPlayerInLight)
+        {
+            // Player just exited the light
+            playerLight.OnLightExit(spotLight);
+            isPlayerInLight = false;
         }
     }
 
-    private bool isPlayerInCone(Transform target) 
+    // Helper function to check if a target Transform is within the spotlight's cone
+    private bool isPlayerInCone(Transform target)
     {
+        // Safety check in case the light is missing or not a spotlight
         if (spotLight == null || spotLight.type != LightType.Spot)
         {
             Debug.LogError("This script requires a Spot Light assigned.");
