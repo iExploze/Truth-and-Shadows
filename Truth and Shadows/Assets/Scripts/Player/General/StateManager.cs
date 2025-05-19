@@ -44,42 +44,45 @@ public class StateManager : MonoBehaviour
     private Rigidbody squidFormRigidbody;
 
     private InteractionManager interactionManager;
+    private InteractionManager mainFormInteractionManager;
+    private InteractionManager shadowCharacterInteractionManager;
 
-    void Start()
+    private void InitializeComponents()
     {
-        // Main is active at start
-        mainCharacterForm.SetActive(true);
-        squidForm.SetActive(false); // Shadow starts inactive
-        shadowCharacter.SetActive(false); // Disable at start
+        // Get main character components
         mainCharacterFormMovement = mainCharacterForm.GetComponent<CharacterMovement>();
-        mainCharacterFormRigidbody = mainCharacterForm.GetComponent<Rigidbody>(); // Get rigidbody reference
-        mainCharacterFormAnimator = mainCharacterForm.GetComponent<Animator>(); // Get animator reference
+        mainCharacterFormRigidbody = mainCharacterForm.GetComponent<Rigidbody>();
+        mainCharacterFormAnimator = mainCharacterForm.GetComponent<Animator>();
+        mainFormInteractionManager = mainCharacterForm.GetComponent<InteractionManager>();
 
         // Get squid components
         squidFormMovement = squidForm.GetComponent<SquidControl>();
         squidFormRigidbody = squidForm.GetComponent<Rigidbody>();
 
-        mainCharacterForm.tag = "Player";
-        squidForm.tag = "Untagged";
-        shadowCharacter.tag = "Untagged"; // Ensure shadow character is untagged
+        // Get shadow components
+        shadowCharacterInteractionManager = shadowCharacter.GetComponent<InteractionManager>();
+        
+        // Get global interaction manager
+        interactionManager = GetComponent<InteractionManager>();
+    }
 
-        // Validate cameras
-        if (
-            mainCharacterFormCamera == null
-            || squidFormCamera == null
-            || shadowCharacterCamera == null
-        )
-        {
-            Debug.LogError("Missing camera references in StateManager!");
-            return;
-        }
+    private void SetInitialState()
+    {
+        mainCharacterForm.SetActive(true);
+        squidForm.SetActive(false);
+        shadowCharacter.SetActive(false);
 
-        // Set initial camera priorities only
         mainCharacterFormCamera.Priority = 10;
         squidFormCamera.Priority = 0;
         shadowCharacterCamera.Priority = 0;
 
-        interactionManager = GetComponent<InteractionManager>();
+        currentState = FormState.mainCharacter;
+    }
+
+    void Start()
+    {
+        InitializeComponents();
+        SetInitialState();
     }
 
     void Update()
@@ -116,81 +119,100 @@ public class StateManager : MonoBehaviour
         }
     }
 
+    private void DisableCurrentForm()
+    {
+        switch (currentState)
+        {
+            case FormState.mainCharacter:
+                DisableMainCharacter();
+                break;
+            case FormState.squid:
+                DisableSquid();
+                break;
+            case FormState.shadowCharacter:
+                DisableShadowCharacter();
+                break;
+        }
+    }
+
+    private void DisableMainCharacter()
+    {
+        if (mainCharacterFormRigidbody != null)
+        {
+            mainCharacterFormRigidbody.velocity = Vector3.zero;
+            mainCharacterFormRigidbody.angularVelocity = Vector3.zero;
+            mainCharacterFormRigidbody.isKinematic = true;
+        }
+        if (mainCharacterFormMovement != null)
+            mainCharacterFormMovement.enabled = false;
+        if (mainCharacterFormAnimator != null)
+        {
+            mainCharacterFormAnimator.SetFloat("Speed", 0);
+            mainCharacterFormAnimator.SetFloat("Direction", 0);
+        }
+    }
+
+    private void DisableSquid()
+    {
+        if (squidFormRigidbody != null)
+        {
+            squidFormRigidbody.velocity = Vector3.zero;
+            squidFormRigidbody.angularVelocity = Vector3.zero;
+            squidFormRigidbody.isKinematic = true;
+        }
+        if (squidFormMovement != null)
+            squidFormMovement.enabled = false;
+        squidForm.SetActive(false);
+    }
+
+    private void DisableShadowCharacter()
+    {
+        if (shadowCharacterInteractionManager != null)
+            shadowCharacterInteractionManager.enabled = false;
+        shadowCharacter.SetActive(false);
+    }
+
     void EnterSquidForm()
     {
         if (interactionManager != null)
             interactionManager.PreserveInteraction();
 
-        // Get the source object to spawn from
-        GameObject sourceObject =
-            (currentState == FormState.shadowCharacter) ? shadowCharacter : mainCharacterForm;
+        GameObject sourceObject = (currentState == FormState.shadowCharacter) ? shadowCharacter : mainCharacterForm;
+        DisableCurrentForm();
 
-        // Disable current form if needed
-        if (currentState == FormState.shadowCharacter)
-        {
-            shadowCharacter.SetActive(false);
-        }
+        Vector3 spawnPosition = CalculateSpawnPosition(sourceObject);
+        EnableSquid(spawnPosition, sourceObject.transform.rotation);
 
-        StopCharacterMovement();
-
-        // Spawn squid at offset from the correct source
-        Vector3 spawnPosition =
-            sourceObject.transform.position + sourceObject.transform.forward * spawnOffset;
-        RaycastHit hit;
-        if (
-            Physics.Raycast(
-                sourceObject.transform.position,
-                sourceObject.transform.forward,
-                out hit,
-                spawnOffset
-            )
-        )
-        {
-            spawnPosition = hit.point - sourceObject.transform.forward * 0.1f;
-        }
-
-        squidForm.transform.position = spawnPosition;
-        squidForm.transform.rotation = sourceObject.transform.rotation;
-        squidForm.SetActive(true);
-
-        mainCharacterFormCamera.Priority = 0;
-        squidFormCamera.Priority = 10;
-        shadowCharacterCamera.Priority = 0;
-
+        UpdateCameraPriorities(0, 10, 0);
         currentState = FormState.squid;
     }
 
-    void StopCharacterMovement()
+    private Vector3 CalculateSpawnPosition(GameObject source)
     {
-        // Stop main character movement if needed
-        if (currentState == FormState.mainCharacter)
+        Vector3 spawnPosition = source.transform.position + source.transform.forward * spawnOffset;
+        if (Physics.Raycast(source.transform.position, source.transform.forward, out RaycastHit hit, spawnOffset))
         {
-            if (mainCharacterFormRigidbody != null)
-            {
-                mainCharacterFormRigidbody.velocity = Vector3.zero;
-                mainCharacterFormRigidbody.angularVelocity = Vector3.zero;
-                mainCharacterFormRigidbody.isKinematic = true;
-            }
-
-            if (mainCharacterFormAnimator != null)
-            {
-                mainCharacterFormAnimator.SetFloat("Speed", 0);
-                mainCharacterFormAnimator.SetFloat("Direction", 0);
-            }
-
-            if (mainCharacterFormMovement != null)
-                mainCharacterFormMovement.enabled = false;
+            spawnPosition = hit.point - source.transform.forward * 0.1f;
         }
+        return spawnPosition;
+    }
 
-        // Stop squid movement if needed
-        if (currentState == FormState.squid && squidFormRigidbody != null)
-        {
-            squidFormRigidbody.velocity = Vector3.zero;
-            squidFormRigidbody.angularVelocity = Vector3.zero;
+    private void EnableSquid(Vector3 position, Quaternion rotation)
+    {
+        squidForm.transform.position = position;
+        squidForm.transform.rotation = rotation;
+        squidForm.SetActive(true);
+        if (squidFormMovement != null)
+            squidFormMovement.enabled = true;
+        if (squidFormRigidbody != null)
+            squidFormRigidbody.isKinematic = false;
+    }
 
-            if (squidFormMovement != null)
-                squidFormMovement.enabled = false;
-        }
+    private void UpdateCameraPriorities(int main, int squid, int shadow)
+    {
+        mainCharacterFormCamera.Priority = main;
+        squidFormCamera.Priority = squid;
+        shadowCharacterCamera.Priority = shadow;
     }
 
     void SpawnShadowCharacter()
@@ -198,22 +220,26 @@ public class StateManager : MonoBehaviour
         if (interactionManager != null)
             interactionManager.PreserveInteraction();
 
-        // Get position from current shadow
+        DisableCurrentForm();
+        
         Vector3 spawnPos = squidForm.transform.position;
         Quaternion spawnRot = squidForm.transform.rotation;
-
-        // Disable shadow
+        
         squidForm.SetActive(false);
 
-        // Enable and position shadow character
         shadowCharacter.transform.position = spawnPos;
         shadowCharacter.transform.rotation = spawnRot;
         shadowCharacter.SetActive(true);
 
+        // Ensure interaction manager is enabled
+        if (shadowCharacterInteractionManager != null)
+        {
+            shadowCharacterInteractionManager.enabled = true;
+            Debug.Log("Enabled shadow character interaction manager");
+        }
+
         // Update priorities
-        mainCharacterFormCamera.Priority = 0;
-        squidFormCamera.Priority = 0;
-        shadowCharacterCamera.Priority = 10;
+        UpdateCameraPriorities(0, 0, 10);
 
         currentState = FormState.shadowCharacter;
     }
@@ -223,15 +249,7 @@ public class StateManager : MonoBehaviour
         if (currentState == FormState.shadowCharacter && interactionManager != null)
             interactionManager.EndCurrentInteraction();
 
-        // Disable current forms
-        if (currentState == FormState.shadowCharacter)
-        {
-            shadowCharacter.SetActive(false);
-        }
-        else if (currentState == FormState.squid)
-        {
-            squidForm.SetActive(false);
-        }
+        DisableCurrentForm();
 
         // Re-enable original character
         if (mainCharacterFormRigidbody != null)
@@ -241,9 +259,7 @@ public class StateManager : MonoBehaviour
             mainCharacterFormMovement.enabled = true;
 
         // Only update priorities
-        mainCharacterFormCamera.Priority = 10;
-        squidFormCamera.Priority = 0;
-        shadowCharacterCamera.Priority = 0;
+        UpdateCameraPriorities(10, 0, 0);
 
         currentState = FormState.mainCharacter;
     }

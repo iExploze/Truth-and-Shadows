@@ -2,78 +2,105 @@ using UnityEngine;
 
 public class InteractionManager : MonoBehaviour
 {
-    public float interactionRange = 2f;
-    public float interactionRadius = 0.5f; // How wide the interaction check is
-    public Transform interactionSource; // Transform to raycast from
+    [Header("Interaction Settings")]
+    [SerializeField] private float interactionRange = 2f;
+    [SerializeField] private float interactionRadius = 0.5f;
+    [SerializeField] private Transform interactionSource;
+
+    [Header("Debug")]
+    [SerializeField] private bool showDebugRay = true;
+
     private IInteractable currentInteractable;
     private bool isInteracting;
 
     void Start()
     {
-        // If no source specified, use this object's transform
-        if (interactionSource == null)
-            interactionSource = transform;
+        InitializeSource();
     }
 
     void Update()
     {
+        HandleInteractionInput();
+        UpdateContinuousInteraction();
+    }
+
+    private void InitializeSource()
+    {
+        if (interactionSource == null)
+            interactionSource = transform;
+    }
+
+    private void HandleInteractionInput()
+    {
         if (Input.GetKeyDown(KeyCode.Space))
-        {
             TryStartInteraction();
-        }
         else if (Input.GetKeyUp(KeyCode.Space))
-        {
             EndCurrentInteraction();
-        }
-        else if (isInteracting && currentInteractable?.RequiresContinuousInteraction == true)
-        {
+    }
+
+    private void UpdateContinuousInteraction()
+    {
+        if (isInteracting && currentInteractable?.RequiresContinuousInteraction == true)
             currentInteractable.ContinueInteraction();
+    }
+
+    private void TryStartInteraction()
+    {
+        if (!IsValidSource()) return;
+
+        Vector3 origin = GetInteractionOrigin();
+        Vector3 direction = interactionSource.forward;
+
+        if (showDebugRay)
+            Debug.DrawRay(origin, direction * interactionRange, Color.yellow, 0.1f);
+
+        if (TryFindInteractable(origin, direction, out IInteractable interactable))
+        {
+            currentInteractable = interactable;
+            isInteracting = true;
+            currentInteractable.StartInteraction();
         }
     }
 
-    void TryStartInteraction()
+    private bool IsValidSource()
     {
-        // Cast sphere from character position forward
-        Vector3 sourcePosition = interactionSource.position + Vector3.up; // Slightly up from feet
-        Vector3 sourceForward = interactionSource.forward;
-        
-        // Debug visualization
-        Debug.DrawRay(sourcePosition, sourceForward * interactionRange, Color.yellow, 0.1f);
+        return interactionSource != null;
+    }
 
-        // Use SphereCast for more forgiving interaction
+    private Vector3 GetInteractionOrigin()
+    {
+        return interactionSource.position + Vector3.up;
+    }
+
+    private bool TryFindInteractable(Vector3 origin, Vector3 direction, out IInteractable interactable)
+    {
+        interactable = null;
         RaycastHit hit;
-        if (Physics.SphereCast(sourcePosition, interactionRadius, sourceForward, out hit, interactionRange))
+        
+        if (Physics.SphereCast(origin, interactionRadius, direction, out hit, interactionRange))
         {
-            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
-            if (interactable != null)
-            {
-                currentInteractable = interactable;
-                isInteracting = true;
-                currentInteractable.StartInteraction();
-            }
+            interactable = hit.collider.GetComponent<IInteractable>();
         }
+
+        return interactable != null;
     }
 
     public void EndCurrentInteraction()
     {
-        if (isInteracting && currentInteractable != null)
+        if (!isInteracting || currentInteractable == null) return;
+
+        currentInteractable.EndInteraction();
+        
+        if (!currentInteractable.RequiresContinuousInteraction)
         {
-            currentInteractable.EndInteraction();
-            if (!currentInteractable.RequiresContinuousInteraction)
-            {
-                currentInteractable = null;
-                isInteracting = false;
-            }
+            currentInteractable = null;
+            isInteracting = false;
         }
     }
 
-    // Called by StateManager when switching forms
     public void PreserveInteraction()
     {
-        // Keep interaction state but don't end it
         if (currentInteractable?.RequiresContinuousInteraction == true)
-        {
             isInteracting = Input.GetKey(KeyCode.Space);
-        }
     }
 }
