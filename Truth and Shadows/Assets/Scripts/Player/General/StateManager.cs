@@ -7,13 +7,13 @@ using UnityEngine;
 public class StateManager : MonoBehaviour
 {
     [Header("Forms")]
-    public GameObject mainForm; // Drag in MainForm child (Shadow)
-    public GameObject altForm; // Drag in AltForm child (Squid)
+    public GameObject mainCharacterForm; // Drag in mainCharacterForm child (Shadow)
+    public GameObject squidForm; // Drag in squidForm child (Squid)
     public GameObject shadowCharacter; // Reference to scene instance instead of prefab
 
     [Header("Camera Rigs")]
-    [SerializeField] private CinemachineFreeLook mainFormCamera;
-    [SerializeField] private CinemachineFreeLook altFormCamera;
+    [SerializeField] private CinemachineFreeLook mainCharacterFormCamera;
+    [SerializeField] private CinemachineFreeLook squidFormCamera;
     [SerializeField] private CinemachineFreeLook shadowCharacterCamera;
 
     [Header("Shadow Spawn Settings")]
@@ -21,42 +21,42 @@ public class StateManager : MonoBehaviour
 
     private enum FormState 
     {
-        Normal,
-        Shadow,
-        ShadowCharacter
+        mainCharacter,
+        squid,
+        shadowCharacter
     }
     
-    private FormState currentState = FormState.Normal;
+    private FormState currentState = FormState.mainCharacter;
     private GameObject currentShadowCharacter;
 
-    private CharacterMovement mainFormMovement; // Reference to main character's movement script
-    private Rigidbody mainFormRigidbody;  // Add this field
-    private Animator mainFormAnimator; // Add this field
+    private CharacterMovement mainCharacterFormMovement; // Reference to main character's movement script
+    private Rigidbody mainCharacterFormRigidbody;  // Add this field
+    private Animator mainCharacterFormAnimator; // Add this field
 
     void Start()
     {
         // Main is active at start
-        mainForm.SetActive(true);
-        altForm.SetActive(false); // Shadow starts inactive
+        mainCharacterForm.SetActive(true);
+        squidForm.SetActive(false); // Shadow starts inactive
         shadowCharacter.SetActive(false); // Disable at start
-        mainFormMovement = mainForm.GetComponent<CharacterMovement>();
-        mainFormRigidbody = mainForm.GetComponent<Rigidbody>();  // Get rigidbody reference
-        mainFormAnimator = mainForm.GetComponent<Animator>(); // Get animator reference
+        mainCharacterFormMovement = mainCharacterForm.GetComponent<CharacterMovement>();
+        mainCharacterFormRigidbody = mainCharacterForm.GetComponent<Rigidbody>();  // Get rigidbody reference
+        mainCharacterFormAnimator = mainCharacterForm.GetComponent<Animator>(); // Get animator reference
 
-        mainForm.tag = "Player";
-        altForm.tag = "Untagged";
+        mainCharacterForm.tag = "Player";
+        squidForm.tag = "Untagged";
         shadowCharacter.tag = "Untagged"; // Ensure shadow character is untagged
 
         // Validate cameras
-        if (mainFormCamera == null || altFormCamera == null || shadowCharacterCamera == null)
+        if (mainCharacterFormCamera == null || squidFormCamera == null || shadowCharacterCamera == null)
         {
             Debug.LogError("Missing camera references in StateManager!");
             return;
         }
 
         // Set initial camera priorities only
-        mainFormCamera.Priority = 10;
-        altFormCamera.Priority = 0;
+        mainCharacterFormCamera.Priority = 10;
+        squidFormCamera.Priority = 0;
         shadowCharacterCamera.Priority = 0;
     }
 
@@ -72,22 +72,22 @@ public class StateManager : MonoBehaviour
     {
         switch (currentState)
         {
-            case FormState.Normal:
+            case FormState.mainCharacter:
                 // Switch to shadow form
                 EnterShadowForm();
-                currentState = FormState.Shadow;
+                currentState = FormState.squid;
                 break;
 
-            case FormState.Shadow:
+            case FormState.squid:
                 // Switch to shadow character
                 SpawnShadowCharacter();
-                currentState = FormState.ShadowCharacter;
+                currentState = FormState.shadowCharacter;
                 break;
 
-            case FormState.ShadowCharacter:
+            case FormState.shadowCharacter:
                 // Return to normal
                 ReturnToNormalForm();
-                currentState = FormState.Normal;
+                currentState = FormState.mainCharacter;
                 break;
         }
     }
@@ -95,48 +95,48 @@ public class StateManager : MonoBehaviour
     void EnterShadowForm()
     {
         // Stop all player movement and animation
-        if (mainFormRigidbody != null)
+        if (mainCharacterFormRigidbody != null)
         {
-            mainFormRigidbody.velocity = Vector3.zero;
-            mainFormRigidbody.angularVelocity = Vector3.zero;
-            mainFormRigidbody.isKinematic = true;
+            mainCharacterFormRigidbody.velocity = Vector3.zero;
+            mainCharacterFormRigidbody.angularVelocity = Vector3.zero;
+            mainCharacterFormRigidbody.isKinematic = true;
         }
 
-        if (mainFormAnimator != null)
+        if (mainCharacterFormAnimator != null)
         {
-            mainFormAnimator.SetFloat("Speed", 0);
-            mainFormAnimator.SetFloat("Direction", 0);
+            mainCharacterFormAnimator.SetFloat("Speed", 0);
+            mainCharacterFormAnimator.SetFloat("Direction", 0);
         }
 
         // Spawn shadow at offset
-        Vector3 spawnPosition = mainForm.transform.position + mainForm.transform.forward * spawnOffset;
+        Vector3 spawnPosition = mainCharacterForm.transform.position + mainCharacterForm.transform.forward * spawnOffset;
         RaycastHit hit;
-        if (Physics.Raycast(mainForm.transform.position, mainForm.transform.forward, out hit, spawnOffset))
+        if (Physics.Raycast(mainCharacterForm.transform.position, mainCharacterForm.transform.forward, out hit, spawnOffset))
         {
-            spawnPosition = hit.point - mainForm.transform.forward * 0.1f;
+            spawnPosition = hit.point - mainCharacterForm.transform.forward * 0.1f;
         }
 
-        altForm.transform.position = spawnPosition;
-        altForm.transform.rotation = mainForm.transform.rotation;
-        altForm.SetActive(true);
+        squidForm.transform.position = spawnPosition;
+        squidForm.transform.rotation = mainCharacterForm.transform.rotation;
+        squidForm.SetActive(true);
 
-        if (mainFormMovement != null)
-            mainFormMovement.enabled = false;
+        if (mainCharacterFormMovement != null)
+            mainCharacterFormMovement.enabled = false;
 
         // Only update priorities
-        mainFormCamera.Priority = 0;
-        altFormCamera.Priority = 10;
+        mainCharacterFormCamera.Priority = 0;
+        squidFormCamera.Priority = 10;
         shadowCharacterCamera.Priority = 0;
     }
 
     void SpawnShadowCharacter()
     {
         // Get position from current shadow
-        Vector3 spawnPos = altForm.transform.position;
-        Quaternion spawnRot = altForm.transform.rotation;
+        Vector3 spawnPos = squidForm.transform.position;
+        Quaternion spawnRot = squidForm.transform.rotation;
         
         // Disable shadow
-        altForm.SetActive(false);
+        squidForm.SetActive(false);
 
         // Enable and position shadow character
         shadowCharacter.transform.position = spawnPos;
@@ -144,8 +144,8 @@ public class StateManager : MonoBehaviour
         shadowCharacter.SetActive(true);
         
         // Update priorities
-        mainFormCamera.Priority = 0;
-        altFormCamera.Priority = 0;
+        mainCharacterFormCamera.Priority = 0;
+        squidFormCamera.Priority = 0;
         shadowCharacterCamera.Priority = 10;
     }
 
@@ -155,15 +155,15 @@ public class StateManager : MonoBehaviour
         shadowCharacter.SetActive(false);
 
         // Re-enable original character
-        if (mainFormRigidbody != null)
-            mainFormRigidbody.isKinematic = false;
+        if (mainCharacterFormRigidbody != null)
+            mainCharacterFormRigidbody.isKinematic = false;
 
-        if (mainFormMovement != null)
-            mainFormMovement.enabled = true;
+        if (mainCharacterFormMovement != null)
+            mainCharacterFormMovement.enabled = true;
 
         // Only update priorities
-        mainFormCamera.Priority = 10;
-        altFormCamera.Priority = 0;
+        mainCharacterFormCamera.Priority = 10;
+        squidFormCamera.Priority = 0;
         shadowCharacterCamera.Priority = 0;
     }
 }
