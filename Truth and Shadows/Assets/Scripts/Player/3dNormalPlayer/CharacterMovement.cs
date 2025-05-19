@@ -9,13 +9,10 @@ public class CharacterMovement : MonoBehaviour
     public bool useCharacterForward = false;
     public bool lockToCameraForward = false;
     public float turnSpeed = 10f;
-    public KeyCode sprintJoystick = KeyCode.JoystickButton2;
-    public KeyCode sprintKeyboard = KeyCode.E;
 
     private float turnSpeedMultiplier;
     private float speed = 0f;
     private float direction = 0f;
-    private bool isSprinting = false;
     private Animator anim;
     private Vector3 targetDirection;
     private Vector2 input;
@@ -53,10 +50,6 @@ public class CharacterMovement : MonoBehaviour
             direction = 0f;
 
         anim.SetFloat("Direction", direction);
-
-        // set sprinting
-	    isSprinting = ((Input.GetKey(sprintJoystick) || Input.GetKey(sprintKeyboard)) && input != Vector2.zero && direction >= 0f);
-        anim.SetBool("isSprinting", isSprinting);
 
         // Update target direction relative to the camera view (or not if the Keep Direction option is checked)
         UpdateTargetDirection();
