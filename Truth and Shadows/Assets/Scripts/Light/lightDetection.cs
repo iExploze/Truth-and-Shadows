@@ -29,6 +29,9 @@ public class lightDetection : MonoBehaviour
         // Dynamically find the currently active player with the "Player" tag
         currentPlayer = GameObject.FindGameObjectWithTag("Player");
 
+        // find the script that interacts with lights in that gameobject
+
+
         if (currentPlayer == null || !currentPlayer.activeInHierarchy)
             return;
 

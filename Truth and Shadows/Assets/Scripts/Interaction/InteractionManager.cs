@@ -16,6 +16,7 @@ public class InteractionManager : MonoBehaviour
     void Start()
     {
         InitializeSource();
+        Cursor.visible = false;
     }
 
     void Update()
