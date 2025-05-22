@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +8,8 @@ public class lightDetection : MonoBehaviour
     private Light spotLight;
 
     // Track current player with "Player" tag
-    private GameObject currentPlayer;
+    private GameObject[] currentPlayers;
+    private Dictionary<GameObject, bool> playerLightStates = new Dictionary<GameObject, bool>();
 
     // Keep track of whether the player is currently in the light
     private bool isPlayerInLight = false;
@@ -26,44 +27,52 @@ public class lightDetection : MonoBehaviour
 
     void Update()
     {
-        // Dynamically find the currently active player with the "Player" tag
-        currentPlayer = GameObject.FindGameObjectWithTag("Player");
+        currentPlayers = GameObject.FindGameObjectsWithTag("Player");
 
-        // find the script that interacts with lights in that gameobject
+        // Track which players are still present
+        HashSet<GameObject> stillPresent = new HashSet<GameObject>(currentPlayers);
 
-
-        if (currentPlayer == null || !currentPlayer.activeInHierarchy)
-            return;
-
-        // Determine if the current player is in the light cone
-        bool isInLight = isPlayerInCone(currentPlayer.transform);
-
-        // Try to get the ILightHittable component from the active player
-        ILightHittable playerLight = currentPlayer.GetComponent<ILightHittable>();
-
-        if (playerLight == null)
+        // Remove entries for players that no longer exist
+        var oldPlayers = new List<GameObject>(playerLightStates.Keys);
+        foreach (var player in oldPlayers)
         {
-            Debug.LogWarning("No ILightHittable component on current Player.");
-            return;
+            if (!stillPresent.Contains(player))
+            {
+                playerLightStates.Remove(player);
+            }
         }
 
-        // State transitions
-        if (isInLight && !isPlayerInLight)
+        foreach (GameObject playerObj in currentPlayers)
         {
-            // Player just entered the light
-            playerLight.OnLightEnter(spotLight);
-            isPlayerInLight = true;
-        }
-        else if (isInLight && isPlayerInLight)
-        {
-            // Player stays in the light
-            playerLight.OnLightStay(spotLight);
-        }
-        else if (!isInLight && isPlayerInLight)
-        {
-            // Player just exited the light
-            playerLight.OnLightExit(spotLight);
-            isPlayerInLight = false;
+            if (!playerObj.activeInHierarchy)
+                continue;
+
+            bool isInLight = isPlayerInCone(playerObj.transform);
+            ILightHittable playerLight = playerObj.GetComponent<ILightHittable>();
+
+            if (playerLight == null)
+            {
+                Debug.LogWarning("No ILightHittable component on " + playerObj.name);
+                continue;
+            }
+
+            bool wasInLight = playerLightStates.ContainsKey(playerObj) && playerLightStates[playerObj];
+
+            if (isInLight && !wasInLight)
+            {
+                playerLight.OnLightEnter(spotLight);
+                playerLightStates[playerObj] = true;
+            }
+            else if (isInLight && wasInLight)
+            {
+                playerLight.OnLightStay(spotLight);
+            }
+            else if (!isInLight && wasInLight)
+            {
+                playerLight.OnLightExit(spotLight);
+                playerLightStates[playerObj] = false;
+            }
+            // else: !isInLight && !wasInLight → do nothing
         }
     }
 
