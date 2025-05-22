@@ -11,9 +11,6 @@ public class lightDetection : MonoBehaviour
     private GameObject[] currentPlayers;
     private Dictionary<GameObject, bool> playerLightStates = new Dictionary<GameObject, bool>();
 
-    // Keep track of whether the player is currently in the light
-    private bool isPlayerInLight = false;
-
     void Start()
     {
         // Get the Light component attached to this GameObject
