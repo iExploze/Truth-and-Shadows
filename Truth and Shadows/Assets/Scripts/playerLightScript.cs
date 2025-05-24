@@ -5,6 +5,8 @@ using UnityEngine;
 public class playerLightScript : MonoBehaviour, ILightHittable
 {
     private AudioSource audioSource;
+
+    [SerializeField] private AudioSource test;
     void Start() 
     {
         // Get the audio source component attached to the same GameObject
@@ -31,6 +33,8 @@ public class playerLightScript : MonoBehaviour, ILightHittable
         {
             audioSource.Stop();
         }
+
+        PlaySoundOnce();
     }
 
     public void OnLightStay(Light lightSource)
@@ -40,6 +44,19 @@ public class playerLightScript : MonoBehaviour, ILightHittable
         if (!audioSource.isPlaying)
         {
             audioSource.Play();
+        }
+    }
+
+    void PlaySoundOnce()
+    {
+        if (test != null)
+        {
+            test.PlayOneShot(test.clip);
+            Debug.Log("Sound played once");
+        }
+        else
+        {
+            Debug.LogWarning("AudioSource not assigned.");
         }
     }
 }
