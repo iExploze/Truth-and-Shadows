@@ -13,6 +13,7 @@ public class lightDetection : MonoBehaviour
 
     void Start()
     {
+        Debug.Log("BBBBBBBB");
         // Get the Light component attached to this GameObject
         spotLight = GetComponent<Light>();
 
@@ -57,11 +58,13 @@ public class lightDetection : MonoBehaviour
 
             if (isInLight && !wasInLight)
             {
+                Debug.Log("player entered light");
                 playerLight.OnLightEnter(spotLight);
                 playerLightStates[playerObj] = true;
             }
             else if (isInLight && wasInLight)
             {
+                Debug.Log("player stay light");
                 playerLight.OnLightStay(spotLight);
             }
             else if (!isInLight && wasInLight)
