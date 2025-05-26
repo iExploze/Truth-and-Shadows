@@ -108,14 +108,17 @@ public class lightDetection : MonoBehaviour
                 if (Physics.Raycast(ray, out hit, spotLight.range, layerMask))
                 {
 
-                    if (hit.transform.CompareTag("Player"))
+                    // only return true if the VERY FIRST thing hit is the target itself
+                    if (hit.transform == target)
                     {
-                        Debug.DrawLine(spotLight.transform.position, hit.point, Color.green);  // Visualize the hit
+                        Debug.DrawLine(spotLight.transform.position, hit.point, Color.green);
                         return true;
                     }
                     else
                     {
-                        Debug.DrawLine(spotLight.transform.position, hit.point, Color.red);  // Visualize the blocked hit
+                        // hit something else (another player or an obstacle) first
+                        Debug.DrawLine(spotLight.transform.position, hit.point, Color.red);
+                        return false;
                     }
                 }
             }

@@ -28,7 +28,7 @@ public class StateManager : MonoBehaviour
 
     [Header("Shadow Spawn Settings")]
     [SerializeField]
-    private float spawnOffset = 0.2f; // Distance to spawn shadow from player
+    private float spawnOffset = 2f; // Distance to spawn shadow from player
 
     private enum FormState
     {
@@ -259,7 +259,7 @@ public class StateManager : MonoBehaviour
         currentState = FormState.shadowCharacter;
     }
 
-    void ReturnToNormalForm()
+    public void ReturnToNormalForm()
     {
         if (currentState == FormState.shadowCharacter && interactionManager != null)
             interactionManager.EndCurrentInteraction();
