@@ -13,13 +13,18 @@ public class StateManager : MonoBehaviour
 
     [Header("Camera Rigs")]
     [SerializeField]
-    private CinemachineFreeLook mainCharacterFormCamera;
+    private CinemachineVirtualCamera mainCharacterFormCameraVCam;
+    [SerializeField]
+    private CinemachineVirtualCamera squidFormCameraVCam;
+    [SerializeField]
+    private CinemachineVirtualCamera shadowCharacterCameraVCam;
 
     [SerializeField]
-    private CinemachineFreeLook squidFormCamera;
-
+    private CinemachineFreeLook mainCharacterFormCameraFreeLook;
     [SerializeField]
-    private CinemachineFreeLook shadowCharacterCamera;
+    private CinemachineFreeLook squidFormCameraFreeLook;
+    [SerializeField]
+    private CinemachineFreeLook shadowCharacterCameraFreeLook;
 
     [Header("Shadow Spawn Settings")]
     [SerializeField]
@@ -72,9 +77,7 @@ public class StateManager : MonoBehaviour
         squidForm.SetActive(false);
         shadowCharacter.SetActive(false);
 
-        mainCharacterFormCamera.Priority = 10;
-        squidFormCamera.Priority = 0;
-        shadowCharacterCamera.Priority = 0;
+        UpdateCameraPriorities(10, 0, 0);
 
         currentState = FormState.mainCharacter;
     }
@@ -208,11 +211,23 @@ public class StateManager : MonoBehaviour
             squidFormRigidbody.isKinematic = false;
     }
 
+    private void SetCameraPriority(CinemachineVirtualCameraBase cam, int priority)
+    {
+        if (cam != null)
+        {
+            cam.Priority = priority;
+        }
+    }
+
     private void UpdateCameraPriorities(int main, int squid, int shadow)
     {
-        mainCharacterFormCamera.Priority = main;
-        squidFormCamera.Priority = squid;
-        shadowCharacterCamera.Priority = shadow;
+        SetCameraPriority(mainCharacterFormCameraVCam, main);
+        SetCameraPriority(squidFormCameraVCam, squid);
+        SetCameraPriority(shadowCharacterCameraVCam, shadow);
+
+        SetCameraPriority(mainCharacterFormCameraFreeLook, main);
+        SetCameraPriority(squidFormCameraFreeLook, squid);
+        SetCameraPriority(shadowCharacterCameraFreeLook, shadow);
     }
 
     void SpawnShadowCharacter()
