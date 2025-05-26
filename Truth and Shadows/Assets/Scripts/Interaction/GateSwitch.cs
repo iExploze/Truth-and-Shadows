@@ -1,30 +1,30 @@
 using UnityEngine;
 
-public class GateSwitch : MonoBehaviour, IInteractable
+namespace TruthAndShadows.Interaction
 {
-    private GameObject targetGate;
-    public bool requireContinuousHold = false; // One-time interaction
-
-    public bool RequiresContinuousInteraction => requireContinuousHold;
-
-    void Start()
+    public class GateSwitch : InteractableBase
     {
-        targetGate = GameObject.Find("Gate");
-        if (targetGate == null)
+        [SerializeField]
+        private GameObject targetGate;
+
+        private void Start()
         {
-            Debug.LogWarning("No gate found for switch: " + gameObject.name);
+            if (targetGate == null)
+            {
+                targetGate = GameObject.Find("Gate");
+                if (targetGate == null)
+                {
+                    Debug.LogWarning("No gate found for switch: " + gameObject.name);
+                }
+            }
+        }
+
+        public override void StartInteraction()
+        {
+            if (targetGate != null)
+            {
+                targetGate.SetActive(false);
+            }
         }
     }
-
-    public void StartInteraction()
-    {
-        if (targetGate != null)
-        {
-            targetGate.SetActive(false);
-        }
-    }
-
-    public void ContinueInteraction() { }
-
-    public void EndInteraction() { }
 }

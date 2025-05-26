@@ -1,107 +1,258 @@
+using Cinemachine;
 using UnityEngine;
 
-public class InteractionManager : MonoBehaviour
+namespace TruthAndShadows.Interaction
 {
-    [Header("Interaction Settings")]
-    [SerializeField] private float interactionRange = 2f;
-    [SerializeField] private float interactionRadius = 0.5f;
-    [SerializeField] private Transform interactionSource;
-
-    [Header("Debug")]
-    [SerializeField] private bool showDebugRay = true;
-
-    private IInteractable currentInteractable;
-    private bool isInteracting;
-
-    void Start()
+    public class InteractionManager : MonoBehaviour
     {
-        InitializeSource();
-        Cursor.visible = false;
-    }
+        [Header("Interaction Settings")]
+        [SerializeField]
+        private float interactionRange = 2f;
 
-    void Update()
-    {
-        HandleInteractionInput();
-        UpdateContinuousInteraction();
-    }
+        [SerializeField]
+        private float interactionRadius = 0.5f;
 
-    private void InitializeSource()
-    {
-        if (interactionSource == null)
-            interactionSource = transform;
-    }
+        [SerializeField]
+        private Transform interactionSource;
 
-    private void HandleInteractionInput()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-            TryStartInteraction();
-        else if (Input.GetKeyUp(KeyCode.Space))
-            EndCurrentInteraction();
-    }
+        [Header("Camera")]
+        [SerializeField]
+        private CinemachineVirtualCamera defaultCamera;
+        private CinemachineVirtualCamera currentInteractionCamera;
 
-    private void UpdateContinuousInteraction()
-    {
-        if (isInteracting && currentInteractable?.RequiresContinuousInteraction == true)
-            currentInteractable.ContinueInteraction();
-    }
+        [Header("Debug")]
+        [SerializeField]
+        private bool showDebugRay = true;
 
-    private void TryStartInteraction()
-    {
-        if (!IsValidSource()) return;
+        private IInteractable currentInteractable;
+        private bool isInteracting;
+        private IInteractable pickedUpInteractable;
 
-        Vector3 origin = GetInteractionOrigin();
-        Vector3 direction = interactionSource.forward;
-
-        if (showDebugRay)
-            Debug.DrawRay(origin, direction * interactionRange, Color.yellow, 0.1f);
-
-        if (TryFindInteractable(origin, direction, out IInteractable interactable))
+        void Start()
         {
-            currentInteractable = interactable;
-            isInteracting = true;
-            currentInteractable.StartInteraction();
-        }
-    }
-
-    private bool IsValidSource()
-    {
-        return interactionSource != null;
-    }
-
-    private Vector3 GetInteractionOrigin()
-    {
-        return interactionSource.position + Vector3.up;
-    }
-
-    private bool TryFindInteractable(Vector3 origin, Vector3 direction, out IInteractable interactable)
-    {
-        interactable = null;
-        RaycastHit hit;
-        
-        if (Physics.SphereCast(origin, interactionRadius, direction, out hit, interactionRange))
-        {
-            interactable = hit.collider.GetComponent<IInteractable>();
+            InitializeSource();
+            Cursor.visible = false;
         }
 
-        return interactable != null;
-    }
-
-    public void EndCurrentInteraction()
-    {
-        if (!isInteracting || currentInteractable == null) return;
-
-        currentInteractable.EndInteraction();
-        
-        if (!currentInteractable.RequiresContinuousInteraction)
+        void Update()
         {
+            HandleInteractionInput();
+            UpdateContinuousInteraction();
+        }
+
+        private void InitializeSource()
+        {
+            if (interactionSource == null)
+                interactionSource = transform;
+        }
+
+        private void HandleInteractionInput()
+        {
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                Debug.Log("R key pressed - attempting interaction");
+                TryStartInteraction();
+            }
+            else if (Input.GetKeyUp(KeyCode.R))
+            {
+                Debug.Log("R key released - ending interaction");
+                EndCurrentInteraction();
+            }
+
+            // Handle pickup functionality with F key - hold to keep picked up
+            HandlePickupInput();
+        }
+
+        private void UpdateContinuousInteraction()
+        {
+            if (isInteracting && currentInteractable?.RequiresContinuousInteraction == true)
+                currentInteractable.ContinueInteraction();
+        }
+
+        private void TryStartInteraction()
+        {
+            Debug.Log("TryStartInteraction called");
+
+            if (!IsValidSource())
+            {
+                Debug.LogWarning("Invalid interaction source!");
+                return;
+            }
+
+            Vector3 origin = GetInteractionOrigin();
+            Vector3 direction = interactionSource.forward;
+
+            Debug.Log(
+                $"Interaction ray: Origin={origin}, Direction={direction}, Range={interactionRange}"
+            );
+
+            if (showDebugRay)
+                Debug.DrawRay(origin, direction * interactionRange, Color.yellow, 0.1f);
+
+            if (TryFindInteractable(origin, direction, out IInteractable interactable))
+            {
+                Debug.Log($"Found interactable: {((MonoBehaviour)interactable).gameObject.name}");
+                currentInteractable = interactable;
+                isInteracting = true;
+                currentInteractable.StartInteraction(); // Switch to interactable's camera if it has one
+                if (currentInteractable.InteractionCamera != null)
+                {
+                    currentInteractionCamera = currentInteractable.InteractionCamera;
+                    SwitchToCamera(currentInteractionCamera);
+                }
+            }
+            else
+            {
+                Debug.Log("No interactable found in range");
+            }
+        }
+
+        private void SwitchToCamera(CinemachineVirtualCamera camera)
+        {
+            // Increase priority of the target camera and decrease others
+            if (defaultCamera != null)
+                defaultCamera.Priority = 0;
+
+            if (currentInteractionCamera != null && currentInteractionCamera != camera)
+                currentInteractionCamera.Priority = 0;
+
+            camera.Priority = 10;
+        }
+
+        private bool IsValidSource()
+        {
+            return interactionSource != null;
+        }
+
+        private Vector3 GetInteractionOrigin()
+        {
+            return interactionSource.position + Vector3.up;
+        }
+
+        private bool TryFindInteractable(
+            Vector3 origin,
+            Vector3 direction,
+            out IInteractable interactable
+        )
+        {
+            interactable = null;
+            RaycastHit hit;
+
+            if (Physics.SphereCast(origin, interactionRadius, direction, out hit, interactionRange))
+            {
+                interactable = hit.collider.GetComponent<IInteractable>();
+            }
+
+            return interactable != null;
+        }
+
+        public void EndCurrentInteraction()
+        {
+            if (!isInteracting || currentInteractable == null)
+                return;
+
+            currentInteractable.EndInteraction(); // Switch back to default camera if we switched away from it
+            if (currentInteractionCamera != null)
+            {
+                currentInteractionCamera.Priority = 0;
+                if (defaultCamera != null)
+                    defaultCamera.Priority = 10;
+                currentInteractionCamera = null;
+            }
+
+            // Clear interaction state for all types of interactions
             currentInteractable = null;
             isInteracting = false;
         }
-    }
 
-    public void PreserveInteraction()
-    {
-        if (currentInteractable?.RequiresContinuousInteraction == true)
-            isInteracting = Input.GetKey(KeyCode.Space);
+        public void PreserveInteraction()
+        {
+            if (currentInteractable?.RequiresContinuousInteraction == true)
+                isInteracting = Input.GetKey(KeyCode.R);
+        }
+
+        private void HandlePickupInput()
+        {
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                // F key just pressed - try to pick up an item if none is held
+                if (pickedUpInteractable == null)
+                {
+                    Debug.Log("F key pressed - attempting pickup");
+                    TryPickupItem();
+                }
+            }
+            else if (Input.GetKeyUp(KeyCode.F))
+            {
+                // F key released - drop any held item
+                if (pickedUpInteractable != null)
+                {
+                    Debug.Log("F key released - dropping item");
+                    DropPickedUpItem();
+                }
+            }
+        }
+
+        private void TryPickupItem()
+        {
+            if (!IsValidSource())
+            {
+                Debug.LogWarning("Invalid interaction source for pickup!");
+                return;
+            }
+
+            Vector3 origin = GetInteractionOrigin();
+            Vector3 direction = interactionSource.forward;
+
+            if (TryFindInteractable(origin, direction, out IInteractable interactable))
+            {
+                if (interactable.CanBePickedUp && !interactable.IsPickedUp)
+                { // End any current interaction before picking up
+                    if (isInteracting && currentInteractable == interactable)
+                    {
+                        EndCurrentInteraction();
+                    }
+
+                    pickedUpInteractable = interactable;
+                    interactable.StartPickup(interactionSource);
+
+                    // Ensure we stay on the player's camera when picking up items
+                    // Don't switch to the interactable's camera for pickup
+                    if (defaultCamera != null)
+                    {
+                        defaultCamera.Priority = 10;
+                    }
+
+                    // Reset any interaction camera priority
+                    if (currentInteractionCamera != null)
+                    {
+                        currentInteractionCamera.Priority = 0;
+                        currentInteractionCamera = null;
+                    }
+
+                    Debug.Log($"Picked up: {((MonoBehaviour)interactable).gameObject.name}");
+                }
+                else
+                {
+                    Debug.Log(
+                        $"Item cannot be picked up: {((MonoBehaviour)interactable).gameObject.name}"
+                    );
+                }
+            }
+            else
+            {
+                Debug.Log("No interactable found for pickup");
+            }
+        }
+
+        private void DropPickedUpItem()
+        {
+            if (pickedUpInteractable != null)
+            {
+                Debug.Log($"Dropping: {((MonoBehaviour)pickedUpInteractable).gameObject.name}");
+                pickedUpInteractable.EndPickup();
+                pickedUpInteractable = null;
+            }
+        }
     }
 }

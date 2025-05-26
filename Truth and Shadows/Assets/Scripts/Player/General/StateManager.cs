@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cinemachine;
 using Cinemachine.Examples; // Add this for CharacterMovement
 using UnityEngine;
+using InteractionManager = TruthAndShadows.Interaction.InteractionManager; // Adjust namespace as needed
 
 public class StateManager : MonoBehaviour
 {
@@ -14,15 +15,19 @@ public class StateManager : MonoBehaviour
     [Header("Camera Rigs")]
     [SerializeField]
     private CinemachineVirtualCamera mainCharacterFormCameraVCam;
+
     [SerializeField]
     private CinemachineVirtualCamera squidFormCameraVCam;
+
     [SerializeField]
     private CinemachineVirtualCamera shadowCharacterCameraVCam;
 
     [SerializeField]
     private CinemachineFreeLook mainCharacterFormCameraFreeLook;
+
     [SerializeField]
     private CinemachineFreeLook squidFormCameraFreeLook;
+
     [SerializeField]
     private CinemachineFreeLook shadowCharacterCameraFreeLook;
 
@@ -66,7 +71,7 @@ public class StateManager : MonoBehaviour
 
         // Get shadow components
         shadowCharacterInteractionManager = shadowCharacter.GetComponent<InteractionManager>();
-        
+
         // Get global interaction manager
         interactionManager = GetComponent<InteractionManager>();
     }
@@ -180,7 +185,8 @@ public class StateManager : MonoBehaviour
         if (interactionManager != null)
             interactionManager.PreserveInteraction();
 
-        GameObject sourceObject = (currentState == FormState.shadowCharacter) ? shadowCharacter : mainCharacterForm;
+        GameObject sourceObject =
+            (currentState == FormState.shadowCharacter) ? shadowCharacter : mainCharacterForm;
         DisableCurrentForm();
 
         Vector3 spawnPosition = CalculateSpawnPosition(sourceObject);
@@ -193,7 +199,14 @@ public class StateManager : MonoBehaviour
     private Vector3 CalculateSpawnPosition(GameObject source)
     {
         Vector3 spawnPosition = source.transform.position + source.transform.forward * spawnOffset;
-        if (Physics.Raycast(source.transform.position, source.transform.forward, out RaycastHit hit, spawnOffset))
+        if (
+            Physics.Raycast(
+                source.transform.position,
+                source.transform.forward,
+                out RaycastHit hit,
+                spawnOffset
+            )
+        )
         {
             spawnPosition = hit.point - source.transform.forward * 0.1f;
         }
@@ -236,10 +249,10 @@ public class StateManager : MonoBehaviour
             interactionManager.PreserveInteraction();
 
         DisableCurrentForm();
-        
+
         Vector3 spawnPos = squidForm.transform.position;
         Quaternion spawnRot = squidForm.transform.rotation;
-        
+
         squidForm.SetActive(false);
 
         shadowCharacter.transform.position = spawnPos;
