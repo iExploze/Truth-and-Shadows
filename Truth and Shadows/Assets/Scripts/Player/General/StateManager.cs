@@ -35,6 +35,8 @@ public class StateManager : MonoBehaviour
     [SerializeField]
     private float spawnOffset = 2f; // Distance to spawn shadow from player
 
+    public GameObject squidHaloIndicator;
+
     private enum FormState
     {
         mainCharacter,
@@ -91,6 +93,7 @@ public class StateManager : MonoBehaviour
     {
         InitializeComponents();
         SetInitialState();
+        squidHaloIndicator.SetActive(false);
     }
 
     void Update()
@@ -102,6 +105,11 @@ public class StateManager : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.Q))
         {
             HandleQInput();
+        }
+        if (Input.GetKeyDown(KeyCode.U) && currentState == FormState.squid)
+        {
+            bool isActive = squidHaloIndicator.activeSelf;
+            squidHaloIndicator.SetActive(!isActive);
         }
     }
 
@@ -170,6 +178,8 @@ public class StateManager : MonoBehaviour
         }
         if (squidFormMovement != null)
             squidFormMovement.enabled = false;
+        if (squidHaloIndicator != null)
+            squidHaloIndicator.SetActive(false);
         squidForm.SetActive(false);
     }
 
@@ -222,6 +232,10 @@ public class StateManager : MonoBehaviour
             squidFormMovement.enabled = true;
         if (squidFormRigidbody != null)
             squidFormRigidbody.isKinematic = false;
+
+        // TEMPORARY: Halo shows up when Squid form is entered
+        if (squidHaloIndicator != null)
+            squidHaloIndicator.SetActive(true);
     }
 
     private void SetCameraPriority(CinemachineVirtualCameraBase cam, int priority)
