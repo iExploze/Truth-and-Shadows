@@ -137,4 +137,5 @@ public class SquidControl : MonoBehaviour
             Debug.DrawLine(rayStart, rayStart + Vector3.down * rayLength, Color.red);
         }
     }
+    public Vector3 SurfaceNormal => surfaceNormal;
 }

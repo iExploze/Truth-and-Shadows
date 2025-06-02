@@ -35,6 +35,14 @@ public class StateManager : MonoBehaviour
     [SerializeField]
     private float spawnOffset = 2f; // Distance to spawn shadow from player
 
+    [SerializeField] private SquidControl squidControl;
+
+    // Added for the squid indicator
+    public GameObject squidHaloIndicator;
+    //private bool squidHaloVisible = false;
+    // Added for checking indicator condition
+    private squidShadowInteraction squidLightStatus;
+
     private enum FormState
     {
         mainCharacter,
@@ -74,6 +82,9 @@ public class StateManager : MonoBehaviour
 
         // Get global interaction manager
         interactionManager = GetComponent<InteractionManager>();
+
+        // Get the squid shadow interaction
+        squidLightStatus = squidForm.GetComponent<squidShadowInteraction>();
     }
 
     private void SetInitialState()
@@ -91,12 +102,31 @@ public class StateManager : MonoBehaviour
     {
         InitializeComponents();
         SetInitialState();
+        squidHaloIndicator.SetActive(false);
     }
 
     void Update()
     {
+        bool isInShadow = squidLightStatus != null && !squidLightStatus.isInLight;
+
+        // Use the exposed SurfaceNormal from SquidControl
+        bool isOnFlatSurface = Vector3.Dot(squidControl.SurfaceNormal, Vector3.up) > 0.9f;
+
+        bool canShowHalo =
+            currentState == FormState.squid &&
+            isInShadow &&
+            isOnFlatSurface;
+
+        squidHaloIndicator.SetActive(canShowHalo);
+
         if (Input.GetKeyDown(KeyCode.E))
         {
+            if (currentState == FormState.squid && !canShowHalo)
+            {
+                Debug.Log("Cannot spawn shadow: invalid location.");
+                return;
+            }
+
             HandleEInput();
         }
         else if (Input.GetKeyDown(KeyCode.Q))
@@ -170,6 +200,7 @@ public class StateManager : MonoBehaviour
         }
         if (squidFormMovement != null)
             squidFormMovement.enabled = false;
+
         squidForm.SetActive(false);
     }
 
@@ -222,6 +253,10 @@ public class StateManager : MonoBehaviour
             squidFormMovement.enabled = true;
         if (squidFormRigidbody != null)
             squidFormRigidbody.isKinematic = false;
+
+        // TEMPORARY: Halo shows up when Squid form is entered
+        if (squidHaloIndicator != null)
+            squidHaloIndicator.SetActive(true);
     }
 
     private void SetCameraPriority(CinemachineVirtualCameraBase cam, int priority)
