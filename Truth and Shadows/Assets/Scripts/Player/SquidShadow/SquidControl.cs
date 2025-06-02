@@ -17,9 +17,6 @@ public class SquidControl : MonoBehaviour
     [Tooltip("How high above the indicator we start the downward ray.")]
     public float raycastHeight = 10f;
 
-    [Tooltip("LayerMask for any surface the indicator can snap to (e.g. \"Ground\").")]
-    public LayerMask groundMask;
-
     [Header("References")]
     [Tooltip("Drag the player's root Transform here (used for clamping radius).")]
     public Transform playerRoot;
@@ -51,12 +48,55 @@ public class SquidControl : MonoBehaviour
         {
             return;
         }
+
+        Vector3 camForward = mainCamera.transform.forward;
+        Vector3 camRight = mainCamera.transform.right;
+
+        camForward.y = 0f;
+        camRight.y = 0f;
+        camForward.Normalize();
+        camRight.Normalize();
+
+        Vector3 inputDir = camForward * v + camRight * h;
+        inputDir.Normalize();
+
+        Vector3 rawTarget = transform.position + inputDir * moveSpeed * Time.deltaTime;
+
+        Vector3 offsetFromPlayer = rawTarget - playerRoot.position;
+        if (offsetFromPlayer.magnitude > maxRadius)
+        {
+            offsetFromPlayer = offsetFromPlayer.normalized * maxRadius;
+            rawTarget = playerRoot.position + offsetFromPlayer;
+        }
+
+        Vector3 destination = new Vector3(rawTarget.x, transform.position.y, rawTarget.z);
+        Vector3 smoothPos = Vector3.SmoothDamp(transform.position, destination, ref velocity, 0.05f);
+        transform.position = smoothPos;
     }
 
 
     private void SnapToSurfaceBelow()
     {
+        Vector3 rayStart = new Vector3(transform.position.x, transform.position.y + raycastHeight, transform.position.z);
+        Ray ray = new Ray(rayStart, Vector3.down);
+        RaycastHit hit;
 
+        Debug.DrawRay(
+            rayStart,
+            Vector3.down * (raycastHeight + 0.1f),
+            Color.yellow
+        );
+
+        if (Physics.Raycast(ray, out hit, raycastHeight + 100f))
+        {
+            // 3) Snap directly onto the hit point
+            transform.position = hit.point;
+                        Debug.DrawLine(
+                rayStart,
+                hit.point,
+                Color.green
+            );
+        }
     }
 
     
