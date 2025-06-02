@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -8,43 +8,60 @@ public class SquidControl : MonoBehaviour
 
     [Header("Move Settings")]
     [Tooltip("Speed (units/sec) that the indicator moves in the horizontal plane.")]
-    public float moveSpeed = 10f;
+    [SerializeField] private float moveSpeed = 10f;
 
     [Tooltip("Maximum radius from player within which the indicator can be placed.")]
-    public float maxRadius = 25f;
+    [SerializeField] private float maxRadius = 25f;
 
     [Header("Raycast Settings")]
     [Tooltip("How high above the indicator we start the downward ray.")]
-    public float raycastHeight = 10f;
+    [SerializeField] private float raycastHeight = 10f;
+
+    [Tooltip("LayerMask for any surface the indicator can snap to (e.g. \"Ground\").")]
+    public LayerMask groundMask;
 
     [Header("References")]
     [Tooltip("Drag the player's root Transform here (used for clamping radius).")]
     public Transform playerRoot;
 
-    private Camera mainCam;
-    private Vector3 velocity; // for SmoothDamp
+    // smoothing helper for horizontal movement
+    private Vector3 velocity;
+
+    private Rigidbody rb;
 
     private void Start()
     {
+        // Put this indicator on the Ignore Raycast layer so its own collider never blocks our rays:
+        gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+
         mainCamera = Camera.main;
 
-        // Optional: freeze rotation so physics won't spin it. 
-        Rigidbody rb = GetComponent<Rigidbody>();
+        // Prevent physics from moving us
+        rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
-        rb.isKinematic = true; // we'll move this transform manually
+        rb.isKinematic = true;
     }
 
-    void Update()
+    private void Update()
     {
         HandleHorizontalMovement();
-        SnapToSurfaceBelow();
+
+        if (Input.GetMouseButton(0))
+        {
+            SnapVerticalDown();
+        }
+        else
+        {
+            SnapDirectlyDown();
+        }
     }
-    void HandleHorizontalMovement()
+
+    private void HandleHorizontalMovement()
     {
-        float h = Input.GetAxis("Horizontal"); 
+        float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        if (Math.Abs(h) < 0.01f && Math.Abs(v) < 0.01f) 
+        if (Math.Abs(h) < 0.01f && Math.Abs(v) < 0.01f)
         {
             return;
         }
@@ -74,31 +91,50 @@ public class SquidControl : MonoBehaviour
         transform.position = smoothPos;
     }
 
-
-    private void SnapToSurfaceBelow()
+    private void SnapVerticalDown()
     {
-        Vector3 rayStart = new Vector3(transform.position.x, transform.position.y + raycastHeight, transform.position.z);
-        Ray ray = new Ray(rayStart, Vector3.down);
-        RaycastHit hit;
+        rb.isKinematic = true;
 
-        Debug.DrawRay(
-            rayStart,
-            Vector3.down * (raycastHeight + 0.1f),
-            Color.yellow
-        );
+        // Temporarily disable our own collider so the ray won't hit ourselves
+        Collider selfCol = GetComponent<Collider>();
+        bool wasEnabled = selfCol.enabled;
+        selfCol.enabled = false;
 
-        if (Physics.Raycast(ray, out hit, raycastHeight + 100f))
+        Vector3 rayStart = transform.position + Vector3.up * raycastHeight;
+        float rayLength = raycastHeight + 100f;
+
+        Debug.DrawRay(rayStart, Vector3.down * rayLength, Color.yellow);
+
+        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, rayLength, groundMask))
         {
-            // 3) Snap directly onto the hit point
             transform.position = hit.point;
-                        Debug.DrawLine(
-                rayStart,
-                hit.point,
-                Color.green
-            );
+            Debug.DrawLine(rayStart, hit.point, Color.green);
         }
+        else
+        {
+            Debug.DrawLine(rayStart, rayStart + Vector3.down * rayLength, Color.red);
+        }
+
+        selfCol.enabled = wasEnabled;
     }
 
-    
+    private void SnapDirectlyDown()
+    {
+        rb.isKinematic = false;
 
+        Vector3 rayStart = transform.position;
+        float rayLength = raycastHeight + 100f;
+
+        Debug.DrawRay(rayStart, Vector3.down * rayLength, Color.yellow);
+
+        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, rayLength, groundMask))
+        {
+            transform.position = hit.point;
+            Debug.DrawLine(rayStart, hit.point, Color.green);
+        }
+        else
+        {
+            Debug.DrawLine(rayStart, rayStart + Vector3.down * rayLength, Color.red);
+        }
+    }
 }
