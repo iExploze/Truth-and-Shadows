@@ -29,6 +29,8 @@ public class SquidControl : MonoBehaviour
 
     private Rigidbody rb;
 
+    private Vector3 surfaceNormal = Vector3.up; // default to up
+
     private void Start()
     {
         // Put this indicator on the Ignore Raycast layer so its own collider never blocks our rays:
@@ -109,6 +111,7 @@ public class SquidControl : MonoBehaviour
         {
             transform.position = hit.point;
             Debug.DrawLine(rayStart, hit.point, Color.green);
+            surfaceNormal = hit.normal;
         }
         else
         {
@@ -131,6 +134,7 @@ public class SquidControl : MonoBehaviour
         {
             transform.position = hit.point;
             Debug.DrawLine(rayStart, hit.point, Color.green);
+            surfaceNormal = hit.normal;
         }
         else
         {
