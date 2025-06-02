@@ -35,7 +35,11 @@ public class StateManager : MonoBehaviour
     [SerializeField]
     private float spawnOffset = 2f; // Distance to spawn shadow from player
 
+    // Added for the squid indicator
     public GameObject squidHaloIndicator;
+    //private bool squidHaloVisible = false;
+    // Added for checking indicator condition
+    private squidShadowInteraction squidLightStatus;
 
     private enum FormState
     {
@@ -76,6 +80,20 @@ public class StateManager : MonoBehaviour
 
         // Get global interaction manager
         interactionManager = GetComponent<InteractionManager>();
+
+        // Get the squid shadow interaction
+        squidLightStatus = squidForm.GetComponent<squidShadowInteraction>();
+    }
+
+    private bool IsOnFlatHorizontalSurface()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(squidForm.transform.position, Vector3.down, out hit, 1f))
+        {
+            float angle = Vector3.Angle(hit.normal, Vector3.up);
+            return angle < 5f;
+        }
+        return false;
     }
 
     private void SetInitialState()
@@ -98,18 +116,27 @@ public class StateManager : MonoBehaviour
 
     void Update()
     {
+        bool canShowHalo =
+        currentState == FormState.squid &&
+        squidLightStatus != null &&
+        !squidLightStatus.isInLight &&
+        IsOnFlatHorizontalSurface();
+
+        squidHaloIndicator.SetActive(canShowHalo);
+
         if (Input.GetKeyDown(KeyCode.E))
         {
+            if (currentState == FormState.squid && !canShowHalo)
+            {
+                Debug.Log("Cannot spawn shadow: invalid location.");
+                return;
+            }
+
             HandleEInput();
         }
         else if (Input.GetKeyDown(KeyCode.Q))
         {
             HandleQInput();
-        }
-        if (Input.GetKeyDown(KeyCode.U) && currentState == FormState.squid)
-        {
-            bool isActive = squidHaloIndicator.activeSelf;
-            squidHaloIndicator.SetActive(!isActive);
         }
     }
 
@@ -178,8 +205,7 @@ public class StateManager : MonoBehaviour
         }
         if (squidFormMovement != null)
             squidFormMovement.enabled = false;
-        if (squidHaloIndicator != null)
-            squidHaloIndicator.SetActive(false);
+
         squidForm.SetActive(false);
     }
 
