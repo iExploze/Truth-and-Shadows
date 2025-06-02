@@ -337,4 +337,6 @@ public class SquidControl : MonoBehaviour
             nearestSurfaceNormal = surfaceNormal;
         }
     }
+
+    public Vector3 SurfaceNormal => surfaceNormal;
 }

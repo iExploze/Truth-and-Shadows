@@ -35,6 +35,8 @@ public class StateManager : MonoBehaviour
     [SerializeField]
     private float spawnOffset = 2f; // Distance to spawn shadow from player
 
+    [SerializeField] private SquidControl squidControl;
+
     // Added for the squid indicator
     public GameObject squidHaloIndicator;
     //private bool squidHaloVisible = false;
@@ -85,17 +87,6 @@ public class StateManager : MonoBehaviour
         squidLightStatus = squidForm.GetComponent<squidShadowInteraction>();
     }
 
-    private bool IsOnFlatHorizontalSurface()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(squidForm.transform.position, Vector3.down, out hit, 1f))
-        {
-            float angle = Vector3.Angle(hit.normal, Vector3.up);
-            return angle < 5f;
-        }
-        return false;
-    }
-
     private void SetInitialState()
     {
         mainCharacterForm.SetActive(true);
@@ -116,11 +107,15 @@ public class StateManager : MonoBehaviour
 
     void Update()
     {
+        bool isInShadow = squidLightStatus != null && !squidLightStatus.isInLight;
+
+        // Use the exposed SurfaceNormal from SquidControl
+        bool isOnFlatSurface = Vector3.Dot(squidControl.SurfaceNormal, Vector3.up) > 0.9f;
+
         bool canShowHalo =
-        currentState == FormState.squid &&
-        squidLightStatus != null &&
-        !squidLightStatus.isInLight &&
-        IsOnFlatHorizontalSurface();
+            currentState == FormState.squid &&
+            isInShadow &&
+            isOnFlatSurface;
 
         squidHaloIndicator.SetActive(canShowHalo);
 

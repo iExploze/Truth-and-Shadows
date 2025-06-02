@@ -1601,6 +1601,7 @@ MonoBehaviour:
   squidFormCameraFreeLook: {fileID: 7317079693064339068}
   shadowCharacterCameraFreeLook: {fileID: 105075005697602469}
   spawnOffset: 0.2
+  squidControl: {fileID: 7954170921848343769}
   squidHaloIndicator: {fileID: 1046151388}
 --- !u!4 &1284848704
 Transform:
@@ -2862,19 +2863,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5950352347581298531, guid: 19e1290cc0e97f04493d01d232e50def, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.000000043161908
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5950352347581298531, guid: 19e1290cc0e97f04493d01d232e50def, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.000000006909086
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5950352347581298531, guid: 19e1290cc0e97f04493d01d232e50def, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.9874293
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5950352347581298531, guid: 19e1290cc0e97f04493d01d232e50def, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.15806147
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6599198063218186726, guid: 19e1290cc0e97f04493d01d232e50def, type: 3}
       propertyPath: m_Radius
@@ -2945,6 +2946,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 19e1290cc0e97f04493d01d232e50def, type: 3}
+--- !u!114 &7954170921848343769 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4172469905644221090, guid: 19e1290cc0e97f04493d01d232e50def, type: 3}
+  m_PrefabInstance: {fileID: 7954170921848343765}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6782875839206742221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecb1a5ec9f3e2034080e827ba6866703, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
