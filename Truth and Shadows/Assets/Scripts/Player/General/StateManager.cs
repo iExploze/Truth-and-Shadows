@@ -39,7 +39,13 @@ public class StateManager : MonoBehaviour
 
     // Added for the squid indicator
     public GameObject squidHaloIndicator;
-    //private bool squidHaloVisible = false;
+
+    [SerializeField]
+    private float haloDebounceTime = 0.2f;
+
+    private float haloTimer = 0f;
+    private bool haloCurrentlyActive = false;
+
     // Added for checking indicator condition
     private squidShadowInteraction squidLightStatus;
 
@@ -117,7 +123,7 @@ public class StateManager : MonoBehaviour
             isInShadow &&
             isOnFlatSurface;
 
-        squidHaloIndicator.SetActive(canShowHalo);
+        UpdateHaloIndicator(canShowHalo);
 
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -325,5 +331,27 @@ public class StateManager : MonoBehaviour
         UpdateCameraPriorities(10, 0, 0);
 
         currentState = FormState.mainCharacter;
+    }
+
+    private void UpdateHaloIndicator(bool shouldShow)
+    {
+        if (shouldShow)
+        {
+            haloTimer += Time.deltaTime;
+            if (haloTimer >= haloDebounceTime && !haloCurrentlyActive)
+            {
+                squidHaloIndicator.SetActive(true);
+                haloCurrentlyActive = true;
+            }
+        }
+        else
+        {
+            haloTimer = 0f;
+            if (haloCurrentlyActive)
+            {
+                squidHaloIndicator.SetActive(false);
+                haloCurrentlyActive = false;
+            }
+        }
     }
 }
