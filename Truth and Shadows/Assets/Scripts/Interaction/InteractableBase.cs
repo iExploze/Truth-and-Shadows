@@ -13,27 +13,32 @@ namespace TruthAndShadows.Interaction
         [SerializeField]
         protected bool requireContinuousHold = false;
 
+        [SerializeField]
+        protected float interactionDistance = 2f;
+        
+        [SerializeField]
+        protected bool useColliderBounds = true;
+
         [Header("Pickup Settings")]
         [SerializeField]
         protected bool canBePickedUp = true;
 
         [SerializeField]
-        protected float pickupRaiseAmount = 0.2f; // How much to raise the item when picked up
+        protected float pickupRaiseAmount = 0.2f;
 
         [SerializeField]
-        protected float pickupSmoothness = 10f; // How smoothly the item follows the player
+        protected float pickupSmoothness = 10f;
 
         [Header("Camera Settings")]
         [SerializeField]
-        protected CinemachineVirtualCamera interactionCamera; // Pickup state
+        protected CinemachineVirtualCamera interactionCamera;
         private bool isPickedUp = false;
         private Transform playerTransform;
         private Vector3 originalPosition;
         private Quaternion originalRotation;
         private Transform originalParent;
         private Rigidbody rigidBody;
-        private Collider[] colliders;
-        private Vector3 relativePosition; // Position relative to player when picked up
+        private Vector3 relativePosition;
         private bool hasCalculatedRelativePosition = false;
 
         public virtual bool RequiresContinuousInteraction => requireContinuousHold;
@@ -43,9 +48,7 @@ namespace TruthAndShadows.Interaction
 
         protected virtual void Start()
         {
-            // Cache components
             rigidBody = GetComponent<Rigidbody>();
-            colliders = GetComponentsInChildren<Collider>();
         }
 
         public abstract void StartInteraction();
@@ -63,26 +66,15 @@ namespace TruthAndShadows.Interaction
             isPickedUp = true;
             hasCalculatedRelativePosition = false;
 
-            // Store original state
             originalPosition = transform.position;
             originalRotation = transform.rotation;
             originalParent = transform.parent;
 
-            // Disable physics
             if (rigidBody != null)
             {
                 rigidBody.isKinematic = true;
                 rigidBody.useGravity = false;
             }
-
-            // Disable colliders to prevent interference
-            foreach (var col in colliders)
-            {
-                col.enabled = false;
-            }
-
-            // Don't attach to player, keep in world space but track relative position
-            // First, raise the item slightly in place
             Vector3 raisedPosition = transform.position + Vector3.up * pickupRaiseAmount;
             transform.position = raisedPosition;
 
@@ -97,22 +89,13 @@ namespace TruthAndShadows.Interaction
             isPickedUp = false;
             hasCalculatedRelativePosition = false;
 
-            // Restore parent
             transform.SetParent(originalParent);
 
-            // Re-enable physics
             if (rigidBody != null)
             {
                 rigidBody.isKinematic = false;
                 rigidBody.useGravity = true;
-            } // Re-enable colliders
-            foreach (var col in colliders)
-            {
-                col.enabled = true;
             }
-
-            // Keep the item at its current position - it will drop straight down due to gravity
-            // No need to teleport it anywhere
 
             playerTransform = null;
 
@@ -124,26 +107,50 @@ namespace TruthAndShadows.Interaction
             // Update pickup position
             if (isPickedUp && playerTransform != null)
             {
-                // Calculate relative position on first frame after pickup
                 if (!hasCalculatedRelativePosition)
                 {
                     relativePosition = transform.position - playerTransform.position;
                     hasCalculatedRelativePosition = true;
                 }
 
-                // Maintain the same relative position to the player
                 Vector3 targetPosition = playerTransform.position + relativePosition;
 
-                // Smoothly move to target position
                 transform.position = Vector3.Lerp(
                     transform.position,
                     targetPosition,
                     Time.deltaTime * pickupSmoothness
                 );
-
-                // Keep the original rotation (don't make it face the player direction)
-                // This preserves the object's orientation when picked up
             }
+        }
+
+        /// <summary>
+        /// Check if player can interact with this object - uses collider bounds for better detection
+        /// </summary>
+        public virtual bool CanInteract(Vector3 playerPosition)
+        {
+            float centerDistance = Vector3.Distance(transform.position, playerPosition);
+            
+            if (useColliderBounds)
+            {
+                Collider col = GetComponent<Collider>();
+                if (col != null)
+                {
+                    Vector3 closestPoint = col.ClosestPoint(playerPosition);
+                    float boundsDistance = Vector3.Distance(playerPosition, closestPoint);
+                    
+                    float finalDistance = Mathf.Min(centerDistance, boundsDistance);
+                    return finalDistance <= interactionDistance;
+                }
+            }
+            return centerDistance <= interactionDistance; 
+        }
+
+        /// <summary>
+        /// Check if player can pickup this object - same as interaction by default
+        /// </summary>
+        public virtual bool CanPickup(Vector3 playerPosition)
+        {
+            return CanInteract(playerPosition);
         }
     }
 }
