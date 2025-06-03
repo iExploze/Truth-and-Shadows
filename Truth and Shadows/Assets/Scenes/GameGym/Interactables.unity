@@ -678,6 +678,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
@@ -995,6 +997,9 @@ MonoBehaviour:
   squidFormCameraFreeLook: {fileID: 4498846193128293214}
   shadowCharacterCameraFreeLook: {fileID: 776998122712833542}
   spawnOffset: 0.2
+  squidControl: {fileID: 0}
+  squidHaloIndicator: {fileID: 0}
+  haloDebounceTime: 0.2
 --- !u!4 &1284848704
 Transform:
   m_ObjectHideFlags: 0
@@ -1517,6 +1522,67 @@ Transform:
   - {fileID: 1656346223}
   m_Father: {fileID: 746300662}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1548697270
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 296837160385075545, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: minPickupDistance
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 4502353740237156324, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_Name
+      value: Block
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.13864803
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.135
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -8.625869
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9101379205203221416, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
 --- !u!1 &1562831881
 GameObject:
   m_ObjectHideFlags: 0
@@ -2386,6 +2452,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
@@ -4338,8 +4406,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8567456239841746410}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.4376369, y: 1.0208676, z: -9.498845}
+  m_LocalRotation: {x: 0.026387628, y: 0.96978885, z: -0.20950893, w: 0.1221448}
+  m_LocalPosition: {x: -2.6159334, y: -1.5166323, z: 8.067538}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4405,9 +4473,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecb1a5ec9f3e2034080e827ba6866703, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCharacterForward: 0
-  lockToCameraForward: 0
-  turnSpeed: 10
+  moveSpeed: 10
+  maxRadius: 25
+  raycastHeight: 10
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 0
+  playerRoot: {fileID: 0}
 --- !u!1 &2285289713398163357
 GameObject:
   m_ObjectHideFlags: 0
@@ -6136,7 +6208,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 40
+  field of view: 50
   orthographic: 0
   orthographic size: 10
   m_Depth: 0
@@ -10352,3 +10424,4 @@ SceneRoots:
   - {fileID: 347949257}
   - {fileID: 746300662}
   - {fileID: 3641657926034022244}
+  - {fileID: 1548697270}
