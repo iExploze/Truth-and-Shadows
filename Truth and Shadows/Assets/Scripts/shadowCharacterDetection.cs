@@ -5,22 +5,27 @@ using UnityEngine;
 
 public class shadowCharacterDetection : MonoBehaviour, ILightHittable
 {
-    // this is the external script responsible for interacting
-    // with the player so that it does not get in light for the shadow player
+    // Size of the circular buffer that holds safe positions
     private const int bufferSize = 60;
     private Vector3[] lastSafePositions = new Vector3[bufferSize];
     private int positionIndex = 0;
     private int validPositions = 0;
 
+    // Whether the player is currently considered “in light”
     private bool isInLight = false;
-    private int backtrackIndex = -1; // -1 means not currently backtracking
 
-    private ShadowCharacterMovement ShadowCharacterMovement;
+    // Timer to measure how long the player has stayed in light
+    private float timeInLight = 0f;
+    private const float maxTimeInLight = 0.3f;
+
+    private ShadowCharacterMovement shadowMovement;
+    public StateManager playerStateManager;
 
     void Start()
     {
-        ShadowCharacterMovement = GetComponent<ShadowCharacterMovement>();
-        // Initialize buffer with current position
+        shadowMovement = GetComponent<ShadowCharacterMovement>();
+
+        // Initialize the buffer with the current position
         for (int i = 0; i < bufferSize; i++)
         {
             lastSafePositions[i] = transform.position;
@@ -30,54 +35,55 @@ public class shadowCharacterDetection : MonoBehaviour, ILightHittable
 
     void Update()
     {
-        // Only store positions if not in light (i.e., safe)
-        if (!isInLight)
+        if (!isInLight) 
         {
-            // Store position in circular buffer
+            // If not in light, keep “rolling” the circular buffer of safe positions
             lastSafePositions[positionIndex] = transform.position;
             positionIndex = (positionIndex + 1) % bufferSize;
-            if (validPositions < bufferSize) validPositions++;
-            backtrackIndex = -1; // Reset backtrack when out of light
+
+            if (validPositions < bufferSize)
+                validPositions++;
         }
     }
 
     public void OnLightEnter(Light lightSource)
     {
-        ShadowCharacterMovement.canMove = false;
-        Debug.Log("get in light");
-        // Go to the most recent safe location
+        // Immediately disable movement
+        shadowMovement.canMove = false;
+        //.Log("Entered light: backtracking to last safe position.");
+
+        // Find the most recent safe position:
         int latestIndex = (positionIndex - 1 + bufferSize) % bufferSize;
         transform.position = lastSafePositions[latestIndex];
+
+        // Mark that we are now in light and reset the timer
         isInLight = true;
-        backtrackIndex = latestIndex;
+        timeInLight = 0f;
     }
 
     public void OnLightExit(Light lightSource)
     {
-        ShadowCharacterMovement.canMove = true;
-        Debug.Log("get out light");
+        // As soon as the player leaves the light, re-enable movement
+        shadowMovement.canMove = true;
+        //Debug.Log("Exited light: back to shadow form.");
+
         isInLight = false;
     }
 
     public void OnLightStay(Light lightSource)
     {
-        isInLight = true;
-        Debug.Log("in light");
-        // Each call steps back to an older location if possible
-        if (backtrackIndex == -1) return; // Only backtrack if in light
+        // Count time spent in light
+        timeInLight += Time.deltaTime;
 
-        // Step to previous index
-        int prevIndex = (backtrackIndex - 1 + bufferSize) % bufferSize;
-
-        // Don't step into uninitialized slots (less than 10 valid positions)
-        if (validPositions < bufferSize && prevIndex >= validPositions)
-            return;
-
-        // Only backtrack if not looping past oldest known safe position
-        if (prevIndex != positionIndex)
+        // If the player has been in light for more than 0.5s, force return to normal form
+        if (timeInLight >= maxTimeInLight)
         {
-            transform.position = lastSafePositions[prevIndex];
-            backtrackIndex = prevIndex;
+            playerStateManager.ReturnToNormalForm();
+
+            // Re-enable movement and reset light state
+            shadowMovement.canMove = true;
+            isInLight = false;
+            timeInLight = 0f;
         }
     }
 }

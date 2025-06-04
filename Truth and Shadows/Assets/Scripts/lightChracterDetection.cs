@@ -38,12 +38,17 @@ public class lightChracterDetection : MonoBehaviour, ILightHittable
             if (validPositions < bufferSize) validPositions++;
             backtrackIndex = -1; // Reset backtrack when out of light
         }
+        else 
+        {
+            int latestIndex = (positionIndex - 1 + bufferSize) % bufferSize;
+            transform.position = lastSafePositions[latestIndex];
+            backtrackIndex = latestIndex;
+        }
     }
 
     public void OnLightEnter(Light lightSource)
     {
         characterMovement.canMove = true;
-        // Go to the most recent safe location
         isInLight = false;
     }
 
@@ -51,15 +56,11 @@ public class lightChracterDetection : MonoBehaviour, ILightHittable
     {
         characterMovement.canMove = false;
         isInLight = false;
-        int latestIndex = (positionIndex - 1 + bufferSize) % bufferSize;
-        transform.position = lastSafePositions[latestIndex];
-        backtrackIndex = latestIndex;
     }
 
     public void OnLightStay(Light lightSource)
     {
         isInLight = true;
-        Debug.Log("in light");
-        // Each call steps back to an older location if possible
+        //Debug.Log("in light");
     }
 }
