@@ -13,14 +13,6 @@ public class StateManager : MonoBehaviour
     public GameObject shadowCharacter; // Reference to scene instance instead of prefab
 
     [Header("Camera Rigs")]
-    [SerializeField]
-    private CinemachineVirtualCamera mainCharacterFormCameraVCam;
-
-    [SerializeField]
-    private CinemachineVirtualCamera squidFormCameraVCam;
-
-    [SerializeField]
-    private CinemachineVirtualCamera shadowCharacterCameraVCam;
 
     [SerializeField]
     private CinemachineFreeLook mainCharacterFormCameraFreeLook;
@@ -108,26 +100,17 @@ public class StateManager : MonoBehaviour
     {
         InitializeComponents();
         SetInitialState();
-        squidHaloIndicator.SetActive(false);
+        //squidHaloIndicator.SetActive(false);
     }
 
     void Update()
     {
         bool isInShadow = squidLightStatus != null && !squidLightStatus.isInLight;
 
-        // Use the exposed SurfaceNormal from SquidControl
-        bool isOnFlatSurface = Vector3.Dot(squidControl.SurfaceNormal, Vector3.up) > 0.9f;
-
-        bool canShowHalo =
-            currentState == FormState.squid &&
-            isInShadow &&
-            isOnFlatSurface;
-
-        UpdateHaloIndicator(canShowHalo);
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            if (currentState == FormState.squid && !canShowHalo)
+            if (currentState == FormState.squid)
             {
                 Debug.Log("Cannot spawn shadow: invalid location.");
                 return;
@@ -275,9 +258,6 @@ public class StateManager : MonoBehaviour
 
     private void UpdateCameraPriorities(int main, int squid, int shadow)
     {
-        SetCameraPriority(mainCharacterFormCameraVCam, main);
-        SetCameraPriority(squidFormCameraVCam, squid);
-        SetCameraPriority(shadowCharacterCameraVCam, shadow);
 
         SetCameraPriority(mainCharacterFormCameraFreeLook, main);
         SetCameraPriority(squidFormCameraFreeLook, squid);

@@ -9,14 +9,14 @@ namespace TruthAndShadows.Interaction
 
         private void Start()
         {
-            if (targetGate == null)
-            {
-                targetGate = GameObject.Find("Gate");
-                if (targetGate == null)
-                {
-                    Debug.LogWarning("No gate found for switch: " + gameObject.name);
-                }
-            }
+            //if (targetGate == null)
+            //{
+            //    targetGate = GameObject.Find("Gate");
+            //    if (targetGate == null)
+            //    {
+            //        Debug.LogWarning("No gate found for switch: " + gameObject.name);
+            //    }
+            //}
         }
 
         public override void StartInteraction()
