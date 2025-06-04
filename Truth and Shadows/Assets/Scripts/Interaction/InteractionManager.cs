@@ -7,10 +7,10 @@ namespace TruthAndShadows.Interaction
     {
         [Header("Interaction Settings")]
         [SerializeField]
-        private float interactionRange = 2f;
+        private float interactionRange = 0.1f;
 
         [SerializeField]
-        private float interactionRadius = 0.5f;
+        private float interactionRadius = 0.1f;
 
         [SerializeField]
         private Transform interactionSource;
@@ -126,7 +126,9 @@ namespace TruthAndShadows.Interaction
 
         private Vector3 GetInteractionOrigin()
         {
-            return interactionSource.position + Vector3.up;
+            // Offset the origin slightly backward to ensure detection when close to objects
+            Vector3 offset = interactionSource.position - (interactionSource.forward * interactionRadius);
+            return offset + Vector3.up;
         }
 
         private bool TryFindInteractable(
@@ -173,23 +175,15 @@ namespace TruthAndShadows.Interaction
 
         private void HandlePickupInput()
         {
-            if (Input.GetKeyDown(KeyCode.F))
+            if (Input.GetKeyDown(KeyCode.F) && pickedUpInteractable == null)
             {
-                // F key just pressed - try to pick up an item if none is held
-                if (pickedUpInteractable == null)
-                {
-                    Debug.Log("F key pressed - attempting pickup");
-                    TryPickupItem();
-                }
+                Debug.Log("F key pressed - attempting pickup");
+                TryPickupItem();
             }
-            else if (Input.GetKeyUp(KeyCode.F))
+            else if (Input.GetKeyUp(KeyCode.F) && pickedUpInteractable != null)
             {
-                // F key released - drop any held item
-                if (pickedUpInteractable != null)
-                {
-                    Debug.Log("F key released - dropping item");
-                    DropPickedUpItem();
-                }
+                Debug.Log("F key released - dropping item");
+                DropPickedUpItem();
             }
         }
 
@@ -204,44 +198,32 @@ namespace TruthAndShadows.Interaction
             Vector3 origin = GetInteractionOrigin();
             Vector3 direction = interactionSource.forward;
 
-            if (TryFindInteractable(origin, direction, out IInteractable interactable))
+            if (TryFindInteractable(origin, direction, out IInteractable interactable) && interactable.CanBePickedUp && !interactable.IsPickedUp)
             {
-                if (interactable.CanBePickedUp && !interactable.IsPickedUp)
-                { // End any current interaction before picking up
-                    if (isInteracting && currentInteractable == interactable)
-                    {
-                        EndCurrentInteraction();
-                    }
-
-                    pickedUpInteractable = interactable;
-                    interactable.StartPickup(interactionSource);
-
-                    // Ensure we stay on the player's camera when picking up items
-                    // Don't switch to the interactable's camera for pickup
-                    if (defaultCamera != null)
-                    {
-                        defaultCamera.Priority = 10;
-                    }
-
-                    // Reset any interaction camera priority
-                    if (currentInteractionCamera != null)
-                    {
-                        currentInteractionCamera.Priority = 0;
-                        currentInteractionCamera = null;
-                    }
-
-                    Debug.Log($"Picked up: {((MonoBehaviour)interactable).gameObject.name}");
-                }
-                else
+                if (isInteracting && currentInteractable == interactable)
                 {
-                    Debug.Log(
-                        $"Item cannot be picked up: {((MonoBehaviour)interactable).gameObject.name}"
-                    );
+                    EndCurrentInteraction();
                 }
+
+                pickedUpInteractable = interactable;
+                interactable.StartPickup(interactionSource);
+
+                if (defaultCamera != null)
+                {
+                    defaultCamera.Priority = 10;
+                }
+
+                if (currentInteractionCamera != null)
+                {
+                    currentInteractionCamera.Priority = 0;
+                    currentInteractionCamera = null;
+                }
+
+                Debug.Log($"Picked up: {((MonoBehaviour)interactable).gameObject.name}");
             }
             else
             {
-                Debug.Log("No interactable found for pickup");
+                Debug.Log(interactable == null ? "No interactable found for pickup" : $"Item cannot be picked up: {((MonoBehaviour)interactable).gameObject.name}");
             }
         }
 
@@ -252,6 +234,22 @@ namespace TruthAndShadows.Interaction
                 Debug.Log($"Dropping: {((MonoBehaviour)pickedUpInteractable).gameObject.name}");
                 pickedUpInteractable.EndPickup();
                 pickedUpInteractable = null;
+            }
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (interactionSource != null)
+            {
+                // Draw the interaction radius as a yellow wire sphere
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireSphere(interactionSource.position, interactionRadius);
+
+                // Draw the interaction range as a red line
+                Vector3 start = interactionSource.position;
+                Vector3 end = start + interactionSource.forward * interactionRange;
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(start, end);
             }
         }
     }
