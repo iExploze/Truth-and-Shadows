@@ -196,6 +196,9 @@ public class StateManager : MonoBehaviour
         if (interactionManager != null)
             interactionManager.PreserveInteraction();
 
+        AudioSource audioSouce = squidForm.GetComponent<AudioSource>();
+        if (audioSouce != null) audioSouce.Play();
+
         GameObject sourceObject =
             (currentState == FormState.shadowCharacter) ? shadowCharacter : mainCharacterForm;
         DisableCurrentForm();
@@ -271,6 +274,9 @@ public class StateManager : MonoBehaviour
         shadowCharacter.transform.rotation = spawnRot;
         shadowCharacter.SetActive(true);
 
+        AudioSource audioSouce = shadowCharacter.GetComponent<AudioSource>();
+        if (audioSouce != null) audioSouce.Play();
+
         // Ensure interaction manager is enabled
         if (shadowCharacterInteractionManager != null)
         {
@@ -290,6 +296,9 @@ public class StateManager : MonoBehaviour
             interactionManager.EndCurrentInteraction();
 
         DisableCurrentForm();
+
+        AudioSource audioSouce = mainCharacterForm.GetComponent<AudioSource>();
+        if (audioSouce != null) audioSouce.Play();
 
         // Re-enable original character
         if (mainCharacterFormRigidbody != null)
