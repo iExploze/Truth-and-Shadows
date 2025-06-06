@@ -9,7 +9,7 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
     public void OnLightEnter(Light lightSource)
     {
         isInLight = true;
-        //playerStateManager.ReturnToNormalForm();
+        playerStateManager.ReturnToNormalForm();
     }
 
     public void OnLightExit(Light lightSource)
@@ -20,7 +20,6 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
     public void OnLightStay(Light lightSource)
     {
         isInLight = true;
-        Debug.LogWarning("Squid Bit by Light!");
     }
 
     // Start is called before the first frame update

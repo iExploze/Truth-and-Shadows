@@ -13,14 +13,6 @@ public class StateManager : MonoBehaviour
     public GameObject shadowCharacter; // Reference to scene instance instead of prefab
 
     [Header("Camera Rigs")]
-    [SerializeField]
-    private CinemachineVirtualCamera mainCharacterFormCameraVCam;
-
-    [SerializeField]
-    private CinemachineVirtualCamera squidFormCameraVCam;
-
-    [SerializeField]
-    private CinemachineVirtualCamera shadowCharacterCameraVCam;
 
     [SerializeField]
     private CinemachineFreeLook mainCharacterFormCameraFreeLook;
@@ -38,13 +30,13 @@ public class StateManager : MonoBehaviour
     [SerializeField] private SquidControl squidControl;
 
     // Added for the squid indicator
-    public GameObject squidHaloIndicator;
+    //public GameObject squidHaloIndicator;
 
-    [SerializeField]
-    private float haloDebounceTime = 0.2f;
+    //[SerializeField]
+    //private float haloDebounceTime = 0.2f;
 
-    private float haloTimer = 0f;
-    private bool haloCurrentlyActive = false;
+    //private float haloTimer = 0f;
+    //private bool haloCurrentlyActive = false;
 
     // Added for checking indicator condition
     private squidShadowInteraction squidLightStatus;
@@ -108,31 +100,13 @@ public class StateManager : MonoBehaviour
     {
         InitializeComponents();
         SetInitialState();
-        squidHaloIndicator.SetActive(false);
+        //squidHaloIndicator.SetActive(false);
     }
 
     void Update()
     {
-        bool isInShadow = squidLightStatus != null && !squidLightStatus.isInLight;
-
-        // Use the exposed SurfaceNormal from SquidControl
-        bool isOnFlatSurface = Vector3.Dot(squidControl.SurfaceNormal, Vector3.up) > 0.9f;
-
-        bool canShowHalo =
-            currentState == FormState.squid &&
-            isInShadow &&
-            isOnFlatSurface;
-
-        UpdateHaloIndicator(canShowHalo);
-
         if (Input.GetKeyDown(KeyCode.E))
         {
-            if (currentState == FormState.squid && !canShowHalo)
-            {
-                Debug.Log("Cannot spawn shadow: invalid location.");
-                return;
-            }
-
             HandleEInput();
         }
         else if (Input.GetKeyDown(KeyCode.Q))
@@ -222,6 +196,9 @@ public class StateManager : MonoBehaviour
         if (interactionManager != null)
             interactionManager.PreserveInteraction();
 
+        AudioSource audioSouce = squidForm.GetComponent<AudioSource>();
+        if (audioSouce != null) audioSouce.Play();
+
         GameObject sourceObject =
             (currentState == FormState.shadowCharacter) ? shadowCharacter : mainCharacterForm;
         DisableCurrentForm();
@@ -260,9 +237,9 @@ public class StateManager : MonoBehaviour
         if (squidFormRigidbody != null)
             squidFormRigidbody.isKinematic = false;
 
-        // TEMPORARY: Halo shows up when Squid form is entered
-        if (squidHaloIndicator != null)
-            squidHaloIndicator.SetActive(true);
+        //// TEMPORARY: Halo shows up when Squid form is entered
+        //if (squidHaloIndicator != null)
+        //    squidHaloIndicator.SetActive(true);
     }
 
     private void SetCameraPriority(CinemachineVirtualCameraBase cam, int priority)
@@ -275,9 +252,6 @@ public class StateManager : MonoBehaviour
 
     private void UpdateCameraPriorities(int main, int squid, int shadow)
     {
-        SetCameraPriority(mainCharacterFormCameraVCam, main);
-        SetCameraPriority(squidFormCameraVCam, squid);
-        SetCameraPriority(shadowCharacterCameraVCam, shadow);
 
         SetCameraPriority(mainCharacterFormCameraFreeLook, main);
         SetCameraPriority(squidFormCameraFreeLook, squid);
@@ -300,6 +274,9 @@ public class StateManager : MonoBehaviour
         shadowCharacter.transform.rotation = spawnRot;
         shadowCharacter.SetActive(true);
 
+        AudioSource audioSouce = shadowCharacter.GetComponent<AudioSource>();
+        if (audioSouce != null) audioSouce.Play();
+
         // Ensure interaction manager is enabled
         if (shadowCharacterInteractionManager != null)
         {
@@ -320,6 +297,9 @@ public class StateManager : MonoBehaviour
 
         DisableCurrentForm();
 
+        AudioSource audioSouce = mainCharacterForm.GetComponent<AudioSource>();
+        if (audioSouce != null) audioSouce.Play();
+
         // Re-enable original character
         if (mainCharacterFormRigidbody != null)
             mainCharacterFormRigidbody.isKinematic = false;
@@ -331,27 +311,5 @@ public class StateManager : MonoBehaviour
         UpdateCameraPriorities(10, 0, 0);
 
         currentState = FormState.mainCharacter;
-    }
-
-    private void UpdateHaloIndicator(bool shouldShow)
-    {
-        if (shouldShow)
-        {
-            haloTimer += Time.deltaTime;
-            if (haloTimer >= haloDebounceTime && !haloCurrentlyActive)
-            {
-                squidHaloIndicator.SetActive(true);
-                haloCurrentlyActive = true;
-            }
-        }
-        else
-        {
-            haloTimer = 0f;
-            if (haloCurrentlyActive)
-            {
-                squidHaloIndicator.SetActive(false);
-                haloCurrentlyActive = false;
-            }
-        }
     }
 }

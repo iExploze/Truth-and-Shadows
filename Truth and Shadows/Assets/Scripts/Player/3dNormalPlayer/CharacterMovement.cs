@@ -20,6 +20,8 @@ public class CharacterMovement : MonoBehaviour
     private Camera mainCamera;
     private float velocity;
 
+        public bool canMove;
+
 	// Use this for initialization
 	void Start ()
 	{
@@ -53,6 +55,8 @@ public class CharacterMovement : MonoBehaviour
 
         // Update target direction relative to the camera view (or not if the Keep Direction option is checked)
         UpdateTargetDirection();
+
+            if (!canMove) return;
         if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
         {
             Vector3 lookDirection = targetDirection.normalized;

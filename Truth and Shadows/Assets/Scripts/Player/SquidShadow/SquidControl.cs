@@ -24,12 +24,23 @@ public class SquidControl : MonoBehaviour
     [Tooltip("Drag the player's root Transform here (used for clamping radius).")]
     public Transform playerRoot;
 
-    // smoothing helper for horizontal movement
-    private Vector3 velocity;
+    [Tooltip("The speed the player must be lower than to toggle wall climbing")]
+    public float wallSensitivity = 0.1f;
 
     private Rigidbody rb;
 
     private Vector3 surfaceNormal = Vector3.up; // default to up
+
+    public float currentSpeed; // in units/sec
+
+    private void Awake()
+    {
+        // Hide the hardware cursor:
+        Cursor.visible = false;
+
+        // (Optional) Lock it to the center if you don't want it wandering
+        Cursor.lockState = CursorLockMode.Locked;
+    }
 
     private void Start()
     {
@@ -43,19 +54,62 @@ public class SquidControl : MonoBehaviour
         rb.useGravity = false;
         rb.isKinematic = true;
     }
+    private bool useVerticalSnap = false;
+    private float snapTimer = 0f;
+    [SerializeField] private float snapHoldDuration = 0.7f; // seconds
 
     private void Update()
     {
-        HandleHorizontalMovement();
+        // 1) Compute movement direction
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+        Vector3 camForward = mainCamera.transform.forward;
+        Vector3 camRight = mainCamera.transform.right;
+        camForward.y = 0f;
+        camRight.y = 0f;
+        camForward.Normalize();
+        camRight.Normalize();
+        Vector3 inputDir = (camForward * v + camRight * h).normalized;
 
-        if (Input.GetMouseButton(0))
+        // 2) Check if indicator is “against” a wall right now
+        bool againstWall = false;
+        if (inputDir.sqrMagnitude > 0f)
+        {
+            Vector3 origin = transform.position;
+            Vector3 dir = new Vector3(inputDir.x, 0f, inputDir.z).normalized;
+            float checkDist = 0.1f;
+
+            Debug.DrawRay(origin, dir * checkDist, Color.red);
+            if (Physics.Raycast(origin, dir, out RaycastHit hit, checkDist, groundMask))
+            {
+                againstWall = true;
+            }
+        }
+
+        // 3) If we just hit a wall, start/refresh the 0.5s snap timer
+        if (againstWall)
+        {
+            useVerticalSnap = true;
+            snapTimer = snapHoldDuration;
+        }
+
+        // 4) If vertical‐snap mode is active, call SnapVerticalDown() and count down
+        if (useVerticalSnap)
         {
             SnapVerticalDown();
+            snapTimer -= Time.deltaTime;
+            if (snapTimer <= 0f)
+            {
+                useVerticalSnap = false;
+            }
         }
         else
         {
+            // 5) Otherwise, do the normal ground snap
             SnapDirectlyDown();
         }
+
+        HandleHorizontalMovement();
     }
 
     private void HandleHorizontalMovement()
@@ -89,15 +143,16 @@ public class SquidControl : MonoBehaviour
         }
 
         Vector3 destination = new Vector3(rawTarget.x, transform.position.y, rawTarget.z);
-        Vector3 smoothPos = Vector3.SmoothDamp(transform.position, destination, ref velocity, 0.05f);
-        transform.position = smoothPos;
+        transform.position = destination;
     }
+
 
     private void SnapVerticalDown()
     {
+        // Always kinematic—never re-enable physics:
         rb.isKinematic = true;
 
-        // Temporarily disable our own collider so the ray won't hit ourselves
+        // Temporarily disable our collider so we don’t hit ourselves:
         Collider selfCol = GetComponent<Collider>();
         bool wasEnabled = selfCol.enabled;
         selfCol.enabled = false;
@@ -106,12 +161,10 @@ public class SquidControl : MonoBehaviour
         float rayLength = raycastHeight + 100f;
 
         Debug.DrawRay(rayStart, Vector3.down * rayLength, Color.yellow);
-
         if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, rayLength, groundMask))
         {
             transform.position = hit.point;
             Debug.DrawLine(rayStart, hit.point, Color.green);
-            surfaceNormal = hit.normal;
         }
         else
         {
@@ -123,23 +176,21 @@ public class SquidControl : MonoBehaviour
 
     private void SnapDirectlyDown()
     {
+        // Keep kinematic true here as well (remove the “false” toggle):
         rb.isKinematic = false;
 
-        Vector3 rayStart = transform.position;
+        Vector3 rayStart = transform.position + Vector3.up * 1f;
         float rayLength = raycastHeight + 100f;
 
         Debug.DrawRay(rayStart, Vector3.down * rayLength, Color.yellow);
-
         if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, rayLength, groundMask))
         {
             transform.position = hit.point;
             Debug.DrawLine(rayStart, hit.point, Color.green);
-            surfaceNormal = hit.normal;
         }
         else
         {
             Debug.DrawLine(rayStart, rayStart + Vector3.down * rayLength, Color.red);
         }
     }
-    public Vector3 SurfaceNormal => surfaceNormal;
 }
