@@ -78,7 +78,6 @@ public class shadowCharacterDetection : MonoBehaviour, ILightHittable
         // If the player has been in light for more than 0.5s, force return to normal form
         if (timeInLight >= maxTimeInLight)
         {
-            playerStateManager.ReturnToNormalForm();
 
             // Re-enable movement and reset light state
             shadowMovement.canMove = true;
