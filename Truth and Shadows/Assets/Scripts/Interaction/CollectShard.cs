@@ -8,6 +8,7 @@ public class CollectShard : MonoBehaviour
 {
     public TMP_Text winnerText;
     public TMP_Text poemLine;
+    public TMP_Text reset;
 
     public GameObject winMenu;
     // Start is called before the first frame update
@@ -17,6 +18,7 @@ public class CollectShard : MonoBehaviour
         winMenu.SetActive(false);
         winnerText.text = "";
         poemLine.text = "";
+        reset.text = "";
     }
 
     // Update is called once per frame
@@ -34,6 +36,7 @@ public class CollectShard : MonoBehaviour
             winMenu.SetActive(true);
             winnerText.text = "LEVEL COMPLETE";
             poemLine.text = "Lorem ipsum dolor sit amet consectetur.";
+            reset.text = "Press L to reset the level";
         }
     }
 }

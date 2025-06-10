@@ -196,7 +196,7 @@ namespace TruthAndShadows.Interaction
             {
                 Debug.Log("Trying to reset...");
                 // SceneManager.LoadSceneAsync(UseLoadingIntermediaryScene ? "Loading" : SceneManager.GetActiveScene().name);
-                SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name);
+                LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
             }
         }
 
