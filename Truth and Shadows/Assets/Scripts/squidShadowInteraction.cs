@@ -5,8 +5,8 @@ using UnityEngine.UI; // For darkness overlay
 
 public class squidShadowInteraction : MonoBehaviour, ILightHittable
 {
-    public StateManager playerStateManager;
-    public bool isInLight = false;
+    private StateManager playerStateManager;
+    private bool isInLight = false;
 
     private float timeInLight = 0f;
     private bool hasTransformed = false;
