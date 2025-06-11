@@ -20,6 +20,7 @@ public class CharacterMovement : MonoBehaviour
     private Camera mainCamera;
     private float velocity;
 
+    [SerializeField]private AudioSource walkAudioSource;
         public bool canMove;
 
 	// Use this for initialization
@@ -46,7 +47,22 @@ public class CharacterMovement : MonoBehaviour
         speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
         anim.SetFloat("Speed", speed);
 
-	    if (input.y < 0f && useCharacterForward)
+            // Play walking sound if moving, stop if not
+            if (walkAudioSource != null)
+            {
+                if (speed > 0.05f && !walkAudioSource.isPlaying)
+                {
+                    walkAudioSource.loop = true; // Make sure it's looping
+                    walkAudioSource.Play();
+                }
+                else if (speed <= 0.05f && walkAudioSource.isPlaying)
+                {
+                    walkAudioSource.Stop();
+                }
+            }
+
+
+            if (input.y < 0f && useCharacterForward)
             direction = input.y;
 	    else
             direction = 0f;

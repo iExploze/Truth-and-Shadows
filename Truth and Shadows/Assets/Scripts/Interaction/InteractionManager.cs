@@ -1,5 +1,6 @@
 using Cinemachine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TruthAndShadows.Interaction
 {
@@ -27,6 +28,7 @@ namespace TruthAndShadows.Interaction
         private IInteractable currentInteractable;
         private bool isInteracting;
         private IInteractable pickedUpInteractable;
+        private bool UseLoadingIntermediaryScene = true;
 
         void Start()
         {
@@ -61,6 +63,7 @@ namespace TruthAndShadows.Interaction
 
             // Handle pickup functionality with F key - hold to keep picked up
             HandlePickupInput();
+            Reset();
         }
 
         private void UpdateContinuousInteraction()
@@ -187,6 +190,16 @@ namespace TruthAndShadows.Interaction
             }
         }
 
+        private void Reset()
+        {
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                Debug.Log("Trying to reset...");
+                // SceneManager.LoadSceneAsync(UseLoadingIntermediaryScene ? "Loading" : SceneManager.GetActiveScene().name);
+                LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
+            }
+        }
+
         private void TryPickupItem()
         {
             if (!IsValidSource())
@@ -227,7 +240,7 @@ namespace TruthAndShadows.Interaction
             }
         }
 
-        private void DropPickedUpItem()
+        public void DropPickedUpItem()
         {
             if (pickedUpInteractable != null)
             {
