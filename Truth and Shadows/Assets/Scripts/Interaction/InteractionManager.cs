@@ -227,7 +227,7 @@ namespace TruthAndShadows.Interaction
             }
         }
 
-        private void DropPickedUpItem()
+        public void DropPickedUpItem()
         {
             if (pickedUpInteractable != null)
             {

@@ -30,6 +30,8 @@ public class StateManager : MonoBehaviour
     private enum FormState { MainCharacter, Squid }
     private FormState currentState = FormState.MainCharacter;
 
+    private InteractionManager mainInteractionManager;
+
     void Start()
     {
         mainCharMovement = mainCharacterForm.GetComponent<CharacterMovement>();
@@ -37,6 +39,8 @@ public class StateManager : MonoBehaviour
         mainCharAnimator = mainCharacterForm.GetComponent<Animator>();
         squidMovement = squidForm.GetComponent<SquidControl>();
         squidRb = squidForm.GetComponent<Rigidbody>();
+
+        mainInteractionManager = mainCharacterForm.GetComponent<InteractionManager>();
 
         SetToHumanForm(); // Always start as human
     }
@@ -47,6 +51,7 @@ public class StateManager : MonoBehaviour
         if (currentState == FormState.Squid) return;
 
         // Hide human, reset movement, physics
+        mainInteractionManager.DropPickedUpItem();
         mainCharacterForm.SetActive(false);
         if (mainCharRb != null)
         {
@@ -140,4 +145,10 @@ public class StateManager : MonoBehaviour
         var audio = obj.GetComponent<AudioSource>();
         if (audio != null) audio.Play();
     }
+
+    public bool isHumanForm()
+    {
+        return currentState == FormState.MainCharacter;
+    }
+
 }
