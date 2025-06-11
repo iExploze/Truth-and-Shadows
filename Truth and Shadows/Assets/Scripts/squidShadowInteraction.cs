@@ -78,11 +78,11 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
         {
             timeInDark += Time.deltaTime;
             float darknessAmount = Mathf.Clamp01(timeInDark / maxTimeInDark);
-            SetDarknessAlpha(darknessAmount * 0.85f);
+            SetDarknessAlpha(darknessAmount * 1f);
 
             if (timeInDark >= maxTimeInDark)
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
         else
