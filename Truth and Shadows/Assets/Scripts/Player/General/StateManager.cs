@@ -45,12 +45,6 @@ public class StateManager : MonoBehaviour
         SetToHumanForm(); // Always start as human
     }
 
-    private IEnumerator ForceCameraSnapNextFrame()
-    {
-        yield return null; // Wait one frame
-        mainCharacterCamera.OnTargetObjectWarped(mainCharacterForm.transform, Vector3.zero);
-    }
-
     // Call this to become a squid
     public void SwitchToSquidForm()
     {
@@ -111,7 +105,7 @@ public class StateManager : MonoBehaviour
         if (mainCharRb != null) mainCharRb.isKinematic = false;
         if (mainCharMovement != null) mainCharMovement.enabled = true;
 
-        //UpdateCameraPriorities(main: 10, squid: 0);
+        UpdateCameraPriorities(main: 10, squid: 0);
 
         currentState = FormState.MainCharacter;
 
@@ -122,15 +116,14 @@ public class StateManager : MonoBehaviour
     // Helper: resets everything for Start()
     private void SetToHumanForm()
     {
-        StartCoroutine(ForceCameraSnapNextFrame());
         mainCharacterForm.SetActive(true);
         squidForm.SetActive(false);
         if (mainCharRb != null) mainCharRb.isKinematic = false;
         if (mainCharMovement != null) mainCharMovement.enabled = true;
         if (squidMovement != null) squidMovement.enabled = false;
         if (squidRb != null) squidRb.isKinematic = true;
-        UpdateCameraPriorities(main: 10, squid: 0);
         currentState = FormState.MainCharacter;
+        UpdateCameraPriorities(main: 10, squid: 0);
     }
 
     private Vector3 CalculateSpawnPosition(GameObject source)
