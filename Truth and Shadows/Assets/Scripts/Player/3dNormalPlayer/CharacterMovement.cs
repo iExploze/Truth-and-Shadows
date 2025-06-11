@@ -21,6 +21,8 @@ public class CharacterMovement : MonoBehaviour
     private float velocity;
 
     [SerializeField]private AudioSource walkAudioSource;
+        //Rashai was here
+        public AudioClip audioClip;
         public bool canMove;
 
 	// Use this for initialization
@@ -60,7 +62,11 @@ public class CharacterMovement : MonoBehaviour
                     walkAudioSource.Stop();
                 }
             }
-
+            //Rashai was here
+            if (speed > 0.05f && Input.GetKey(KeyCode.F))
+            {
+                  walkAudioSource.PlayOneShot(audioClip);
+            }
 
             if (input.y < 0f && useCharacterForward)
             direction = input.y;
