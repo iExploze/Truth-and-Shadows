@@ -1456,9 +1456,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79ff186c7f0ba6948876f0c8d3a46ab1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bridgeObject: {fileID: 0}
-  anotherObject: {fileID: 1181570908}
-  audioSource: {fileID: 38872872}
+  blockToMove: {fileID: 0}
+  moveDistance: 2
+  moveSpeed: 2
 --- !u!82 &38872872
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2241,6 +2241,71 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 41e722f5443cbd048b675375e24f1beb, type: 3}
+--- !u!1001 &53104947
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1487428623}
+    m_Modifications:
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 11.666203
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 11.666203
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.01712036
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.03390503
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.03641749
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.99999946
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.0010166763
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 90.117
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6730224705649548675, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+      propertyPath: m_Name
+      value: sesom model
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
 --- !u!1001 &54894636
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15015,7 +15080,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &415288724
 Transform:
   m_ObjectHideFlags: 0
@@ -28146,6 +28211,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 34dfeb3f659c70946a7698f1846d752b, type: 3}
   m_PrefabInstance: {fileID: 78367124}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &786007109 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6209724029649864505, guid: d04e7828181d5db40aff191f76074eb3, type: 3}
+  m_PrefabInstance: {fileID: 53104947}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &786157701
 GameObject:
   m_ObjectHideFlags: 0
@@ -33941,8 +34011,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
@@ -34428,8 +34496,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
@@ -34459,8 +34525,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
@@ -34500,8 +34564,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
@@ -34531,8 +34593,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
@@ -34979,8 +35039,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 200534926}
   spotLight: {fileID: 1908530035}
   verticallyRotatable: {fileID: 2031851550}
@@ -39626,9 +39684,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79ff186c7f0ba6948876f0c8d3a46ab1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bridgeObject: {fileID: 1282996448}
-  anotherObject: {fileID: 0}
-  audioSource: {fileID: 1126395665}
+  blockToMove: {fileID: 0}
+  moveDistance: 2
+  moveSpeed: 2
 --- !u!82 &1126395665
 AudioSource:
   m_ObjectHideFlags: 0
@@ -41693,11 +41751,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &1181570908 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5650001579064455877, guid: abaadc7b92d009c4db049ea78bacd3d0, type: 3}
-  m_PrefabInstance: {fileID: 124747750}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1184301565 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4619486662236612, guid: e05ee61d6dad0e54eb51d1c8ec3becc6, type: 3}
@@ -49943,6 +49996,7 @@ Transform:
   - {fileID: 12602111}
   - {fileID: 415288724}
   - {fileID: 1526122637}
+  - {fileID: 786007109}
   m_Father: {fileID: 292598750}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!82 &1487428624
@@ -50096,8 +50150,6 @@ MonoBehaviour:
   useCharacterForward: 0
   lockToCameraForward: 0
   turnSpeed: 10
-  walkAudioSource: {fileID: 1487428631}
-  audioClip: {fileID: 0}
   canMove: 0
 --- !u!114 &1487428628
 MonoBehaviour:
@@ -55990,8 +56042,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
@@ -56021,8 +56071,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
@@ -76304,6 +76352,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42589da1d00e85942a08c54035d69c3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerStateManager: {fileID: 0}
+  isInLight: 0
   maxTimeInDark: 15
   darknessOverlay: {fileID: 2146395285}
 --- !u!114 &2054488390
@@ -76324,9 +76374,6 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 131072
-  wallMask:
-    serializedVersion: 2
-    m_Bits: 524288
   playerRoot: {fileID: 1487428623}
   wallSensitivity: 1
   currentSpeed: 0
@@ -77906,8 +77953,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
@@ -88535,8 +88580,6 @@ MonoBehaviour:
   canBePickedUp: 1
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
-  source: {fileID: 0}
-  clip: {fileID: 0}
   interactionCamera: {fileID: 1546961997302805569}
   spotLight: {fileID: 1225991641294964346}
   verticallyRotatable: {fileID: 4185106675881381125}
