@@ -12,10 +12,9 @@ public class EnemyAI : MonoBehaviour
 
     private NavMeshAgent agent;
     private int patrolIndex;
-    [SerializeField]private Transform playerTransform;
+    [SerializeField] private Transform playerTransform;
     private StateManager playerState;
     private bool chasing = false;
-    private float lastSeenTime;
     [SerializeField] private AudioSource chaseMusicSource;
 
 
@@ -49,7 +48,6 @@ public class EnemyAI : MonoBehaviour
             // Chase!
             agent.SetDestination(playerTransform.position);
             chasing = true;
-            lastSeenTime = Time.time;
 
             // Play chase music if not already playing
             if (chaseMusicSource != null && !chaseMusicSource.isPlaying)
