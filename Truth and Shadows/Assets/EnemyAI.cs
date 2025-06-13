@@ -17,6 +17,8 @@ public class EnemyAI : MonoBehaviour
     private bool chasing = false;
     [SerializeField] private AudioSource chaseMusicSource;
 
+    [SerializeField] private float distanceToKill = 3f;
+
 
     private Light spotLight;
 
@@ -77,7 +79,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         // Check if close enough to "catch" the player
-        if (Vector3.Distance(transform.position, playerTransform.position) < 3.5f && canSee)
+        if (Vector3.Distance(transform.position, playerTransform.position) < distanceToKill && canSee)
         {
             // Reset the scene
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
