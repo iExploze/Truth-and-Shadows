@@ -19,6 +19,7 @@ public class SquidControl : MonoBehaviour
 
     [Tooltip("LayerMask for any surface the indicator can snap to (e.g. \"Ground\").")]
     public LayerMask groundMask;
+    public LayerMask wallMask;
 
     [Header("References")]
     [Tooltip("Drag the player's root Transform here (used for clamping radius).")]
@@ -96,7 +97,7 @@ public class SquidControl : MonoBehaviour
         // 4) If vertical‐snap mode is active, call SnapVerticalDown() and count down
         if (useVerticalSnap)
         {
-            SnapVerticalDown();
+            //SnapVerticalDown();
             snapTimer -= Time.deltaTime;
             if (snapTimer <= 0f)
             {
@@ -118,9 +119,7 @@ public class SquidControl : MonoBehaviour
         float v = Input.GetAxis("Vertical");
 
         if (Math.Abs(h) < 0.01f && Math.Abs(v) < 0.01f)
-        {
             return;
-        }
 
         Vector3 camForward = mainCamera.transform.forward;
         Vector3 camRight = mainCamera.transform.right;
@@ -133,17 +132,21 @@ public class SquidControl : MonoBehaviour
         Vector3 inputDir = camForward * v + camRight * h;
         inputDir.Normalize();
 
-        Vector3 rawTarget = transform.position + inputDir * moveSpeed * Time.deltaTime;
+        float distance = moveSpeed * Time.deltaTime;
+        Vector3 targetPos = transform.position + inputDir * distance;
 
-        Vector3 offsetFromPlayer = rawTarget - playerRoot.position;
-        if (offsetFromPlayer.magnitude > maxRadius)
+        // Raycast in the movement direction to check for wall
+        RaycastHit hit;
+        if (!Physics.Raycast(transform.position, inputDir, out hit, distance + 0.1f, wallMask))
         {
-            offsetFromPlayer = offsetFromPlayer.normalized * maxRadius;
-            rawTarget = playerRoot.position + offsetFromPlayer;
+            // No wall, move freely
+            transform.position = targetPos;
         }
-
-        Vector3 destination = new Vector3(rawTarget.x, transform.position.y, rawTarget.z);
-        transform.position = destination;
+        else
+        {
+            // Wall detected, stop right before the wall
+            transform.position = hit.point - inputDir * 0.05f;
+        }
     }
 
 
@@ -176,7 +179,6 @@ public class SquidControl : MonoBehaviour
 
     private void SnapDirectlyDown()
     {
-        // Keep kinematic true here as well (remove the “false” toggle):
         rb.isKinematic = false;
 
         Vector3 rayStart = transform.position + Vector3.up * 1f;

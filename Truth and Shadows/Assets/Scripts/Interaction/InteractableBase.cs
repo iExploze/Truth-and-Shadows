@@ -29,6 +29,11 @@ namespace TruthAndShadows.Interaction
         [SerializeField]
         protected float pickupSmoothness = 10f;
 
+        //For Object interactable Sound
+        //Rashai was here
+        public AudioSource source;
+        public AudioClip clip;
+
         [Header("Camera Settings")]
         [SerializeField]
         protected CinemachineVirtualCamera interactionCamera;
@@ -69,7 +74,9 @@ namespace TruthAndShadows.Interaction
             originalPosition = transform.position;
             originalRotation = transform.rotation;
             originalParent = transform.parent;
-
+            //Rashai was here
+            source.PlayOneShot(clip);
+           
             if (rigidBody != null)
             {
                 rigidBody.isKinematic = true;
