@@ -90,6 +90,7 @@ public class SquidControl : MonoBehaviour
         // 3) If we just hit a wall, start/refresh the 0.5s snap timer
         if (againstWall)
         {
+            Debug.Log("wall");
             useVerticalSnap = true;
             snapTimer = snapHoldDuration;
         }
@@ -160,8 +161,8 @@ public class SquidControl : MonoBehaviour
         bool wasEnabled = selfCol.enabled;
         selfCol.enabled = false;
 
-        Vector3 rayStart = transform.position + Vector3.up * raycastHeight;
-        float rayLength = raycastHeight + 100f;
+        Vector3 rayStart = transform.position + Vector3.up * 1000;
+        float rayLength = raycastHeight + 10000f;
 
         Debug.DrawRay(rayStart, Vector3.down * rayLength, Color.yellow);
         if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, rayLength, groundMask))
