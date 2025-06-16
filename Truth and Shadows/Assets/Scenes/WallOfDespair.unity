@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 84158860}
   - component: {fileID: 84158859}
   - component: {fileID: 84158858}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -227,6 +227,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &167382156 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+  m_PrefabInstance: {fileID: 849770980}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &167382162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 167382156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac211f759d63c840884efe9d7fde103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 1
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  source: {fileID: 0}
+  clip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  originalColor: {r: 1, g: 1, b: 1, a: 1}
+  pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  colorChangeSpeed: 5
+  cubeMass: 1000
+  minPickupDistance: 1.25
+  pickupDetectionRadius: 4
+  cubeRenderer: {fileID: 0}
+  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  targetColor: {r: 0, g: 0, b: 0, a: 0}
+  isColorChanging: 0
 --- !u!1001 &175830840
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -327,6 +363,42 @@ MonoBehaviour:
   currentColor: {r: 0, g: 0, b: 0, a: 0}
   targetColor: {r: 0, g: 0, b: 0, a: 0}
   isColorChanging: 0
+--- !u!1 &436998437 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+  m_PrefabInstance: {fileID: 1983346844}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &436998443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 436998437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac211f759d63c840884efe9d7fde103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 1
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  source: {fileID: 0}
+  clip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  originalColor: {r: 1, g: 1, b: 1, a: 1}
+  pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  colorChangeSpeed: 5
+  cubeMass: 1000
+  minPickupDistance: 1.25
+  pickupDetectionRadius: 4
+  cubeRenderer: {fileID: 0}
+  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  targetColor: {r: 0, g: 0, b: 0, a: 0}
+  isColorChanging: 0
 --- !u!1 &449072326
 GameObject:
   m_ObjectHideFlags: 0
@@ -339,7 +411,7 @@ GameObject:
   - component: {fileID: 449072329}
   - component: {fileID: 449072328}
   - component: {fileID: 449072327}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Cube (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -596,7 +668,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1501669270}
   m_SourcePrefab: {fileID: 100100000, guid: 308194079bd922743b28baee7e423efe, type: 3}
 --- !u!1001 &849770980
 PrefabInstance:
@@ -657,7 +732,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 167382162}
   m_SourcePrefab: {fileID: 100100000, guid: 308194079bd922743b28baee7e423efe, type: 3}
 --- !u!1 &1131020783
 GameObject:
@@ -777,7 +855,7 @@ GameObject:
   - component: {fileID: 1169335098}
   - component: {fileID: 1169335097}
   - component: {fileID: 1169335096}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1057,7 +1135,7 @@ GameObject:
   - component: {fileID: 1467622557}
   - component: {fileID: 1467622556}
   - component: {fileID: 1467622555}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1150,6 +1228,78 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1501669264 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+  m_PrefabInstance: {fileID: 703801549}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1501669270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1501669264}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac211f759d63c840884efe9d7fde103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 1
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  source: {fileID: 0}
+  clip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  originalColor: {r: 1, g: 1, b: 1, a: 1}
+  pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  colorChangeSpeed: 5
+  cubeMass: 1000
+  minPickupDistance: 1.25
+  pickupDetectionRadius: 4
+  cubeRenderer: {fileID: 0}
+  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  targetColor: {r: 0, g: 0, b: 0, a: 0}
+  isColorChanging: 0
+--- !u!1 &1728458858 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+  m_PrefabInstance: {fileID: 1900454526}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1728458864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1728458858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac211f759d63c840884efe9d7fde103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 1
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  source: {fileID: 0}
+  clip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  originalColor: {r: 1, g: 1, b: 1, a: 1}
+  pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  colorChangeSpeed: 5
+  cubeMass: 1000
+  minPickupDistance: 1.25
+  pickupDetectionRadius: 4
+  cubeRenderer: {fileID: 0}
+  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  targetColor: {r: 0, g: 0, b: 0, a: 0}
+  isColorChanging: 0
 --- !u!1001 &1900454526
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1209,7 +1359,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1728458864}
   m_SourcePrefab: {fileID: 100100000, guid: 308194079bd922743b28baee7e423efe, type: 3}
 --- !u!1 &1930876610
 GameObject:
@@ -1362,7 +1515,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 436998443}
   m_SourcePrefab: {fileID: 100100000, guid: 308194079bd922743b28baee7e423efe, type: 3}
 --- !u!1 &2099802664
 GameObject:
@@ -1376,7 +1532,7 @@ GameObject:
   - component: {fileID: 2099802667}
   - component: {fileID: 2099802666}
   - component: {fileID: 2099802665}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6702,7 +6858,7 @@ MonoBehaviour:
     m_Bits: 131072
   wallMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 524288
   playerRoot: {fileID: 6852169880293168940}
   wallSensitivity: 1
   currentSpeed: 0
@@ -7114,7 +7270,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 50
+  field of view: 60
   orthographic: 0
   orthographic size: 10
   m_Depth: 0
@@ -8268,8 +8424,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3815234199092645332}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0000000142536685, y: 0.9630218, z: -0.26942363, w: -0.000000050947992}
-  m_LocalPosition: {x: -24.018578, y: 159.76535, z: 36.33407}
+  m_LocalRotation: {x: -0.000000025975494, y: 0.9453943, z: -0.32592902, w: -0.00000007534489}
+  m_LocalPosition: {x: -4.698578, y: 2.0353575, z: 3.15407}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

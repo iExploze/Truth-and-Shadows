@@ -97,7 +97,7 @@ public class SquidControl : MonoBehaviour
         // 4) If vertical‐snap mode is active, call SnapVerticalDown() and count down
         if (useVerticalSnap)
         {
-            //SnapVerticalDown();
+            SnapVerticalDown();
             snapTimer -= Time.deltaTime;
             if (snapTimer <= 0f)
             {
