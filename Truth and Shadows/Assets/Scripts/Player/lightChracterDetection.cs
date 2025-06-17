@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using Cinemachine.Examples;
 using UnityEngine;
 
@@ -8,27 +7,45 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
     private StateManager stateManager;
     private CharacterMovement characterMovement;
 
+    private bool isInLight = false;
+    private bool isSquid = false; // Tracks if we've already switched forms
+
     void Start()
     {
         characterMovement = GetComponent<CharacterMovement>();
-        // Find the StateManager in the scene (adjust if you use a different setup)
         stateManager = FindObjectOfType<StateManager>();
     }
 
     public void OnLightEnter(Light lightSource)
     {
-        // Optionally: do stuff when entering light
+        isInLight = true;
+        isSquid = false; // We're in light, should be human form
         characterMovement.canMove = true;
     }
 
     public void OnLightStay(Light lightSource)
     {
-        // Optionally: do stuff while staying in light
+        isInLight = true;
+        // Can add more logic here if needed
     }
 
     public void OnLightExit(Light lightSource)
     {
-        // Instantly turn into a squid/wraith when you leave light
+        isInLight = false;
+        // We'll handle switching in Update(), but you could also do it here just in case
+        SwitchToSquidIfNeeded();
+    }
+
+    void Update()
+    {
+        if (!isInLight && !isSquid)
+        {
+            SwitchToSquidIfNeeded();
+        }
+    }
+
+    private void SwitchToSquidIfNeeded()
+    {
         characterMovement.canMove = false;
         if (stateManager != null)
         {
@@ -38,5 +55,6 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
         {
             Debug.LogWarning("StateManager not found on light exit!");
         }
+        isSquid = true;
     }
 }
