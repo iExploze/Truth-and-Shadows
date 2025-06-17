@@ -160,7 +160,7 @@ public class SquidControl : MonoBehaviour
         bool wasEnabled = selfCol.enabled;
         selfCol.enabled = false;
 
-        Vector3 rayStart = transform.position + Vector3.up * 10000 * raycastHeight ;
+        Vector3 rayStart = transform.position + Vector3.up * 1000 * raycastHeight ;
         float rayLength = raycastHeight + 10000f;
 
         Debug.DrawRay(rayStart, Vector3.down * rayLength, Color.yellow);
