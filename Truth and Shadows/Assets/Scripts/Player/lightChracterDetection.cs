@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Cinemachine.Examples;
+﻿using Cinemachine.Examples;
 using UnityEngine;
 
 public class lightCharacterDetection : MonoBehaviour, ILightHittable
@@ -8,7 +7,7 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
     private CharacterMovement characterMovement;
 
     private bool isInLight = false;
-    private bool isSquid = false; // Tracks if we've already switched forms
+    private bool isSquid = false;
 
     void Start()
     {
@@ -18,21 +17,23 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
 
     public void OnLightEnter(Light lightSource)
     {
+        if (isInLight) return; // already in light
         isInLight = true;
-        isSquid = false; // We're in light, should be human form
+        isSquid = false; // now human
         characterMovement.canMove = true;
     }
 
     public void OnLightStay(Light lightSource)
     {
         isInLight = true;
-        // Can add more logic here if needed
+        // No-op, unless you want special logic
     }
 
     public void OnLightExit(Light lightSource)
     {
+        if (isInLight) return; // already not in light
+        Debug.Log("called switch to squid");
         isInLight = false;
-        // We'll handle switching in Update(), but you could also do it here just in case
         SwitchToSquidIfNeeded();
     }
 
@@ -42,6 +43,7 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
         {
             SwitchToSquidIfNeeded();
         }
+        isInLight = false;
     }
 
     private void SwitchToSquidIfNeeded()

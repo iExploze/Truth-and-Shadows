@@ -46,7 +46,7 @@ public class EnemyAI : MonoBehaviour
 
         if (canSee && humanForm)
         {
-            Debug.Log("chasing");
+            //Debug.Log("chasing");
             // Chase!
             agent.SetDestination(playerTransform.position);
             chasing = true;
@@ -106,7 +106,7 @@ public class EnemyAI : MonoBehaviour
 
     private bool canSeePlayer()
     {
-        Debug.Log("testing");
+        //Debug.Log("testing");
         return isPlayerInCone(playerTransform);
     }
 
@@ -161,21 +161,5 @@ public class EnemyAI : MonoBehaviour
         }
 
         return false;
-    }
-
-    Vector3 GetNearestPatrolPoint()
-    {
-        float minDist = Mathf.Infinity;
-        Vector3 closest = patrolPoints[0].position;
-        foreach (var p in patrolPoints)
-        {
-            float d = Vector3.Distance(playerTransform.position, p.position);
-            if (d < minDist)
-            {
-                minDist = d;
-                closest = p.position;
-            }
-        }
-        return closest;
     }
 }
