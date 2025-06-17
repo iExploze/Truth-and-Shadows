@@ -949,7 +949,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4200770380503452502, guid: 41f1416f7bac90645b557ae04705db18, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 118.88
+      value: 117.79
       objectReference: {fileID: 0}
     - target: {fileID: 4200770380503452502, guid: 41f1416f7bac90645b557ae04705db18, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1059,7 +1059,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2098709893}
   m_SourcePrefab: {fileID: 100100000, guid: 308194079bd922743b28baee7e423efe, type: 3}
 --- !u!1001 &189350906
 PrefabInstance:
@@ -1612,6 +1615,42 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c9dedd2b767f9ad45ad967cb7eed7f06, type: 3}
+--- !u!1 &408901522 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+  m_PrefabInstance: {fileID: 2020115402}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &408901528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 408901522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac211f759d63c840884efe9d7fde103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 1
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  source: {fileID: 0}
+  clip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  originalColor: {r: 1, g: 1, b: 1, a: 1}
+  pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  colorChangeSpeed: 5
+  cubeMass: 1000
+  minPickupDistance: 1.25
+  pickupDetectionRadius: 4
+  cubeRenderer: {fileID: 0}
+  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  targetColor: {r: 0, g: 0, b: 0, a: 0}
+  isColorChanging: 0
 --- !u!1001 &410213901
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2390,6 +2429,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &598145318 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+  m_PrefabInstance: {fileID: 612625986}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &598145324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598145318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac211f759d63c840884efe9d7fde103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 1
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  source: {fileID: 0}
+  clip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  originalColor: {r: 1, g: 1, b: 1, a: 1}
+  pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  colorChangeSpeed: 5
+  cubeMass: 1000
+  minPickupDistance: 1.25
+  pickupDetectionRadius: 4
+  cubeRenderer: {fileID: 0}
+  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  targetColor: {r: 0, g: 0, b: 0, a: 0}
+  isColorChanging: 0
 --- !u!1 &600391120
 GameObject:
   m_ObjectHideFlags: 0
@@ -2648,7 +2723,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 598145324}
   m_SourcePrefab: {fileID: 100100000, guid: 308194079bd922743b28baee7e423efe, type: 3}
 --- !u!1001 &643196076
 PrefabInstance:
@@ -3512,7 +3590,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1768713923}
   m_SourcePrefab: {fileID: 100100000, guid: 308194079bd922743b28baee7e423efe, type: 3}
 --- !u!1 &868988060
 GameObject:
@@ -3818,7 +3899,7 @@ Transform:
   m_GameObject: {fileID: 976940039}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 117.04, y: 115.84699, z: 95.49}
+  m_LocalPosition: {x: 117.04, y: 114.756996, z: 95.49}
   m_LocalScale: {x: 3.8656468, y: 5.6489687, z: 6.22194}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5656,7 +5737,7 @@ Transform:
   m_GameObject: {fileID: 1466941084}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 117.97, y: 121.09, z: 95.49}
+  m_LocalPosition: {x: 117.97, y: 120, z: 95.49}
   m_LocalScale: {x: 3.8656468, y: 5.6489687, z: 6.22194}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6610,7 +6691,7 @@ Transform:
   m_GameObject: {fileID: 1581002502}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 122.68, y: 111.96, z: 95.49}
+  m_LocalPosition: {x: 122.68, y: 110.87, z: 95.49}
   m_LocalScale: {x: 3.8656468, y: 5.6489687, z: 6.22194}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6750,6 +6831,42 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c9dedd2b767f9ad45ad967cb7eed7f06, type: 3}
+--- !u!1 &1655528417 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+  m_PrefabInstance: {fileID: 1942445124}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1655528423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1655528417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac211f759d63c840884efe9d7fde103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 1
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  source: {fileID: 0}
+  clip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  originalColor: {r: 1, g: 1, b: 1, a: 1}
+  pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  colorChangeSpeed: 5
+  cubeMass: 1000
+  minPickupDistance: 1.25
+  pickupDetectionRadius: 4
+  cubeRenderer: {fileID: 0}
+  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  targetColor: {r: 0, g: 0, b: 0, a: 0}
+  isColorChanging: 0
 --- !u!1001 &1716406445
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6988,6 +7105,42 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f4b18dc7fbfd2c147a2f14d66bf3f61e, type: 3}
+--- !u!1 &1768713917 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+  m_PrefabInstance: {fileID: 823653035}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1768713923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1768713917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac211f759d63c840884efe9d7fde103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 1
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  source: {fileID: 0}
+  clip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  originalColor: {r: 1, g: 1, b: 1, a: 1}
+  pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  colorChangeSpeed: 5
+  cubeMass: 1000
+  minPickupDistance: 1.25
+  pickupDetectionRadius: 4
+  cubeRenderer: {fileID: 0}
+  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  targetColor: {r: 0, g: 0, b: 0, a: 0}
+  isColorChanging: 0
 --- !u!1001 &1775247076
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7674,7 +7827,7 @@ Transform:
   m_GameObject: {fileID: 1933668389}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 120.07, y: 106.53999, z: 95.49}
+  m_LocalPosition: {x: 120.07, y: 105.45, z: 95.49}
   m_LocalScale: {x: 3.8656468, y: 5.6489687, z: 6.22194}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7747,7 +7900,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1655528423}
   m_SourcePrefab: {fileID: 100100000, guid: 308194079bd922743b28baee7e423efe, type: 3}
 --- !u!1001 &1944878593
 PrefabInstance:
@@ -8198,7 +8354,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 408901528}
   m_SourcePrefab: {fileID: 100100000, guid: 308194079bd922743b28baee7e423efe, type: 3}
 --- !u!1 &2030476201
 GameObject:
@@ -8306,6 +8465,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2098709887 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3077721835934338978, guid: 308194079bd922743b28baee7e423efe, type: 3}
+  m_PrefabInstance: {fileID: 182319925}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2098709893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2098709887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac211f759d63c840884efe9d7fde103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 1
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  source: {fileID: 0}
+  clip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  originalColor: {r: 1, g: 1, b: 1, a: 1}
+  pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  colorChangeSpeed: 5
+  cubeMass: 1000
+  minPickupDistance: 1.25
+  pickupDetectionRadius: 4
+  cubeRenderer: {fileID: 0}
+  currentColor: {r: 0, g: 0, b: 0, a: 0}
+  targetColor: {r: 0, g: 0, b: 0, a: 0}
+  isColorChanging: 0
 --- !u!1001 &2126714678
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8760,8 +8955,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1114696612948290175}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0000000112896466, y: 0.96758515, z: -0.2525451, w: 0.00000004325443}
-  m_LocalPosition: {x: 143.35141, y: 111.651535, z: 107.45407}
+  m_LocalRotation: {x: 0.0000000011383258, y: 0.96758515, z: -0.25254506, w: 0.0000000043613095}
+  m_LocalPosition: {x: 164.02542, y: 98.50153, z: 146.07407}
   m_LocalScale: {x: 0.35477, y: 0.35477, z: 0.35477}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9860,8 +10055,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3723479253622572342}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000011039097, y: 0.96758515, z: -0.2525451, w: -0.00000004229449}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.000000001138324, y: 0.96758515, z: -0.25254503, w: 0.0000000043613086}
+  m_LocalPosition: {x: 0, y: 0, z: -0.000015258789}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -10500,8 +10695,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8767708904768917098}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0000000061533605, y: 0.990042, z: -0.14077248, w: -0.00000004327611}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0.0000000013885549, y: 0.990042, z: -0.14077254, w: -0.000000009765592}
+  m_LocalPosition: {x: 0, y: 0, z: -0.000015258789}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -16325,8 +16520,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7843011747998220922}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000009764761, y: 0.97472876, z: -0.22339171, w: -0.000000042606747}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.00000021812089, y: 0.97472876, z: -0.22339171, w: 0.00000095173056}
+  m_LocalPosition: {x: 0, y: 0, z: -0.000015258789}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -17025,7 +17220,7 @@ Transform:
   m_GameObject: {fileID: 8221904274884754203}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: 137.76, y: 106.01, z: 101.01}
+  m_LocalPosition: {x: 158.434, y: 92.86, z: 139.63}
   m_LocalScale: {x: 1.2641165, y: 1.2641165, z: 1.2641165}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -18104,7 +18299,7 @@ Transform:
   m_GameObject: {fileID: 7570283468436664349}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 143.35141, y: 111.651535, z: 107.45407}
+  m_LocalPosition: {x: 164.02542, y: 98.50153, z: 146.07407}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
