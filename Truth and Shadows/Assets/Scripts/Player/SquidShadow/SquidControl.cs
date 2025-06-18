@@ -97,7 +97,7 @@ public class SquidControl : MonoBehaviour
         // 4) If vertical‐snap mode is active, call SnapVerticalDown() and count down
         if (useVerticalSnap)
         {
-            //SnapVerticalDown();
+            SnapVerticalDown();
             snapTimer -= Time.deltaTime;
             if (snapTimer <= 0f)
             {
@@ -160,8 +160,8 @@ public class SquidControl : MonoBehaviour
         bool wasEnabled = selfCol.enabled;
         selfCol.enabled = false;
 
-        Vector3 rayStart = transform.position + Vector3.up * raycastHeight;
-        float rayLength = raycastHeight + 100f;
+        Vector3 rayStart = transform.position + Vector3.up * 1000 * raycastHeight ;
+        float rayLength = raycastHeight + 10000f;
 
         Debug.DrawRay(rayStart, Vector3.down * rayLength, Color.yellow);
         if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, rayLength, groundMask))
