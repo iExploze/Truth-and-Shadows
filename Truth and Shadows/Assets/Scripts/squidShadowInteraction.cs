@@ -83,6 +83,10 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
             timeInDark = 0f;
             SetDarknessAlpha(0f);
         }
+    }
+
+    void LateUpdate() 
+    {
         // Prepare for next frame
         isInLight = false; // This forces you to call OnLightStay every frame
     }

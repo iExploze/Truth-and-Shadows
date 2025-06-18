@@ -42,7 +42,7 @@ public class EnemyAI : MonoBehaviour
         bool canSee = canSeePlayer();
         bool humanForm = playerState.isHumanForm();
 
-        Debug.Log("Can see player: " + canSee);
+        //Debug.Log("Can see player: " + canSee);
 
         if (canSee && humanForm)
         {

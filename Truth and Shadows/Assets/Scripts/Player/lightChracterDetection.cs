@@ -1,49 +1,59 @@
 ﻿using Cinemachine.Examples;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class lightCharacterDetection : MonoBehaviour, ILightHittable
 {
     private StateManager stateManager;
     private CharacterMovement characterMovement;
 
-    private bool isInLight = false;
+    // Track all current lights
+    private HashSet<Light> currentLights = new HashSet<Light>();
     private bool isSquid = false;
 
     void Start()
     {
         characterMovement = GetComponent<CharacterMovement>();
         stateManager = FindObjectOfType<StateManager>();
+        isSquid = false;
     }
 
     public void OnLightEnter(Light lightSource)
     {
-        if (isInLight) return; // already in light
-        isInLight = true;
-        isSquid = false; // now human
-        characterMovement.canMove = true;
+        // Add this light
+        bool wasInLight = currentLights.Count > 0;
+        currentLights.Add(lightSource);
+
+        if (!wasInLight && currentLights.Count > 0)
+        {
+            // Just entered *any* light
+            isSquid = false;
+            characterMovement.canMove = true;
+            //Debug.Log("Entered light");
+        }
     }
 
     public void OnLightStay(Light lightSource)
     {
-        isInLight = true;
-        // No-op, unless you want special logic
+        // Optional: refresh logic (no-op if not needed)
+        isSquid = false; // now human
+        characterMovement.canMove = true;
     }
 
     public void OnLightExit(Light lightSource)
     {
-        if (isInLight) return; // already not in light
-        Debug.Log("called switch to squid");
-        isInLight = false;
-        SwitchToSquidIfNeeded();
+        currentLights.Remove(lightSource);
     }
 
     void Update()
     {
-        if (!isInLight && !isSquid)
+        if (currentLights.Count == 0 && !isSquid)
         {
+            isSquid = true;
+            // Truly out of *all* lights
+            //Debug.Log("Exited all lights");
             SwitchToSquidIfNeeded();
         }
-        isInLight = false;
     }
 
     private void SwitchToSquidIfNeeded()
