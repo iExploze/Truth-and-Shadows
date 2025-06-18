@@ -78,9 +78,9 @@ namespace TruthAndShadows.Interaction
 
             interactionDistance = pickupDetectionRadius;
 
-            Debug.Log(
-                $"GiantCubeInteractable initialized on {gameObject.name} with mass: {cubeMass}"
-            );
+            //Debug.Log(
+            //    $"GiantCubeInteractable initialized on {gameObject.name} with mass: {cubeMass}"
+            //);
         }
 
         public override bool CanInteract(Vector3 playerPosition)

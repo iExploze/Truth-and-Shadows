@@ -1,34 +1,63 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Cinemachine.Examples;
+﻿using Cinemachine.Examples;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class lightCharacterDetection : MonoBehaviour, ILightHittable
 {
     private StateManager stateManager;
     private CharacterMovement characterMovement;
 
+    // Track all current lights
+    private HashSet<Light> currentLights = new HashSet<Light>();
+    private bool isSquid = false;
+
     void Start()
     {
         characterMovement = GetComponent<CharacterMovement>();
-        // Find the StateManager in the scene (adjust if you use a different setup)
         stateManager = FindObjectOfType<StateManager>();
+        isSquid = false;
     }
 
     public void OnLightEnter(Light lightSource)
     {
-        // Optionally: do stuff when entering light
-        characterMovement.canMove = true;
+        // Add this light
+        bool wasInLight = currentLights.Count > 0;
+        currentLights.Add(lightSource);
+
+        if (!wasInLight && currentLights.Count > 0)
+        {
+            // Just entered *any* light
+            isSquid = false;
+            characterMovement.canMove = true;
+            //Debug.Log("Entered light");
+        }
     }
 
     public void OnLightStay(Light lightSource)
     {
-        // Optionally: do stuff while staying in light
+        // Optional: refresh logic (no-op if not needed)
+        isSquid = false; // now human
+        characterMovement.canMove = true;
     }
 
     public void OnLightExit(Light lightSource)
     {
-        // Instantly turn into a squid/wraith when you leave light
+        currentLights.Remove(lightSource);
+    }
+
+    void Update()
+    {
+        if (currentLights.Count == 0)
+        {
+            isSquid = true;
+            // Truly out of *all* lights
+            //Debug.Log("Exited all lights");
+            SwitchToSquidIfNeeded();
+        }
+    }
+
+    private void SwitchToSquidIfNeeded()
+    {
         characterMovement.canMove = false;
         if (stateManager != null)
         {
@@ -38,5 +67,6 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
         {
             Debug.LogWarning("StateManager not found on light exit!");
         }
+        isSquid = true;
     }
 }
