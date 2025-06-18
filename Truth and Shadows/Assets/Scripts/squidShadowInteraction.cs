@@ -8,9 +8,7 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
     private StateManager playerStateManager;
     private bool isInLight = false;
 
-    private float timeInLight = 0f;
     private bool hasTransformed = false;
-    private const float transformDelay = 0.01f;
 
     // --- New for dark timer and camera effect ---
     public float maxTimeInDark = 10f; // Max seconds allowed in darkness
@@ -30,7 +28,6 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
     public void OnLightEnter(Light lightSource)
     {
         isInLight = true;
-        timeInLight = 0f;
         hasTransformed = false;
 
         // Reset darkness
@@ -48,18 +45,14 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
 
         if (!hasTransformed)
         {
-            timeInLight += Time.deltaTime;
-            if (timeInLight >= transformDelay)
+            hasTransformed = true;
+            if (playerStateManager != null)
             {
-                hasTransformed = true;
-                if (playerStateManager != null)
-                {
-                    playerStateManager.SwitchToHumanForm();
-                }
-                else
-                {
-                    Debug.LogWarning("StateManager not assigned to squidShadowInteraction!");
-                }
+                playerStateManager.SwitchToHumanForm();
+            }
+            else
+            {
+                Debug.LogWarning("StateManager not assigned to squidShadowInteraction!");
             }
         }
     }
@@ -67,7 +60,6 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
     public void OnLightExit(Light lightSource)
     {
         isInLight = false;
-        timeInLight = 0f;
         hasTransformed = false;
         // Do not reset darkness timer here, so dark effect starts accumulating
     }
@@ -91,6 +83,10 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
             timeInDark = 0f;
             SetDarknessAlpha(0f);
         }
+    }
+
+    void LateUpdate() 
+    {
         // Prepare for next frame
         isInLight = false; // This forces you to call OnLightStay every frame
     }

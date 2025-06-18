@@ -67,8 +67,7 @@ public class StateManager : MonoBehaviour
         }
 
         // Place and activate squid
-        Vector3 spawnPosition = CalculateSpawnPosition(mainCharacterForm);
-        squidForm.transform.position = spawnPosition;
+        squidForm.transform.position = mainCharacterForm.transform.position;
         squidForm.transform.rotation = mainCharacterForm.transform.rotation;
         squidForm.SetActive(true);
         if (squidMovement != null) squidMovement.enabled = true;
@@ -124,14 +123,6 @@ public class StateManager : MonoBehaviour
         if (squidRb != null) squidRb.isKinematic = true;
         currentState = FormState.MainCharacter;
         UpdateCameraPriorities(main: 10, squid: 0);
-    }
-
-    private Vector3 CalculateSpawnPosition(GameObject source)
-    {
-        Vector3 pos = source.transform.position + source.transform.forward * spawnOffset;
-        if (Physics.Raycast(source.transform.position, source.transform.forward, out RaycastHit hit, spawnOffset))
-            pos = hit.point - source.transform.forward * 0.1f;
-        return pos;
     }
 
     private void UpdateCameraPriorities(int main, int squid)
