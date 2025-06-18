@@ -47,7 +47,7 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
 
     void Update()
     {
-        if (currentLights.Count == 0 && !isSquid)
+        if (currentLights.Count == 0)
         {
             isSquid = true;
             // Truly out of *all* lights

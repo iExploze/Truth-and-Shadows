@@ -236,7 +236,7 @@ namespace TruthAndShadows.Interaction
             }
             else
             {
-                Debug.Log(interactable == null ? "No interactable found for pickup" : $"Item cannot be picked up: {((MonoBehaviour)interactable).gameObject.name}");
+                //Debug.Log(interactable == null ? "No interactable found for pickup" : $"Item cannot be picked up: {((MonoBehaviour)interactable).gameObject.name}");
             }
         }
 
@@ -244,7 +244,7 @@ namespace TruthAndShadows.Interaction
         {
             if (pickedUpInteractable != null)
             {
-                Debug.Log($"Dropping: {((MonoBehaviour)pickedUpInteractable).gameObject.name}");
+                //Debug.Log($"Dropping: {((MonoBehaviour)pickedUpInteractable).gameObject.name}");
                 pickedUpInteractable.EndPickup();
                 pickedUpInteractable = null;
             }

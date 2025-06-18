@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 public class EnemyAI : MonoBehaviour
@@ -15,12 +14,19 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private Transform playerTransform;
     private StateManager playerState;
     private bool chasing = false;
+    private bool noticed = false;
+    private float noticedTimer = 0f;
+    private float noticedDuration = 2.5f;
     [SerializeField] private AudioSource chaseMusicSource;
 
     [SerializeField] private float distanceToKill = 3f;
 
-
     private Light spotLight;
+    private Color originalSpotColor;
+    private float originalIntensity;
+
+    public Color noticedColor = Color.red;
+    public float noticedIntensityMultiplier = 2f;
 
     void Start()
     {
@@ -35,6 +41,11 @@ public class EnemyAI : MonoBehaviour
         {
             Debug.LogError("This script requires a Spot Light assigned.");
         }
+        else
+        {
+            originalSpotColor = spotLight.color;
+            originalIntensity = spotLight.intensity;
+        }
     }
 
     void Update()
@@ -42,33 +53,60 @@ public class EnemyAI : MonoBehaviour
         bool canSee = canSeePlayer();
         bool humanForm = playerState.isHumanForm();
 
-        //Debug.Log("Can see player: " + canSee);
-
-        if (canSee && humanForm)
+        // Handle Noticed State
+        if (canSee && humanForm && !chasing)
         {
-            //Debug.Log("chasing");
-            // Chase!
-            agent.SetDestination(playerTransform.position);
-            chasing = true;
+            if (!noticed)
+            {
+                noticed = true;
+                noticedTimer = 0f;
+            }
+            else
+            {
+                noticedTimer += Time.deltaTime;
+                // Lerp color/intensity
+                float t = Mathf.Clamp01(noticedTimer / noticedDuration);
+                spotLight.color = Color.Lerp(originalSpotColor, noticedColor, t);
+                spotLight.intensity = Mathf.Lerp(originalIntensity, originalIntensity * noticedIntensityMultiplier, t);
 
-            // Play chase music if not already playing
-            if (chaseMusicSource != null && !chaseMusicSource.isPlaying)
-                chaseMusicSource.Play();
+                if (noticedTimer >= noticedDuration)
+                {
+                    chasing = true;
+                    noticed = false;
+                    // Start chase music
+                    if (chaseMusicSource != null && !chaseMusicSource.isPlaying)
+                        chaseMusicSource.Play();
+                }
+            }
         }
-        else if (chasing && (!humanForm || !canSee))
+        else if (noticed && (!canSee || !humanForm))
         {
-            chasing = false;
-            // Find nearest patrol point index
-            patrolIndex = GetNearestPatrolPointIndex();
-            // Advance to next patrol point for patrolling
-            patrolIndex = (patrolIndex + 1) % patrolPoints.Length;
-            agent.SetDestination(patrolPoints[patrolIndex].position);
-
-            if (chaseMusicSource != null && chaseMusicSource.isPlaying)
-                chaseMusicSource.Stop();
+            // Reset noticed state & restore spotlight
+            ResetNotice();
         }
 
-        else if (!chasing)
+        // Handle chasing
+        if (chasing)
+        {
+            if (canSee && humanForm)
+            {
+                agent.SetDestination(playerTransform.position);
+            }
+            else
+            {
+                chasing = false;
+                // Return to patrol after chase
+                patrolIndex = GetNearestPatrolPointIndex();
+                patrolIndex = (patrolIndex + 1) % patrolPoints.Length;
+                agent.SetDestination(patrolPoints[patrolIndex].position);
+                // Stop chase music
+                if (chaseMusicSource != null && chaseMusicSource.isPlaying)
+                    chaseMusicSource.Stop();
+                // Restore light
+                ResetSpotlight();
+            }
+        }
+        else if (!noticed)
         {
             // Patrol as usual
             if (!agent.pathPending && agent.remainingDistance < 0.2f)
@@ -76,13 +114,30 @@ public class EnemyAI : MonoBehaviour
                 patrolIndex = (patrolIndex + 1) % patrolPoints.Length;
                 agent.SetDestination(patrolPoints[patrolIndex].position);
             }
+            // Restore spotlight if not in noticed
+            ResetSpotlight();
         }
 
         // Check if close enough to "catch" the player
-        if (Vector3.Distance(transform.position, playerTransform.position) < distanceToKill && canSee)
+        if (chasing && Vector3.Distance(transform.position, playerTransform.position) < distanceToKill && canSee)
         {
-            // Reset the scene
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+    }
+
+    void ResetNotice()
+    {
+        noticed = false;
+        noticedTimer = 0f;
+        ResetSpotlight();
+    }
+
+    void ResetSpotlight()
+    {
+        if (spotLight != null)
+        {
+            spotLight.color = originalSpotColor;
+            spotLight.intensity = originalIntensity;
         }
     }
 
@@ -102,49 +157,30 @@ public class EnemyAI : MonoBehaviour
         return closestIndex;
     }
 
-
-
     private bool canSeePlayer()
     {
-        //Debug.Log("testing");
         return isPlayerInCone(playerTransform);
     }
 
-    // Helper function to check if a target Transform is within the spotlight's cone
     private bool isPlayerInCone(Transform target)
     {
-        // Safety check in case the light is missing or not a spotlight
         if (spotLight == null || spotLight.type != LightType.Spot)
         {
             Debug.LogError("This script requires a Spot Light assigned.");
             return false;
         }
-
-        // Get the direction from spotlight to player
         Vector3 directionToPlayer = (target.position - spotLight.transform.position).normalized;
-
-        // Calculate the angle between the spotlight's forward direction and the direction to the player
         float angleToPlayer = Vector3.Angle(spotLight.transform.forward, directionToPlayer);
-
-        // Check if the player is within the light cone's angle
         if (angleToPlayer <= spotLight.spotAngle / 2)
         {
-            // Calculate the distance between the spotlight and the player
             float distanceToPlayer = Vector3.Distance(spotLight.transform.position, target.position);
-            // Check if the player is within the spotlight's range
             if (distanceToPlayer <= spotLight.range)
             {
                 int layerMask = ~LayerMask.GetMask("IgnoreLightRaycast");
-
-                // Cast a ray in the calculated direction and check for a hit
                 Ray ray = new Ray(spotLight.transform.position, directionToPlayer);
                 RaycastHit hit;
-
-                // Check if the ray hits the player and is not blocked
                 if (Physics.Raycast(ray, out hit, spotLight.range, layerMask))
                 {
-
-                    // only return true if the VERY FIRST thing hit is the target itself
                     if (hit.transform == target)
                     {
                         Debug.DrawLine(spotLight.transform.position, hit.point, Color.green);
@@ -152,14 +188,12 @@ public class EnemyAI : MonoBehaviour
                     }
                     else
                     {
-                        // hit something else (another player or an obstacle) first
                         Debug.DrawLine(spotLight.transform.position, hit.point, Color.red);
                         return false;
                     }
                 }
             }
         }
-
         return false;
     }
 }
