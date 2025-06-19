@@ -52,12 +52,12 @@ namespace TruthAndShadows.Interaction
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
-                Debug.Log("R key pressed - attempting interaction");
+                //Debug.Log("R key pressed - attempting interaction");
                 TryStartInteraction();
             }
             else if (Input.GetKeyUp(KeyCode.R))
             {
-                Debug.Log("R key released - ending interaction");
+                //Debug.Log("R key released - ending interaction");
                 EndCurrentInteraction();
             }
 
@@ -74,20 +74,20 @@ namespace TruthAndShadows.Interaction
 
         private void TryStartInteraction()
         {
-            Debug.Log("TryStartInteraction called");
+            //Debug.Log("TryStartInteraction called");
 
             if (!IsValidSource())
             {
-                Debug.LogWarning("Invalid interaction source!");
+                //Debug.LogWarning("Invalid interaction source!");
                 return;
             }
 
             Vector3 origin = GetInteractionOrigin();
             Vector3 direction = interactionSource.forward;
 
-            Debug.Log(
-                $"Interaction ray: Origin={origin}, Direction={direction}, Range={interactionRange}"
-            );
+            //Debug.Log(
+            //    $"Interaction ray: Origin={origin}, Direction={direction}, Range={interactionRange}"
+            //);
 
             if (showDebugRay)
                 Debug.DrawRay(origin, direction * interactionRange, Color.yellow, 0.1f);
@@ -180,12 +180,12 @@ namespace TruthAndShadows.Interaction
         {
             if (Input.GetKeyDown(KeyCode.F) && pickedUpInteractable == null)
             {
-                Debug.Log("F key pressed - attempting pickup");
+                //Debug.Log("F key pressed - attempting pickup");
                 TryPickupItem();
             }
             else if (Input.GetKeyUp(KeyCode.F) && pickedUpInteractable != null)
             {
-                Debug.Log("F key released - dropping item");
+                //Debug.Log("F key released - dropping item");
                 DropPickedUpItem();
             }
         }
@@ -194,7 +194,7 @@ namespace TruthAndShadows.Interaction
         {
             if (Input.GetKeyDown(KeyCode.L))
             {
-                Debug.Log("Trying to reset...");
+                //Debug.Log("Trying to reset...");
                 // SceneManager.LoadSceneAsync(UseLoadingIntermediaryScene ? "Loading" : SceneManager.GetActiveScene().name);
                 LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
             }
@@ -236,7 +236,7 @@ namespace TruthAndShadows.Interaction
             }
             else
             {
-                Debug.Log(interactable == null ? "No interactable found for pickup" : $"Item cannot be picked up: {((MonoBehaviour)interactable).gameObject.name}");
+                //Debug.Log(interactable == null ? "No interactable found for pickup" : $"Item cannot be picked up: {((MonoBehaviour)interactable).gameObject.name}");
             }
         }
 
@@ -244,7 +244,7 @@ namespace TruthAndShadows.Interaction
         {
             if (pickedUpInteractable != null)
             {
-                Debug.Log($"Dropping: {((MonoBehaviour)pickedUpInteractable).gameObject.name}");
+                //Debug.Log($"Dropping: {((MonoBehaviour)pickedUpInteractable).gameObject.name}");
                 pickedUpInteractable.EndPickup();
                 pickedUpInteractable = null;
             }
