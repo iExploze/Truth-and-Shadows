@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlideCubeOnApproach : MonoBehaviour
+public class SlideDoorOnApproach : MonoBehaviour
 {
     public Transform player;
     public float triggerDistance = 4f;
@@ -18,11 +18,8 @@ public class SlideCubeOnApproach : MonoBehaviour
     {
         startPos = transform.position;
 
-        // Set target position based on direction
-        if (moveLeft)
-            targetPos = startPos + Vector3.left * moveDistance;
-        else
-            targetPos = startPos + Vector3.right * moveDistance;
+        Vector3 localDir = moveLeft ? -transform.right : transform.right;
+        targetPos = startPos + localDir * moveDistance;
     }
 
     void Update()
