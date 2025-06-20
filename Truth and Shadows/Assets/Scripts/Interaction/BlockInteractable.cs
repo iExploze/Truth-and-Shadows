@@ -160,7 +160,11 @@ namespace TruthAndShadows.Interaction
                     targetColor,
                     Time.deltaTime * colorChangeSpeed
                 );
-                cubeRenderer.material.color = currentColor;
+                var mats = cubeRenderer.materials;
+                if (mats.Length > 0) {
+                    mats[0].color = currentColor;
+                }
+                cubeRenderer.materials = mats;
 
                 if (
                     Vector3.Distance(
@@ -170,7 +174,10 @@ namespace TruthAndShadows.Interaction
                 )
                 {
                     currentColor = targetColor;
-                    cubeRenderer.material.color = currentColor;
+                    if (mats.Length > 0) {
+                        mats[0].color = currentColor;
+                    }
+                    cubeRenderer.materials = mats;
                     isColorChanging = false;
                 }
             }
