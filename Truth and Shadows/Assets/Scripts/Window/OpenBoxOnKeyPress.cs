@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class SlideWallOnKeyPress : MonoBehaviour
 {
@@ -9,10 +8,9 @@ public class SlideWallOnKeyPress : MonoBehaviour
     public Transform triggerZone;
     public float triggerRadius = 2f;
     public KeyCode interactionKey = KeyCode.F;
-    public TextMeshProUGUI promptTMP;
 
     [Header("Movement Settings")]
-    public Vector3 localMoveDirection = Vector3.right; // default: slide right
+    public Vector3 localMoveDirection = Vector3.right;
     public float moveDistance = 3f;
     public float moveSpeed = 2f;
 
@@ -21,13 +19,12 @@ public class SlideWallOnKeyPress : MonoBehaviour
     private Vector3 openPosition;
     private bool hasMoved = false;
 
+    public bool IsPlayerNearby { get; private set; } = false;
+
     void Start()
     {
         closedPosition = transform.position;
         openPosition = closedPosition + transform.TransformDirection(localMoveDirection.normalized) * moveDistance;
-
-        if (promptTMP != null)
-            promptTMP.gameObject.SetActive(false); // Hide prompt initially
     }
 
     void Update()
@@ -36,23 +33,15 @@ public class SlideWallOnKeyPress : MonoBehaviour
         if (player == null) return;
 
         float distance = Vector3.Distance(player.transform.position, triggerZone.position);
+        IsPlayerNearby = (distance < triggerRadius);
 
-        if (!hasMoved && distance < triggerRadius)
+        if (!hasMoved && IsPlayerNearby)
         {
-            if (promptTMP != null)
-                promptTMP.gameObject.SetActive(true);
-
             if (Input.GetKeyDown(interactionKey))
             {
                 isOpening = true;
                 hasMoved = true;
-                if (promptTMP != null)
-                    promptTMP.gameObject.SetActive(false); // Hide after pressing
             }
-        }
-        else if (!isOpening && promptTMP != null)
-        {
-            promptTMP.gameObject.SetActive(false);
         }
 
         if (isOpening)

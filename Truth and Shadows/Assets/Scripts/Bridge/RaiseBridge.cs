@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
 
 public class RaiseBridge : MonoBehaviour
 {
@@ -12,7 +10,6 @@ public class RaiseBridge : MonoBehaviour
     public KeyCode interactionKey = KeyCode.F;
     public float raiseAmount = 3f; // How high the bridge moves
     public float moveSpeed = 2f;
-    public TextMeshProUGUI promptTMP;
 
     private Vector3 startBridgePos;
     private Vector3 targetBridgePos;
@@ -26,9 +23,6 @@ public class RaiseBridge : MonoBehaviour
             startBridgePos = bridge.position;
             targetBridgePos = startBridgePos + Vector3.up * raiseAmount;
         }
-
-        if (promptTMP != null)
-            promptTMP.gameObject.SetActive(false);
     }
 
     void Update()
@@ -38,21 +32,10 @@ public class RaiseBridge : MonoBehaviour
 
         float distance = Vector3.Distance(player.position, transform.position);
 
-        if (!activated && distance < triggerRadius)
+        if (!activated && distance < triggerRadius && Input.GetKeyDown(interactionKey))
         {
-            if (promptTMP != null)
-                promptTMP.gameObject.SetActive(true);
-
-            if (Input.GetKeyDown(interactionKey))
-            {
-                activated = true;
-                isRaising = true;
-                promptTMP.gameObject.SetActive(false);
-            }
-        }
-        else if (!activated && promptTMP != null)
-        {
-            promptTMP.gameObject.SetActive(false);
+            activated = true;
+            isRaising = true;
         }
 
         if (isRaising)
