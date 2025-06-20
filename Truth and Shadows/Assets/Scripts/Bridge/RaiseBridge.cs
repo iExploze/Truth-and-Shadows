@@ -8,6 +8,8 @@ public class RaiseBridge : MonoBehaviour
     public Transform bridge; // The bridge to move
     public float triggerRadius = 2f;
     public KeyCode interactionKey = KeyCode.F;
+    public AudioSource switchAudioSource;
+    public AudioSource bridgeAudioSource;
     public float raiseAmount = 3f; // How high the bridge moves
     public float moveSpeed = 2f;
 
@@ -36,17 +38,30 @@ public class RaiseBridge : MonoBehaviour
         {
             activated = true;
             isRaising = true;
+            soundPlay();
         }
 
         if (isRaising)
         {
             bridge.position = Vector3.MoveTowards(bridge.position, targetBridgePos, moveSpeed * Time.deltaTime);
-
+         
             if (Vector3.Distance(bridge.position, targetBridgePos) < 0.01f)
             {
                 bridge.position = targetBridgePos;
                 isRaising = false;
             }
         }
+    }
+    void soundPlay()
+    {
+        if (bridgeAudioSource != null)
+        {
+            bridgeAudioSource.Play();
+        }
+        if (switchAudioSource != null)
+        {
+            switchAudioSource.Play();
+        }
+
     }
 }
