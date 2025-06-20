@@ -17,9 +17,9 @@ public class CollectShard : MonoBehaviour
     {
         // displayPoem = GetComponent<DisplayPoem>();
         winMenu.SetActive(false);
-        winnerText.text = "";
-        poemLine.text = "";
-        reset.text = "";
+        winnerText.text = "Level Complete";
+        poemLine.text = "You";
+        reset.text = "Reset Level";
     }
 
     private void OnTriggerEnter(Collider other)
@@ -28,9 +28,9 @@ public class CollectShard : MonoBehaviour
         {
             winSoundSource.Play();
             winMenu.SetActive(true);
-            winnerText.text = "LEVEL COMPLETE";
-            poemLine.text = "Lorem ipsum dolor sit amet consectetur.";
-            reset.text = "Press L to reset the level";   
+            winnerText.text = "LEVEL 1 COMPLETE";
+            poemLine.text = "He left me\r\nAnd I will never believe\r\nIt had to be that way";
+            reset.text = "Press L to restart the level";   
         }
     }
 }

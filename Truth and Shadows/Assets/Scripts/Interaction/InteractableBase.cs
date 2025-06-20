@@ -32,7 +32,7 @@ namespace TruthAndShadows.Interaction
         //For Object interactable Sound
         //Rashai was here
         public AudioSource source;
-        public AudioClip clip;
+        public AudioClip pickUpClip;
 
         [Header("Camera Settings")]
         [SerializeField]
@@ -142,7 +142,12 @@ namespace TruthAndShadows.Interaction
             originalRotation = transform.rotation;
             originalParent = transform.parent;
             //Rashai was here
-            source.PlayOneShot(clip);
+            source.PlayOneShot(pickUpClip);
+
+            if (isPickedUp && rigidBody.velocity.magnitude > 0)
+            {
+                source.Play();
+            }
 
             if (rigidBody != null)
             {
@@ -165,6 +170,8 @@ namespace TruthAndShadows.Interaction
 
             transform.SetParent(originalParent);
 
+            source.Stop();
+
             if (rigidBody != null)
             {
                 rigidBody.isKinematic = false;
@@ -175,6 +182,7 @@ namespace TruthAndShadows.Interaction
 
             Debug.Log($"Dropped: {gameObject.name}");
         }
+        
 
         protected virtual void Update()
         {

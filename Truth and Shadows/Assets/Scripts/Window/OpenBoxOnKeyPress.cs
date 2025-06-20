@@ -22,6 +22,8 @@ public class SlideWallOnKeyPress : MonoBehaviour
     [Header("Sound Settings")]
     public AudioSource switchSoundSource;
     public AudioSource wallSoundSource;
+    private float soundTime;
+    public float soundTimer;
 
     public bool IsPlayerNearby { get; private set; } = false;
 
@@ -45,6 +47,7 @@ public class SlideWallOnKeyPress : MonoBehaviour
             {
                 isOpening = true;
                 hasMoved = true;
+                soundTime = 0f;
                 soundPlay();
             }
         }
@@ -52,6 +55,15 @@ public class SlideWallOnKeyPress : MonoBehaviour
         if (isOpening)
         {
             transform.position = Vector3.MoveTowards(transform.position, openPosition, moveSpeed * Time.deltaTime);
+
+            soundTime += Time.deltaTime;
+
+            if (soundTime >= soundTimer)
+            {
+                wallSoundSource.Stop();
+                switchSoundSource.Stop();
+            }
+
         }
     }
 

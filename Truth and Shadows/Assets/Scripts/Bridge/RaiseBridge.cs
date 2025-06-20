@@ -17,6 +17,8 @@ public class RaiseBridge : MonoBehaviour
     private Vector3 targetBridgePos;
     private bool isRaising = false;
     private bool activated = false;
+    private float time;
+    public float timeLimit;
 
     void Start()
     {
@@ -28,30 +30,42 @@ public class RaiseBridge : MonoBehaviour
     }
 
     void Update()
+{
+    if (player == null || bridge == null)
+        return;
+
+    float distance = Vector3.Distance(player.position, transform.position);
+
+    if (!activated && distance < triggerRadius && Input.GetKeyDown(interactionKey))
     {
-        if (player == null || bridge == null)
-            return;
+        activated = true;
+        isRaising = true;
+        time = 0f;
+        soundPlay();
+    }
 
-        float distance = Vector3.Distance(player.position, transform.position);
+    if (isRaising)
+    {
+        bridge.position = Vector3.MoveTowards(bridge.position, targetBridgePos, moveSpeed * Time.deltaTime);
 
-        if (!activated && distance < triggerRadius && Input.GetKeyDown(interactionKey))
+        if (Vector3.Distance(bridge.position, targetBridgePos) < 0.01f)
         {
-            activated = true;
-            isRaising = true;
-            soundPlay();
+            bridge.position = targetBridgePos;
+            isRaising = false;
         }
 
-        if (isRaising)
+        time += Time.deltaTime;
+
+        if (time >= timeLimit)
         {
-            bridge.position = Vector3.MoveTowards(bridge.position, targetBridgePos, moveSpeed * Time.deltaTime);
-         
-            if (Vector3.Distance(bridge.position, targetBridgePos) < 0.01f)
-            {
-                bridge.position = targetBridgePos;
-                isRaising = false;
-            }
+            if (bridgeAudioSource.isPlaying)
+                bridgeAudioSource.Stop();
+            if (switchAudioSource.isPlaying)
+                switchAudioSource.Stop();
         }
     }
+}
+
     void soundPlay()
     {
         if (bridgeAudioSource != null)
