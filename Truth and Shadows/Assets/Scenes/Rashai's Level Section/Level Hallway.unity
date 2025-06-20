@@ -4592,7 +4592,7 @@ GameObject:
   - component: {fileID: 666324650}
   - component: {fileID: 666324654}
   m_Layer: 0
-  m_Name: Cube (27)
+  m_Name: SlidingWall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4697,11 +4697,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   triggerZone: {fileID: 791758994964340133}
-  triggerRadius: 2
+  triggerRadius: 3
   interactionKey: 102
   localMoveDirection: {x: 1, y: 0, z: 0}
   moveDistance: 5
   moveSpeed: 3
+  switchSoundSource: {fileID: 0}
+  wallSoundSource: {fileID: 0}
 --- !u!1 &668963287 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8221898279112206012, guid: 351d4bd8fcb2349dca7a6973c898570b, type: 3}
@@ -15844,6 +15846,8 @@ MonoBehaviour:
   bridge: {fileID: 0}
   triggerRadius: 2
   interactionKey: 102
+  switchAudioSource: {fileID: 0}
+  bridgeAudioSource: {fileID: 0}
   raiseAmount: 3
   moveSpeed: 2
 --- !u!64 &2127326431
@@ -23697,7 +23701,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8603760561410938863}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0.0000000101337845, y: 0.9727554, z: -0.23183396, w: -0.000000042520487}
   m_LocalPosition: {x: 0, y: 0, z: 0.0000076293945}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -26126,8 +26130,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 3918536474888844697}
   bridge: {fileID: 27063932}
-  triggerRadius: 2
+  triggerRadius: 3
   interactionKey: 102
+  switchAudioSource: {fileID: 0}
+  bridgeAudioSource: {fileID: 0}
   raiseAmount: 3
   moveSpeed: 2
 --- !u!1 &6441758446104845090
@@ -26371,7 +26377,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4669479079839562717}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0.0000000041034762, y: 0.99558383, z: -0.09387659, w: -0.00000004351835}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -27588,7 +27594,6 @@ MonoBehaviour:
   lockToCameraForward: 0
   turnSpeed: 10
   walkAudioSource: {fileID: 0}
-  audioClip: {fileID: 0}
   canMove: 0
 --- !u!1 &8128653626249208285
 GameObject:
@@ -27685,7 +27690,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 273470475786527810}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0.000000008579415, y: 0.9805491, z: -0.19627413, w: -0.000000042861164}
   m_LocalPosition: {x: 0, y: 0, z: 0.0000076293945}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
