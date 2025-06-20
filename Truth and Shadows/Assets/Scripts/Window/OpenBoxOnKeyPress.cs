@@ -19,6 +19,10 @@ public class SlideWallOnKeyPress : MonoBehaviour
     private Vector3 openPosition;
     private bool hasMoved = false;
 
+    [Header("Sound Settings")]
+    public AudioSource switchSoundSource;
+    public AudioSource wallSoundSource;
+
     public bool IsPlayerNearby { get; private set; } = false;
 
     void Start()
@@ -41,12 +45,26 @@ public class SlideWallOnKeyPress : MonoBehaviour
             {
                 isOpening = true;
                 hasMoved = true;
+                soundPlay();
             }
         }
 
         if (isOpening)
         {
             transform.position = Vector3.MoveTowards(transform.position, openPosition, moveSpeed * Time.deltaTime);
+        }
+    }
+
+    void soundPlay()
+    {
+        if (wallSoundSource != null)
+        {
+            wallSoundSource.Play();
+        }
+
+        if (switchSoundSource != null)
+        {
+            switchSoundSource.Play();
         }
     }
 }
