@@ -128,13 +128,13 @@ namespace TruthAndShadows.InputSystem
 
         #endregion
 
-        #region Camera/Look Input
-
-        /// <summary>
+        #region Camera/Look Input        /// <summary>
         /// Gets the look/camera rotation input (Mouse or Right Stick)
+        /// Always returns camera input regardless of other actions
         /// </summary>
         public Vector2 GetLookInput()
         {
+            // Always allow camera movement regardless of other actions
             if (_usingController)
             {
                 float x = Input.GetAxis("RightStickHorizontal") * rightStickSensitivity;

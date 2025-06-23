@@ -38,14 +38,15 @@ namespace Cinemachine.Examples
         {
 #if ENABLE_LEGACY_INPUT_MANAGER
             input.x = Input.GetAxis("Horizontal");
-            input.y = Input.GetAxis("Vertical");
-
-            // Check if spotlight aiming - block movement if rotating spotlight
+            input.y = Input.GetAxis("Vertical");            // Check if spotlight aiming - block movement if rotating spotlight
             if (InputManager.Instance != null && InputManager.Instance.GetRotateButton())
             {
                 // Set input to zero to prevent movement during spotlight aiming
                 input = Vector2.zero;
             }
+
+            // Don't block camera rotation regardless of movement
+            // Camera input is handled separately
 
             // set speed to both vertical and horizontal inputs
             if (useCharacterForward)

@@ -17,7 +17,7 @@ namespace TruthAndShadows.InputSystem
         public float controllerSensitivity = 1.0f;
 
         [SerializeField]
-        public bool invertY = false;
+        public bool invertY = true; // Default to inverted vertical for more natural camera feel
 
         [Header("Input Axes")]
         [SerializeField]
@@ -85,7 +85,7 @@ namespace TruthAndShadows.InputSystem
             }
 
             camera.m_XAxis.m_MaxSpeed = xSpeed;
-            camera.m_XAxis.m_AccelTime = 0.1f;
+            camera.m_XAxis.m_AccelTime = 0.05f; // Faster acceleration for more responsive feeling
             camera.m_XAxis.m_DecelTime = 0.1f;
 
             // Configure Y axis (vertical rotation)
@@ -99,14 +99,18 @@ namespace TruthAndShadows.InputSystem
             }
 
             camera.m_YAxis.m_MaxSpeed = ySpeed;
-            camera.m_YAxis.m_AccelTime = 0.1f;
+            camera.m_YAxis.m_AccelTime = 0.05f; // Faster acceleration for more responsive feeling
             camera.m_YAxis.m_DecelTime = 0.1f;
 
             // Configure inversions
             camera.m_XAxis.m_InvertInput = false;
             camera.m_YAxis.m_InvertInput = invertY;
 
-            Debug.Log($"Configured camera: {camera.name}");
+            // Disable any automatic recentering to give player full camera control
+            camera.m_RecenterToTargetHeading.m_enabled = false;
+            camera.m_YAxisRecentering.m_enabled = false;
+
+            Debug.Log($"Configured camera: {camera.name} - recentering disabled");
         }
 
         // Track input device state
@@ -148,22 +152,18 @@ namespace TruthAndShadows.InputSystem
             // Fallback to direct input check
             try
             {
-                // Check for controller input
-                if (
-                    Mathf.Abs(Input.GetAxis(horizontalAxisName)) > deadzone
-                    || Mathf.Abs(Input.GetAxis(verticalAxisName)) > deadzone
-                )
-                {
+                // Check for controller input - first check axis movement
+                if (Mathf.Abs(Input.GetAxis(horizontalAxisName)) > deadzone)
                     return true;
-                }
-
-                // Check for any joystick buttons
+                
+                if (Mathf.Abs(Input.GetAxis(verticalAxisName)) > deadzone)
+                    return true;
+                
+                // Then check for any joystick buttons
                 for (int i = 0; i < 20; i++)
                 {
-                    if (Input.GetKey((KeyCode)(KeyCode.JoystickButton0 + i)))
-                    {
+                    if (Input.GetKey(KeyCode.JoystickButton0 + i))
                         return true;
-                    }
                 }
             }
             catch (System.Exception)
@@ -172,6 +172,7 @@ namespace TruthAndShadows.InputSystem
                 return false;
             }
 
+            // If we get here, no controller input was detected
             return false;
         }
     }
