@@ -19,6 +19,7 @@
    - [InteractableBase Class](#interactablebase-class)
    - [Spotlight Pickup](#spotlight-pickup)
    - [Giant Cube Example](#giant-cube-example)
+   - [Environmental Interactables](#environmental-interactables)
 6. [Dog Hint System](#dog-hint-system)
    - [Setup Instructions](#dog-setup-instructions)
    - [Configuration Options](#dog-configuration-options)
@@ -246,6 +247,35 @@ Required components:
 - GiantCubeInteractable script
 - Rigidbody (optional, for physics)
 
+### Environmental Interactables
+
+The game includes switch-based interactables that affect the environment:
+
+#### Bridge Switch
+
+The BridgeSwitchInteractable allows players to activate bridges that raise up:
+
+1. Create a switch GameObject with a collider and add the BridgeSwitchInteractable script
+2. Assign the bridge Transform that should move upward
+3. Configure settings:
+   - **Raise Amount**: How high the bridge will raise (default: 3.0f)
+   - **Move Speed**: How fast the bridge moves (default: 2.0f)
+   - **Audio**: Optional audio for bridge movement with fade out
+
+#### Wall/Door Switch
+
+The WallSwitchInteractable allows players to slide walls or doors:
+
+1. Create a switch GameObject with a collider and add the WallSwitchInteractable script
+2. Assign the wall/door Transform that should slide
+3. Configure settings:
+   - **Move Direction**: Local direction the wall should slide (default: Vector3.right)
+   - **Move Distance**: How far the wall will slide (default: 3.0f)
+   - **Move Speed**: How fast the wall moves (default: 2.0f)
+   - **Audio**: Optional audio for wall movement with fade out
+
+Both switches support keyboard ('R' key) and controller (LB button) interaction.
+
 ---
 
 ## Dog Hint System
@@ -408,12 +438,33 @@ If keyboard inputs (R and F keys) or controller inputs are not working:
 
 ### Creating New Interactables
 
-To create a new interactable similar to the spotlight:
+To create a new interactable object in the game:
 
-1. Inherit from `InteractableBase`
-2. Implement the required methods (StartInteraction, EndInteraction, etc.)
-3. Configure pickup behavior if needed
-4. Set up proper camera references if your interactable uses a camera
+1. Create a new C# script that inherits from `InteractableBase`
+2. Implement the required interface methods:
+   - `StartInteraction()` - Called when the player presses the interact button while looking at the object
+   - `ContinueInteraction()` - Called every frame while the player continues to hold the interact button
+   - `EndInteraction()` - Called when the player releases the interact button
+
+3. In your `Start()` method:
+   - Always call `base.Start()` first
+   - Set `canBePickedUp = true/false` depending on if the object should be picked up or just activated
+
+4. Example implementations:
+   - `BridgeSwitchInteractable` - A switch that raises a bridge when activated
+   - `WallSwitchInteractable` - A switch that slides a wall/door when activated
+   - `BlockInteractable` - A simple object that can be picked up and manipulated
+
+5. Key considerations:
+   - For switch-type interactables, set `canBePickedUp = false`
+   - For objects that should move when activated, create a coroutine to handle the movement over time
+   - Add your own Inspector properties using [Header] and [SerializeField] attributes
+   - Use audio sources for interaction feedback
+
+6. Hook into the interaction system:
+   - All interactable objects are automatically detected by the `InteractionManager`
+   - Player will see a highlight/outline on interactable objects when in range
+   - Controller and keyboard controls are automatically supported through the InputManager
 
 ### Modifying Input System
 
