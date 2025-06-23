@@ -5044,7 +5044,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 666324649}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a29809cef9a851641a1ba1a6f1081ebf, type: 3}
   m_Name: 
@@ -28154,6 +28154,7 @@ GameObject:
   - component: {fileID: 6420566189943554953}
   - component: {fileID: 6420566189943554955}
   - component: {fileID: 6420566189943554954}
+  - component: {fileID: 6420566189943554956}
   m_Layer: 0
   m_Name: Switch2
   m_TagString: Untagged
@@ -28168,7 +28169,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6420566189943554952}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 61c38287609d1204ab48c17d4792f297, type: 3}
   m_Name: 
@@ -28374,6 +28375,38 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6420566189943554956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6420566189943554952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b40d2278ed67a874dadf6860b74e31b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requireContinuousHold: 0
+  interactionDistance: 2
+  useColliderBounds: 1
+  canBePickedUp: 0
+  movementStyle: 0
+  pickupRaiseAmount: 0.2
+  pickupSmoothness: 10
+  pickupMovementSmoothing: 15
+  source: {fileID: 0}
+  pickUpClip: {fileID: 0}
+  interactionCamera: {fileID: 0}
+  enableOutline: 1
+  outlineColor: {r: 0.2, g: 0.6, b: 1, a: 1}
+  outlineWidth: 10
+  outlineParticlePrefab: {fileID: 5397975728314071263, guid: 72f556a5681967b46a166b7ee4cef45a, type: 3}
+  bridge: {fileID: 27063932}
+  raiseAmount: 3
+  moveSpeed: 2
+  bridgeAudioSource: {fileID: 6420566189943554955}
+  audioFadeTime: 3
 --- !u!1 &6441758446104845090
 GameObject:
   m_ObjectHideFlags: 0
@@ -28581,6 +28614,7 @@ GameObject:
   - component: {fileID: 3547842199370981401}
   - component: {fileID: 2160290353052684329}
   - component: {fileID: 2256823593781279141}
+  - component: {fileID: 6617367549064079855}
   m_Layer: 0
   m_Name: Switch
   m_TagString: Untagged
