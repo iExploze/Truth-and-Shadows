@@ -1,4 +1,5 @@
 ﻿using Cinemachine.Examples;
+using TruthAndShadows.InputSystem;
 using UnityEngine;
 
 // WASD to move, Space to sprint
@@ -29,8 +30,16 @@ public class CharacterMovementNoCamera : MonoBehaviour
 
     void FixedUpdate()
     {
-#if ENABLE_LEGACY_INPUT_MANAGER
-        var input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+#if ENABLE_LEGACY_INPUT_MANAGER        // Get consistent movement input across devices (WASD or left stick)
+        var input = InputManager.Instance.GetMovementInput();
+
+        // Check if spotlight aiming - block movement if rotating spotlight
+        if (InputManager.Instance.GetRotateButton())
+        {
+            // Zero out input to prevent movement during spotlight aiming
+            input = Vector2.zero;
+        }
+
         var speed = input.y;
         speed = Mathf.Clamp(speed, -1f, 1f);
         speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref currentVelocity.y, Damping);
@@ -38,15 +47,20 @@ public class CharacterMovementNoCamera : MonoBehaviour
         anim.SetFloat("Direction", speed);
 
         // set sprinting
-        isSprinting = (Input.GetKey(sprintJoystick) || Input.GetKey(sprintKeyboard)) && speed > 0;
+        isSprinting = InputManager.Instance.IsSprintHeld() && speed > 0;
         anim.SetBool("isSprinting", isSprinting);
 
         // strafing
         currentStrafeSpeed = Mathf.SmoothDamp(
-            currentStrafeSpeed, input.x * StrafeSpeed, ref currentVelocity.x, Damping);
+            currentStrafeSpeed,
+            input.x * StrafeSpeed,
+            ref currentVelocity.x,
+            Damping
+        );
         transform.position += transform.TransformDirection(Vector3.right) * currentStrafeSpeed;
 
-        var rotInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+        // Get consistent camera input across devices (mouse or right stick)
+        var rotInput = InputManager.Instance.GetLookInput();
         var rot = transform.eulerAngles;
         rot.y += rotInput.x * TurnSpeed;
         transform.rotation = Quaternion.Euler(rot);

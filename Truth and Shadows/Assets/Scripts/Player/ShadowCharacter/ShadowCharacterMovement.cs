@@ -1,3 +1,4 @@
+using TruthAndShadows.InputSystem;
 using UnityEngine;
 
 namespace Cinemachine.Examples
@@ -19,21 +20,26 @@ namespace Cinemachine.Examples
         private Camera mainCamera;
         private float velocity;
 
-        public bool canMove = true;
+        public bool canMove = true; // Use this for initialization
 
-        // Use this for initialization
-        void Start()
+        private void Start()
         {
             anim = GetComponent<Animator>();
             mainCamera = Camera.main;
-        }
+        } // Update is called once per frame
 
-        // Update is called once per frame
-        void FixedUpdate()
+        private void FixedUpdate()
         {
 #if ENABLE_LEGACY_INPUT_MANAGER
             input.x = Input.GetAxis("Horizontal");
             input.y = Input.GetAxis("Vertical");
+
+            // Check if spotlight aiming - block movement if rotating spotlight
+            if (InputManager.Instance != null && InputManager.Instance.GetRotateButton())
+            {
+                // Zero out input to prevent movement during spotlight aiming
+                input = Vector2.zero;
+            }
 
             // set speed to both vertical and horizontal inputs
             if (useCharacterForward)
@@ -55,7 +61,8 @@ namespace Cinemachine.Examples
             // Update target direction relative to the camera view (or not if the Keep Direction option is checked)
             UpdateTargetDirection();
 
-            if (!canMove) return;
+            if (!canMove)
+                return;
 
             if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
             {

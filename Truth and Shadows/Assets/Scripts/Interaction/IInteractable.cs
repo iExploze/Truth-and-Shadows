@@ -11,7 +11,8 @@ namespace TruthAndShadows.Interaction
         bool RequiresContinuousInteraction { get; }
 
         // Optional camera that will be used during interaction
-        CinemachineVirtualCamera InteractionCamera { get; }
+        // Returns a Cinemachine camera component (can be any Cinemachine camera type)
+        Component InteractionCamera { get; }
 
         // Pickup functionality
         bool CanBePickedUp { get; }

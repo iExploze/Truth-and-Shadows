@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TruthAndShadows.InputSystem;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,29 +15,39 @@ namespace Controller
         [Header("Movement")]
         [SerializeField]
         private float m_WalkSpeed = 1f;
+
         [SerializeField]
         private float m_RunSpeed = 4f;
+
         [SerializeField, Range(0f, 360f)]
         private float m_RotateSpeed = 90f;
+
         [SerializeField]
         private Space m_Space = Space.Self;
+
         [SerializeField]
         private float m_JumpHeight = 5f;
 
         [Header("Animator")]
         [SerializeField]
         private string m_VerticalID = "Vert";
+
         [SerializeField]
-        private string m_StateID = "State";        [SerializeField]
+        private string m_StateID = "State";
+
+        [SerializeField]
         private LookWeight m_LookWeight = new(1f, 0.3f, 0.7f, 1f);
 
         [Header("Transform Sequences")]
         [SerializeField]
         private List<TransformSet> m_TransformSets = new List<TransformSet>();
+
         [SerializeField]
         private float m_MovementSpeed = 2f;
+
         [SerializeField]
         private float m_LookDuration = 1f;
+
         [SerializeField]
         private float m_FadeDuration = 1f;
 
@@ -68,16 +79,30 @@ namespace Controller
             m_WalkSpeed = Mathf.Max(m_WalkSpeed, 0f);
             m_RunSpeed = Mathf.Max(m_RunSpeed, m_WalkSpeed);
 
-            m_Movement?.SetStats(m_WalkSpeed / 3.6f, m_RunSpeed / 3.6f, m_RotateSpeed, m_JumpHeight, m_Space);
-        }        private void Awake()
+            m_Movement?.SetStats(
+                m_WalkSpeed / 3.6f,
+                m_RunSpeed / 3.6f,
+                m_RotateSpeed,
+                m_Space
+            );
+        }
+
+        private void Awake()
         {
             m_Transform = transform;
             m_Controller = GetComponent<CharacterController>();
             m_Animator = GetComponent<Animator>();
 
-            m_Movement = new MovementHandler(m_Controller, m_Transform, m_WalkSpeed, m_RunSpeed, m_RotateSpeed, m_JumpHeight, m_Space);
+            m_Movement = new MovementHandler(
+                m_Controller,
+                m_Transform,
+                m_WalkSpeed,
+                m_RunSpeed,
+                m_RotateSpeed,
+                m_Space
+            );
             m_Animation = new AnimationHandler(m_Animator, m_VerticalID, m_StateID);
-            
+
             // Setup rendering for fade effects
             m_Renderers = GetComponentsInChildren<Renderer>();
             m_OriginalMaterials = new Material[m_Renderers.Length];
@@ -86,18 +111,32 @@ namespace Controller
                 m_OriginalMaterials[i] = m_Renderers[i].material;
             }
             SetAlpha(0f); // Start invisible
-        }        private void Update()
-        {
-            // Check for K key to start sequence
-            if (Input.GetKeyDown(KeyCode.K) && !m_IsInSequence)
+        }
+
+        private void Update()
+        { 
+            // Check for hint button (K key or controller button: B on Xbox, Circle on PS, A on Switch Pro) to start sequence
+            if (
+                (
+                    InputManager.Instance != null && InputManager.Instance.GetHintButtonDown()
+                    || (InputManager.Instance == null && Input.GetKeyDown(KeyCode.K))
+                ) && !m_IsInSequence
+            )
             {
                 StartTransformSequence();
-            }
-
-            // Only handle normal movement when not in sequence
+                Debug.Log("Starting dog hint sequence");
+            }            // Only handle normal movement when not in sequence
             if (!m_IsInSequence)
             {
-                m_Movement.Move(Time.deltaTime, in m_Axis, in m_Target, m_IsRun, m_IsMoving, out var animAxis, out var isAir);
+                m_Movement.Move(
+                    Time.deltaTime,
+                    in m_Axis,
+                    in m_Target,
+                    m_IsRun,
+                    m_IsMoving,
+                    out var animAxis,
+                    out var isAir
+                );
                 m_Animation.Animate(in animAxis, m_IsRun ? 1f : 0f, Time.deltaTime);
             }
         }
@@ -127,7 +166,7 @@ namespace Controller
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            if(hit.normal.y > m_Controller.stepOffset)
+            if (hit.normal.y > m_Controller.stepOffset)
             {
                 m_Movement.SetSurface(hit.normal);
             }
@@ -151,7 +190,7 @@ namespace Controller
         }
 
         #region Handlers
-        private class MovementHandler
+        sealed class MovementHandler
         {
             private readonly CharacterController m_Controller;
             private readonly Transform m_Transform;
@@ -173,7 +212,14 @@ namespace Controller
             private float m_jumpTimer;
             private Vector3 m_LastForward;
 
-            public MovementHandler(CharacterController controller, Transform transform, float walkSpeed, float runSpeed, float rotateSpeed, float jumpHeight, Space space)
+            public MovementHandler(
+                CharacterController controller,
+                Transform transform,
+                float walkSpeed,
+                float runSpeed,
+                float rotateSpeed,
+                Space space
+            )
             {
                 m_Controller = controller;
                 m_Transform = transform;
@@ -185,7 +231,7 @@ namespace Controller
                 m_Space = space;
             }
 
-            public void SetStats(float walkSpeed, float runSpeed, float rotateSpeed, float jumpHeight, Space space)
+            public void SetStats(float walkSpeed, float runSpeed, float rotateSpeed, Space space)
             {
                 m_WalkSpeed = walkSpeed;
                 m_RunSpeed = runSpeed;
@@ -199,13 +245,22 @@ namespace Controller
                 m_Normal = normal;
             }
 
-            public void Move(float deltaTime, in Vector2 axis, in Vector3 target, bool isRun, bool isMoving, out Vector2 animAxis, out bool isAir)
+            public void Move(
+                float deltaTime,
+                in Vector2 axis,
+                in Vector3 target,
+                bool isRun,
+                bool isMoving,
+                out Vector2 animAxis,
+                out bool isAir
+            )
             {
                 var cameraLook = Vector3.Normalize(target - m_Transform.position);
                 var targetForward = m_LastForward;
 
                 ConvertMovement(in axis, in cameraLook, out var movement);
-                if (movement.sqrMagnitude > 0.5f) {
+                if (movement.sqrMagnitude > 0.5f)
+                {
                     m_LastForward = Vector3.Normalize(movement);
                 }
 
@@ -217,7 +272,11 @@ namespace Controller
                 GenAnimationAxis(in movement, out animAxis);
             }
 
-            private void ConvertMovement(in Vector2 axis, in Vector3 targetForward, out Vector3 movement)
+            private void ConvertMovement(
+                in Vector2 axis,
+                in Vector3 targetForward,
+                out Vector3 movement
+            )
             {
                 Vector3 forward;
                 Vector3 right;
@@ -261,24 +320,33 @@ namespace Controller
                 isAir = true;
 
                 m_GravityAcelleration += Physics.gravity * deltaTime;
-                return;
             }
 
             private void GenAnimationAxis(in Vector3 movement, out Vector2 animAxis)
             {
-                if(m_Space == Space.Self)
+                if (m_Space == Space.Self)
                 {
-                    animAxis = new Vector2(Vector3.Dot(movement, m_Transform.right), Vector3.Dot(movement, m_Transform.forward));
+                    animAxis = new Vector2(
+                        Vector3.Dot(movement, m_Transform.right),
+                        Vector3.Dot(movement, m_Transform.forward)
+                    );
                 }
                 else
                 {
-                    animAxis = new Vector2(Vector3.Dot(movement, Vector3.right), Vector3.Dot(movement, Vector3.forward));
+                    animAxis = new Vector2(
+                        Vector3.Dot(movement, Vector3.right),
+                        Vector3.Dot(movement, Vector3.forward)
+                    );
                 }
             }
 
             private void Turn(in Vector3 targetForward, bool isMoving)
             {
-                var angle = Vector3.SignedAngle(m_Transform.forward, Vector3.ProjectOnPlane(targetForward, Vector3.up), Vector3.up);
+                var angle = Vector3.SignedAngle(
+                    m_Transform.forward,
+                    Vector3.ProjectOnPlane(targetForward, Vector3.up),
+                    Vector3.up
+                );
 
                 if (!m_IsRotating)
                 {
@@ -296,7 +364,7 @@ namespace Controller
 
             private void UpdateRotation(float deltaTime)
             {
-                if(!m_IsRotating)
+                if (!m_IsRotating)
                 {
                     return;
                 }
@@ -316,7 +384,7 @@ namespace Controller
             }
         }
 
-        private class AnimationHandler
+        sealed class AnimationHandler
         {
             private readonly Animator m_Animator;
             private readonly string m_VerticalID;
@@ -339,14 +407,24 @@ namespace Controller
                 m_Animator.SetFloat(m_VerticalID, m_FlowAxis.magnitude);
                 m_Animator.SetFloat(m_StateID, Mathf.Clamp01(m_FlowState));
 
-                m_FlowAxis = Vector2.ClampMagnitude(m_FlowAxis + k_InputFlow * deltaTime * (axis - m_FlowAxis).normalized, 1f);
-                m_FlowState = Mathf.Clamp01(m_FlowState + k_InputFlow * deltaTime * Mathf.Sign(state - m_FlowState));
+                m_FlowAxis = Vector2.ClampMagnitude(
+                    m_FlowAxis + k_InputFlow * deltaTime * (axis - m_FlowAxis).normalized,
+                    1f
+                );
+                m_FlowState = Mathf.Clamp01(
+                    m_FlowState + k_InputFlow * deltaTime * Mathf.Sign(state - m_FlowState)
+                );
             }
 
             public void AnimateIK(in Vector3 target, in LookWeight lookWeight)
             {
                 m_Animator.SetLookAtPosition(target);
-                m_Animator.SetLookAtWeight(lookWeight.weight, lookWeight.body, lookWeight.head, lookWeight.eyes);
+                m_Animator.SetLookAtWeight(
+                    lookWeight.weight,
+                    lookWeight.body,
+                    lookWeight.head,
+                    lookWeight.eyes
+                );
             }
         }
         #endregion
@@ -366,13 +444,15 @@ namespace Controller
             }
 
             StartCoroutine(ExecuteTransformSequence(m_TransformSets[m_CurrentSetIndex]));
-            
+
             // Only increment if we haven't reached the last set
             if (m_CurrentSetIndex < m_TransformSets.Count - 1)
             {
                 m_CurrentSetIndex++;
             }
-        }        private IEnumerator ExecuteTransformSequence(TransformSet transformSet)
+        }
+
+        private IEnumerator ExecuteTransformSequence(TransformSet transformSet)
         {
             m_IsInSequence = true;
 
@@ -381,7 +461,7 @@ namespace Controller
 
             // Always position the creature at the first movement position before making visible
             Transform firstMovementTransform = null;
-            
+
             // Find the first movement position in this set
             for (int i = 0; i < transformSet.transforms.Count; i++)
             {
@@ -391,22 +471,24 @@ namespace Controller
                     firstMovementTransform = transformData.transform;
                     break;
                 }
-            }            // If there's a movement position, teleport there while invisible
+            } // If there's a movement position, teleport there while invisible
             if (firstMovementTransform != null)
             {
-                Debug.Log($"Teleporting to first position: {firstMovementTransform.name} at {firstMovementTransform.position}");
-                
+                Debug.Log(
+                    $"Teleporting to first position: {firstMovementTransform.name} at {firstMovementTransform.position}"
+                );
+
                 // Disable CharacterController temporarily to ensure position change takes effect
                 m_Controller.enabled = false;
                 m_Transform.position = firstMovementTransform.position;
                 m_Controller.enabled = true;
-                
+
                 Debug.Log($"Position after teleport: {m_Transform.position}");
             }
             else
             {
                 Debug.LogWarning("No movement transforms found in this set!");
-            }            // Wait a frame to ensure position is set
+            } // Wait a frame to ensure position is set
             yield return null;
 
             // Now fade in at the correct location
@@ -427,7 +509,6 @@ namespace Controller
                     {
                         // Skip the first movement since we already teleported there
                         isFirstMovement = false;
-                        continue;
                     }
                     else
                     {
@@ -438,7 +519,9 @@ namespace Controller
                 else if (transformData.type == TransformType.Look)
                 {
                     // Look at the transform
-                    yield return StartCoroutine(LookAtTransform(transformData.transform, m_LookDuration));
+                    yield return StartCoroutine(
+                        LookAtTransform(transformData.transform, m_LookDuration)
+                    );
                 }
             }
 
@@ -518,7 +601,7 @@ namespace Controller
             {
                 elapsed += Time.deltaTime;
                 float progress = elapsed / blendDuration;
-                
+
                 // Blend to head look
                 m_LookWeight = LerpLookWeight(originalLookWeight, headLookWeight, progress);
                 yield return null;
@@ -535,7 +618,7 @@ namespace Controller
             {
                 elapsed += Time.deltaTime;
                 float progress = elapsed / blendDuration;
-                
+
                 m_LookWeight = LerpLookWeight(headLookWeight, originalLookWeight, progress);
                 yield return null;
             }
@@ -578,7 +661,7 @@ namespace Controller
                 if (m_Renderers[i] != null && m_OriginalMaterials[i] != null)
                 {
                     Material mat = m_Renderers[i].material;
-                    
+
                     // Try different transparency properties based on shader type
                     if (mat.HasProperty("_Color"))
                     {
@@ -586,20 +669,23 @@ namespace Controller
                         color.a = alpha;
                         mat.color = color;
                     }
-                    
+
                     // For Standard shader transparency
                     if (mat.HasProperty("_Mode"))
                     {
                         mat.SetFloat("_Mode", 3); // Transparent mode
                         mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                        mat.SetInt(
+                            "_DstBlend",
+                            (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha
+                        );
                         mat.SetInt("_ZWrite", 0);
                         mat.DisableKeyword("_ALPHATEST_ON");
                         mat.EnableKeyword("_ALPHABLEND_ON");
                         mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                         mat.renderQueue = 3000;
                     }
-                    
+
                     // For URP/Built-in renderer
                     if (mat.HasProperty("_BaseColor"))
                     {
@@ -607,7 +693,7 @@ namespace Controller
                         baseColor.a = alpha;
                         mat.SetColor("_BaseColor", baseColor);
                     }
-                    
+
                     // For legacy shaders
                     if (mat.HasProperty("_MainTex"))
                     {
