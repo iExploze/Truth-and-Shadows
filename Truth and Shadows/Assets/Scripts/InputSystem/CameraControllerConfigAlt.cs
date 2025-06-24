@@ -213,7 +213,6 @@ namespace TruthAndShadows.InputSystem
 
         private bool IsUsingController()
         {
-            float deadzone = 0.2f;
 
             // Check if InputManager exists and use its detection
             if (InputManager.Instance != null)
@@ -221,30 +220,9 @@ namespace TruthAndShadows.InputSystem
                 return InputManager.Instance.UsingController;
             }
 
-            // Fallback to direct input check
-            try
-            {
-                // Check for controller input - first check axis movement
-                if (Mathf.Abs(Input.GetAxis(horizontalAxisName)) > deadzone)
-                    return true;
-
-                if (Mathf.Abs(Input.GetAxis(verticalAxisName)) > deadzone)
-                    return true;
-
-                // Then check for any joystick buttons
-                for (int i = 0; i < 20; i++)
-                {
-                    if (Input.GetKey(KeyCode.JoystickButton0 + i))
-                        return true;
-                }
-            }
-            catch (System.Exception)
-            {
-                // Input axes probably don't exist, assume mouse/keyboard
-                return false;
-            }
-
-            // If we get here, no controller input was detected
+            Debug.LogWarning(
+                "InputManager not found! Interaction may not work correctly without it."
+            );
             return false;
         }
 
@@ -259,35 +237,16 @@ namespace TruthAndShadows.InputSystem
                 // Make sure we have cameras to work with
                 ConfigureAllCameras();
                 return;
-            } // Check if we're using a pickup object (F key held)
-            bool isPickupActive =
-                Input.GetKey(KeyCode.F)
-                || (InputManager.Instance != null && InputManager.Instance.PickupHeld);
-            if (!isPickupActive)
-                return; // CRITICAL FIX: Get input values that are guaranteed to work during pickup
+            } 
+
             Vector2 lookInput = Vector2.zero;
-            bool usingInputManagerValues = false; // For most reliable results, check both input sources
+
             if (InputManager.Instance != null)
             {
                 // Use direct access to the InputManager's public property
                 lookInput = InputManager.Instance.PickupCameraInput;
-
-                // Check if InputManager provided usable values
-                if (lookInput.sqrMagnitude > 0.01f)
-                {
-                    usingInputManagerValues = true;
-                    // Force very high sensitivity during pickup for best results
-                    lookInput *= 1.25f;
-
-                    if (Time.frameCount % 60 == 0)
-                    {
-                        Debug.Log($"[CAMERA FIX] Using InputManager pickup values: {lookInput}");
-                    }
-                }
             }
-
-            // Fallback to direct mouse delta tracking if InputManager didn't work
-            if (!usingInputManagerValues)
+            else
             {
                 // Get direct mouse delta as primary input source
                 Vector2 mouseDelta = GetMouseDeltaPosition();
@@ -328,15 +287,7 @@ namespace TruthAndShadows.InputSystem
                 return;
 
             // Determine if we're using controller or mouse based on input type
-            bool useController =
-                autoDetectController
-                && (
-                    (InputManager.Instance != null && InputManager.Instance.UsingController)
-                    || (
-                        !usingInputManagerValues
-                        && Mathf.Abs(Input.GetAxisRaw("RightStickHorizontal")) > 0.2f
-                    )
-                );
+            bool useController = IsUsingController();
 
             // Apply input directly to cameras during pickup
             foreach (var camera in cameras)
@@ -351,13 +302,13 @@ namespace TruthAndShadows.InputSystem
                 if (useController)
                 {
                     // Apply controller input with appropriate sensitivity
-                    float xSpeed = controllerSensitivity * 150f * Time.deltaTime;
-                    float ySpeed = controllerSensitivity * 2f * Time.deltaTime;
+                float xSpeed = controllerSensitivity * 150f * Time.deltaTime;
+                float ySpeed = controllerSensitivity * 2f * Time.deltaTime;
 
-                    camera.m_XAxis.m_InputAxisValue = lookInput.x * xSpeed;
-                    camera.m_YAxis.m_InputAxisValue = invertY
-                        ? -lookInput.y * ySpeed
-                        : lookInput.y * ySpeed;
+                camera.m_XAxis.m_InputAxisValue = lookInput.x * xSpeed;
+                camera.m_YAxis.m_InputAxisValue = invertY
+                    ? -lookInput.y * ySpeed
+                    : lookInput.y * ySpeed;
                 }
                 else
                 {

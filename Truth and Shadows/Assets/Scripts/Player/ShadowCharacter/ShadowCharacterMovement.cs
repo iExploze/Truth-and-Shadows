@@ -35,7 +35,7 @@ namespace Cinemachine.Examples
             input.y = Input.GetAxis("Vertical");
 
             // Check if spotlight aiming - block movement if rotating spotlight
-            if (InputManager.Instance != null && InputManager.Instance.GetRotateButton())
+            if (InputManager.Instance != null && InputManager.Instance.RotateHeld)
             {
                 // Zero out input to prevent movement during spotlight aiming
                 input = Vector2.zero;

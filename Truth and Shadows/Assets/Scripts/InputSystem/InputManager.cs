@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using Input = UnityEngine.Input;
 
@@ -55,32 +56,33 @@ namespace TruthAndShadows.InputSystem
         private bool invertRightStickY = false;
 
         #region Controller Mappings
-        // Interaction button (left bumper/shoulder button - matches R key functionality)
-        private readonly KeyCode[] interactButtons = new KeyCode[]
+        private static readonly KeyCode[] interactButtons = new KeyCode[]
         {
+            KeyCode.R, // Keyboard
             KeyCode.JoystickButton4, // Xbox LB, PS L1, Switch L
         };
 
-        // Pickup button (right bumper/shoulder button - matches F key functionality)W
         private readonly KeyCode[] pickupButtons = new KeyCode[]
         {
+            KeyCode.F, // Keyboard
             KeyCode.JoystickButton5, // Xbox RB, PS R1, Switch R
         };
 
-        // This should match interactButtons for consistency
         private readonly KeyCode[] rotateButtons = new KeyCode[]
         {
+            KeyCode.R, // Keyboard
             KeyCode.JoystickButton4, // Xbox LB, PS L1, Switch L
         };
 
         private readonly KeyCode[] resetButtons = new KeyCode[]
         {
+            KeyCode.L, // Keyboard
             KeyCode.JoystickButton6, // Xbox Back/View, PS Share, Switch -
         };
 
-        // Hint button (rightmost face button - matches K key functionality)
         private readonly KeyCode[] hintButtons = new KeyCode[]
         {
+            KeyCode.K, // Keyboard
             KeyCode.JoystickButton0, // Xbox B, PS Circle, Switch A
         };
         #endregion
@@ -159,11 +161,7 @@ namespace TruthAndShadows.InputSystem
             // Handle camera movement
             if (allowCameraLook)
             {
-                // Get regular look input
                 LookInput = GetLookInputInternal();
-
-                // During pickup/interaction, use specialized camera input
-                PickupCameraInput = GetPickupCameraInputInternal();
             }
             else
             {
@@ -189,16 +187,12 @@ namespace TruthAndShadows.InputSystem
             HintPressed = HintHeld && !_prevHintHeld;
             HintReleased = !HintHeld && _prevHintHeld;
             _prevHintHeld = HintHeld;
-
-            // Force Unity to process all input axes to prevent potential input blocking
-            // This helps ensure multiple inputs can be processed simultaneously
-            ForceProcessAllInputAxes();
         }
 
         /// <summary>
         /// Detects if a controller is connected
         /// </summary>
-        public bool IsControllerConnected()
+        public static bool IsControllerConnected()
         {
             return Input.GetJoystickNames().Length > 0
                 && !string.IsNullOrEmpty(Input.GetJoystickNames()[0]);
@@ -209,41 +203,23 @@ namespace TruthAndShadows.InputSystem
         /// </summary>
         private bool HasControllerInput()
         {
-            // Check joystick axes
-            if (
-                Mathf.Abs(Input.GetAxis("Horizontal")) > joystickDeadzone
-                || Mathf.Abs(Input.GetAxis("Vertical")) > joystickDeadzone
-                || Mathf.Abs(Input.GetAxis("RightStickHorizontal")) > joystickDeadzone
-                || Mathf.Abs(Input.GetAxis("RightStickVertical")) > joystickDeadzone
-            )
-            {
-                return true;
-            }
-
-            // Check any joystick buttons
-            for (int i = 0; i < 20; i++)
-            {
-                if (Input.GetKey((KeyCode)(KeyCode.JoystickButton0 + i)))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            // Only consider right stick movement as controller input
+            return Mathf.Abs(Input.GetAxis("RightStickHorizontal")) > joystickDeadzone
+                || Mathf.Abs(Input.GetAxis("RightStickVertical")) > joystickDeadzone;
         }
 
         #region Movement Input Internals
-        private Vector2 GetMovementInputInternal()
+        private static Vector2 GetMovementInputInternal()
         {
             return new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         }
 
-        private Vector2 GetMovementInputRawInternal()
+        private static Vector2 GetMovementInputRawInternal()
         {
             return new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         }
 
-        private bool IsSprintHeldInternal()
+        private static bool IsSprintHeldInternal()
         {
             return Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.JoystickButton2); // Xbox X, PS Square, Switch Y
         }
@@ -304,267 +280,39 @@ namespace TruthAndShadows.InputSystem
 
                 return new Vector2(mouseX, mouseY);
             }
-        }        /// <summary>
-        /// Makes sure Unity processes important input axes to prevent input blocking issues.
-        /// </summary>
-        private void ForceProcessAllInputAxes()
-        {
-            // Force Unity to read these axes to ensure they're active
-            // The values need to be read but don't need to be stored
-            Input.GetAxis("Mouse X");
-            Input.GetAxis("Mouse Y");
-            Input.GetAxis("Horizontal");
-            Input.GetAxis("Vertical");
         }
         #endregion
 
         #region Interaction Input Internals
-        private bool GetInteractButtonDownInternal()
-        {
-            // Simply report if the interact button is pressed, regardless of other inputs
-            if (Input.GetKeyDown(KeyCode.R))
-                return true;
 
-            foreach (KeyCode key in interactButtons)
-            {
-                if (Input.GetKeyDown(key))
-                    return true;
-            }
+        private static bool AnyKeyDown(KeyCode[] keys) => keys.Any(Input.GetKeyDown);
 
-            return false;
-        }
+        private static bool AnyKey(KeyCode[] keys) => keys.Any(Input.GetKey);
 
-        private bool GetInteractButtonInternal()
-        {
-            // Simply report if the interact button is held, regardless of other inputs
-            if (Input.GetKey(KeyCode.R))
-                return true;
+        private static bool AnyKeyUp(KeyCode[] keys) => keys.Any(Input.GetKeyUp);
 
-            foreach (KeyCode key in interactButtons)
-            {
-                if (Input.GetKey(key))
-                    return true;
-            }
+        private static bool GetInteractButtonDownInternal() => AnyKeyDown(interactButtons);
 
-            return false;
-        }
+        private static bool GetInteractButtonInternal() => AnyKey(interactButtons);
 
-        private bool GetInteractButtonUpInternal()
-        {
-            // Simply report if the interact button is released, regardless of other inputs
-            if (Input.GetKeyUp(KeyCode.R))
-                return true;
+        private static bool GetInteractButtonUpInternal() => AnyKeyUp(interactButtons);
 
-            foreach (KeyCode key in interactButtons)
-            {
-                if (Input.GetKeyUp(key))
-                    return true;
-            }
+        private bool GetPickupButtonDownInternal() => AnyKeyDown(pickupButtons);
 
-            return false;
-        }
+        private bool GetPickupButtonInternal() => AnyKey(pickupButtons);
 
-        private bool GetPickupButtonDownInternal()
-        {
-            // Simply report if the pickup button is pressed, regardless of other inputs
-            if (Input.GetKeyDown(KeyCode.F))
-                return true;
+        private bool GetPickupButtonUpInternal() => AnyKeyUp(pickupButtons);
 
-            foreach (KeyCode key in pickupButtons)
-            {
-                if (Input.GetKeyDown(key))
-                    return true;
-            }
+        private bool GetRotateButtonInternal() => AnyKey(rotateButtons);
 
-            return false;
-        }
+        private bool GetResetButtonDownInternal() => AnyKeyDown(resetButtons);
 
-        private bool GetPickupButtonInternal()
-        {
-            // Simply report if the pickup button is held, regardless of other inputs
-            if (Input.GetKey(KeyCode.F))
-                return true;
+        private bool GetHintButtonDownInternal() => AnyKeyDown(hintButtons);
 
-            foreach (KeyCode key in pickupButtons)
-            {
-                if (Input.GetKey(key))
-                    return true;
-            }
+        private bool GetHintButtonInternal() => AnyKey(hintButtons);
 
-            return false;
-        }
+        private bool GetHintButtonUpInternal() => AnyKeyUp(hintButtons);
 
-        private bool GetPickupButtonUpInternal()
-        {
-            // Simply report if the pickup button is released, regardless of other inputs
-            if (Input.GetKeyUp(KeyCode.F))
-                return true;
-
-            foreach (KeyCode key in pickupButtons)
-            {
-                if (Input.GetKeyUp(key))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool GetRotateButtonInternal()
-        {
-            // Simply report if the rotate button is held, regardless of other inputs
-            if (Input.GetKey(KeyCode.R))
-                return true;
-
-            foreach (KeyCode key in rotateButtons)
-            {
-                if (Input.GetKey(key))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool GetResetButtonDownInternal()
-        {
-            // Simply report if the reset button is pressed
-            if (Input.GetKeyDown(KeyCode.L))
-                return true;
-
-            foreach (KeyCode key in resetButtons)
-            {
-                if (Input.GetKeyDown(key))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool GetHintButtonDownInternal()
-        {
-            // Simply report if the hint button is pressed
-            if (Input.GetKeyDown(KeyCode.K))
-                return true;
-
-            foreach (KeyCode key in hintButtons)
-            {
-                if (Input.GetKeyDown(key))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool GetHintButtonInternal()
-        {
-            // Simply report if the hint button is held
-            if (Input.GetKey(KeyCode.K))
-                return true;
-
-            foreach (KeyCode key in hintButtons)
-            {
-                if (Input.GetKey(key))
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool GetHintButtonUpInternal()
-        {
-            // Simply report if the hint button is released
-            if (Input.GetKeyUp(KeyCode.K))
-                return true;
-
-            foreach (KeyCode key in hintButtons)
-            {
-                if (Input.GetKeyUp(key))
-                    return true;
-            }
-
-            return false;
-        }
-        #endregion
-
-        #region Public API - Legacy Functions for Backwards Compatibility
-        // These public methods are maintained for compatibility with existing code
-
-        /// <summary>
-        /// Gets the current movement vector.
-        /// </summary>
-        public Vector2 GetMovementInput() => MoveInput;
-
-        /// <summary>
-        /// Gets the raw (non-smoothed) movement vector.
-        /// </summary>
-        public Vector2 GetMovementInputRaw() => MoveInputRaw;
-
-        /// <summary>
-        /// Returns true if the sprint button is held.
-        /// </summary>
-        public bool IsSprintHeld() => IsRunning;
-
-        /// <summary>
-        /// Gets the look/camera rotation input (Mouse or Right Stick)
-        /// </summary>
-        public Vector2 GetLookInput() => LookInput;
-
-        /// <summary>
-        /// Gets look input that bypasses any potential input blocking during pickup.
-        /// This method ensures camera control works properly during pickup actions.
-        /// </summary>
-        public Vector2 GetPickupCameraInput() => PickupCameraInput;
-
-        /// <summary>
-        /// Returns true during the frame the interact button is pressed
-        /// </summary>
-        public bool GetInteractButtonDown() => InteractPressed;
-
-        /// <summary>
-        /// Returns true while the interact button is held
-        /// </summary>
-        public bool GetInteractButton() => InteractHeld;
-
-        /// <summary>
-        /// Returns true during the frame the interact button is released
-        /// </summary>
-        public bool GetInteractButtonUp() => InteractReleased;
-
-        /// <summary>
-        /// Returns true during the frame the pickup button is pressed
-        /// </summary>
-        public bool GetPickupButtonDown() => PickupPressed;
-
-        /// <summary>
-        /// Returns true while the pickup button is held
-        /// </summary>
-        public bool GetPickupButton() => PickupHeld;
-
-        /// <summary>
-        /// Returns true during the frame the pickup button is released
-        /// </summary>
-        /// <summary>
-        /// Returns true during the frame the reset button is pressed
-        /// </summary>
-        public bool GetResetButtonDown() => ResetPressed;
-
-        /// <summary>
-        /// Returns true during the frame the hint button is pressed
-        /// </summary>
-        public bool GetHintButtonDown() => HintPressed;
-
-        /// <summary>
-        /// Returns true while the hint button is held
-        /// </summary>
-        public bool GetHintButton() => HintHeld;
-
-        /// <summary>
-        /// Returns true during the frame the hint button is released
-        /// </summary>
-        public bool GetHintButtonUp() => HintReleased;
-
-        /// <summary>
-        /// Returns true while the rotate button is held        /// </summary>
-        public bool GetRotateButton() => RotateHeld;
         #endregion
     }
 }

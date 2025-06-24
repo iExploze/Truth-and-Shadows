@@ -1137,7 +1137,7 @@ namespace TruthAndShadows.Interaction
             {
                 // Calculate position relative to player's forward direction, accounting for the pickup raise amount
                 relativePosition =
-                    playerTransform.forward * 2f + Vector3.up * (1f + pickupRaiseAmount);
+                    playerTransform.forward * 1.3f + Vector3.up * pickupRaiseAmount;
                 hasCalculatedRelativePosition = true;
             }
 

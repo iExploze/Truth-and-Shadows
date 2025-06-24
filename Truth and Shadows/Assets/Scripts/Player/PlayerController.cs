@@ -132,9 +132,6 @@ namespace TruthAndShadows.Player
             // Process movement based on current state
             ProcessMovement();
 
-            // Process camera look based on current state
-            ProcessCameraLook();
-
             // Process interactions based on current state
             ProcessInteractions();
 
@@ -356,71 +353,6 @@ namespace TruthAndShadows.Player
                     walkAudioSource.Stop();
                 }
             }
-        }
-        #endregion
-
-        #region Camera Processing        
-        /// <summary>
-        /// Process camera look input based on current state
-        /// </summary>
-        private void ProcessCameraLook()
-        {
-            // Camera rotation is typically handled by a dedicated camera controller
-            // This is a placeholder that can be expanded as needed
-
-            // Choose appropriate camera input based on state
-            // The InputManager already applies permissions from InputContextProvider
-            Vector2 lookInput;
-
-            // Always prefer PickupCameraInput during special states that need more responsive camera control
-            bool isSpecialCameraState =
-                _currentState == PlayerState.Pickup
-                || (_currentState == PlayerState.Interacting && InputManager.Instance.IsRunning);
-
-            if (isSpecialCameraState)
-            {
-                // Use the more direct and responsive camera input
-                lookInput = InputManager.Instance.PickupCameraInput;
-
-                // If we're in this special state but still getting no input, try some additional help
-                if (
-                    _currentState == PlayerState.Interacting
-                    && InputManager.Instance.IsRunning
-                    && lookInput.sqrMagnitude < 0.001f
-                )
-                {
-                    // Direct solution: Force look input by reading directly from mouse raw axis
-                    float mouseX = Input.GetAxisRaw("Mouse X");
-                    float mouseY = Input.GetAxisRaw("Mouse Y");
-
-                    // If raw doesn't work, try regular
-                    if (mouseX == 0 && mouseY == 0)
-                    {
-                        mouseX = Input.GetAxis("Mouse X");
-                        mouseY = Input.GetAxis("Mouse Y");
-                    }
-
-                    // If we detect any input this way, use it directly
-                    if (mouseX != 0 || mouseY != 0)
-                    {
-                        lookInput = new Vector2(mouseX, mouseY) * 1.5f;
-
-                        if (showDebugInfo && Time.frameCount % 60 == 0)
-                        {
-                            Debug.Log(
-                                $"[PlayerController] Forcing mouse input during running+interaction: {lookInput}"
-                            );
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // Regular look input for normal states
-                lookInput = InputManager.Instance.LookInput;
-            }
-
-            // Camera movement would be applied here or in a separate camera controller script
         }
         #endregion
 
