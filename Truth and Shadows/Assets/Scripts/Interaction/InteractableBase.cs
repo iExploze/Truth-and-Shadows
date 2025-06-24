@@ -303,7 +303,7 @@ namespace TruthAndShadows.Interaction
 
         protected virtual void UpdatePickupPosition()
         {
-            if (rigidBody == null || playerTransform == null)
+            if (rigidBody == null || playerTransform == null || !IsPickedUp)
                 return;
 
             switch (movementStyle)
@@ -311,53 +311,38 @@ namespace TruthAndShadows.Interaction
                 case PickupMovementStyle.Held:
                     if (!hasCalculatedRelativePosition)
                     {
-                        relativePosition = transform.position - playerTransform.position;
+                        // Calculate position relative to player's forward direction, accounting for the pickup raise amount
+                        relativePosition = playerTransform.forward * 1.3f + Vector3.up * pickupRaiseAmount;
                         hasCalculatedRelativePosition = true;
                     }
 
-                    Vector3 targetPosition = playerTransform.position + relativePosition;
+                    // Calculate position by adding relative position to player position
+                    Vector3 heldPosition = playerTransform.position + relativePosition;
 
-                    // Unified movement logic
+                    // Smooth movement using the base class's pickup smoothing value
+                    Vector3 smoothedPosition = Vector3.Lerp(
+                        transform.position,
+                        heldPosition,
+                        Time.deltaTime * pickupSmoothness
+                    );
+
+                    // Move to follow player with smoothing
+                    transform.position = smoothedPosition;
+
+                    // Update rigidbody as well
                     if (rigidBody.isKinematic)
                     {
-                        // For kinematic bodies, smoothly move to the target position.
-                        Vector3 newPosition = Vector3.Lerp(
-                            rigidBody.position,
-                            targetPosition,
-                            Time.fixedDeltaTime * pickupSmoothness
-                        );
-                        rigidBody.MovePosition(newPosition);
-                    }
-                    else
-                    {
-                        // For non-kinematic (physics) bodies, smoothly change velocity.
-                        Vector3 targetVelocity =
-                            (targetPosition - rigidBody.position) / Time.fixedDeltaTime;
-
-                        Vector3 smoothedVelocity = Vector3.Lerp(
-                            rigidBody.velocity,
-                            targetVelocity,
-                            Time.fixedDeltaTime * pickupMovementSmoothing
-                        );
-                        rigidBody.velocity = smoothedVelocity;
+                        rigidBody.position = smoothedPosition;
                     }
                     break;
-
                 case PickupMovementStyle.HorizontalPushPull:
                     // Calculate how much the player has moved since last frame
                     Vector3 currentPlayerPos = playerTransform.position;
                     Vector3 playerDelta = currentPlayerPos - lastPlayerPosition;
-
-                    // We only care about horizontal movement
                     playerDelta.y = 0;
-
-                    // New velocity-based movement to prevent bouncing and physics glitches
                     if (playerDelta.magnitude > 0.001f)
                     {
-                        // Calculate the desired velocity to match player movement
                         Vector3 targetVelocity = playerDelta / Time.fixedDeltaTime;
-
-                        // Apply the velocity, but preserve existing vertical velocity (for gravity)
                         rigidBody.velocity = new Vector3(
                             targetVelocity.x,
                             rigidBody.velocity.y,
@@ -366,7 +351,6 @@ namespace TruthAndShadows.Interaction
                     }
                     else
                     {
-                        // If the player isn't moving, stop the block's horizontal movement
                         rigidBody.velocity = new Vector3(0, rigidBody.velocity.y, 0);
                     }
                     lastPlayerPosition = currentPlayerPos;

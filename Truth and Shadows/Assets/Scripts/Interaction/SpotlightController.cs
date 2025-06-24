@@ -1161,15 +1161,6 @@ namespace TruthAndShadows.Interaction
             }
         }
 
-        protected override void FixedUpdate()
-        {
-            // Skip base implementation - handle pickup ourselves
-            if (IsPickedUp && playerTransform != null)
-            {
-                // Call our custom position update directly
-                UpdatePickupPosition();
-            }
-        }
 
         private void VerifyOutlineComponents()
         {
