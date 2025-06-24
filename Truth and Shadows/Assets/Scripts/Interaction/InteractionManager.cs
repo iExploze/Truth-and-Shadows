@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
 using Cinemachine;
+using TruthAndShadows.InputSystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,7 +22,15 @@ namespace TruthAndShadows.Interaction
         [Header("Camera")]
         [SerializeField]
         private CinemachineVirtualCamera defaultCamera;
-        private CinemachineVirtualCamera currentInteractionCamera;
+        private Component currentInteractionCamera;
+
+        // Dictionary to store original camera priorities before interaction
+        private Dictionary<CinemachineVirtualCameraBase, int> originalCameraPriorities =
+            new Dictionary<CinemachineVirtualCameraBase, int>();
+
+        [Header("Camera Debug")]
+        [SerializeField]
+        private bool logCameraChanges = true;
 
         [Header("Debug")]
         [SerializeField]
@@ -50,18 +61,35 @@ namespace TruthAndShadows.Interaction
 
         private void HandleInteractionInput()
         {
-            if (Input.GetKeyDown(KeyCode.R))
+            // Check if InputManager is available
+            if (InputManager.Instance == null)
             {
-                //Debug.Log("R key pressed - attempting interaction");
+                Debug.LogError(
+                    "InputManager.Instance is null! This will prevent interaction input from working correctly."
+                );
+                return;
+            }
+
+            // Use InputManager for consistent input handling across devices
+            if (InputManager.Instance.GetInteractButtonDown())
+            {
+                //Debug.Log("Interact button pressed - attempting interaction");
+
+                // If we have a picked-up item, drop it before starting a new interaction
+                if (pickedUpInteractable != null)
+                {
+                    DropPickedUpItem();
+                }
+
                 TryStartInteraction();
             }
-            else if (Input.GetKeyUp(KeyCode.R))
+            else if (InputManager.Instance.GetInteractButtonUp())
             {
-                //Debug.Log("R key released - ending interaction");
+                //Debug.Log("Interact button released - ending interaction");
                 EndCurrentInteraction();
             }
 
-            // Handle pickup functionality with F key - hold to keep picked up
+            // Handle pickup functionality
             HandlePickupInput();
             Reset();
         }
@@ -97,8 +125,7 @@ namespace TruthAndShadows.Interaction
                 Debug.Log($"Found interactable: {((MonoBehaviour)interactable).gameObject.name}");
                 currentInteractable = interactable;
                 isInteracting = true;
-                currentInteractable.StartInteraction(); // Switch to interactable's camera if it has one
-                if (currentInteractable.InteractionCamera != null)
+                currentInteractable.StartInteraction(); // Switch to interactable's camera if it has one                if (currentInteractable.InteractionCamera != null)
                 {
                     currentInteractionCamera = currentInteractable.InteractionCamera;
                     SwitchToCamera(currentInteractionCamera);
@@ -110,16 +137,159 @@ namespace TruthAndShadows.Interaction
             }
         }
 
-        private void SwitchToCamera(CinemachineVirtualCamera camera)
+        private void SwitchToCamera(Component camera)
         {
-            // Increase priority of the target camera and decrease others
-            if (defaultCamera != null)
+            if (logCameraChanges)
+                Debug.Log($"Switching to camera: {camera.gameObject.name}");
+
+            // Clear any previous camera priorities
+            originalCameraPriorities.Clear();
+
+            // Disable all Cinemachine cameras in the scene except the one we're switching to
+            // This will also store their original priorities
+            DisableAllCameras(camera); // Increase priority of the new camera
+            // Use a higher priority to ensure it takes precedence over any other camera
+            SetCameraPriority(camera, 999); // Using a very high priority to guarantee it takes precedence
+        }
+
+        private void DisableAllCameras(Component exceptCamera)
+        {
+            // Store original priorities before disabling
+            if (originalCameraPriorities.Count == 0)
+            {
+                if (logCameraChanges)
+                    Debug.Log("Storing original camera priorities before interaction");
+
+                // Clear the dictionary in case there's anything left from a previous call
+                originalCameraPriorities.Clear();
+            }
+
+            // Find all Cinemachine Virtual Camera Base objects in the scene
+            var vcamBases = FindObjectsOfType<CinemachineVirtualCameraBase>();
+
+            if (logCameraChanges)
+                Debug.Log($"Found {vcamBases.Length} Cinemachine cameras in the scene");
+
+            foreach (var cam in vcamBases)
+            {
+                // Skip the camera we want to activate
+                if (exceptCamera != null && cam.gameObject == exceptCamera.gameObject)
+                {
+                    continue;
+                }
+
+                // Get current priority and store it if we haven't already
+                int currentPriority = cam.Priority;
+                if (!originalCameraPriorities.ContainsKey(cam))
+                {
+                    originalCameraPriorities.Add(cam, currentPriority);
+                    if (logCameraChanges)
+                        Debug.Log(
+                            $"Stored original priority for {cam.gameObject.name}: {currentPriority}"
+                        );
+                }
+
+                // Skip any cameras that are already at priority 0
+                if (currentPriority == 0)
+                {
+                    continue;
+                }
+
+                // Set priority to 0
+                if (logCameraChanges)
+                    Debug.Log(
+                        $"Disabling camera: {cam.gameObject.name} (was priority: {currentPriority})"
+                    );
+
+                cam.Priority = 0;
+            }
+
+            // If defaultCamera isn't part of the cameras found above, explicitly handle it
+            if (
+                defaultCamera != null
+                && (exceptCamera == null || defaultCamera.gameObject != exceptCamera.gameObject)
+            )
+            {
+                // Store its priority if we haven't already
+                if (!originalCameraPriorities.ContainsKey(defaultCamera))
+                {
+                    originalCameraPriorities.Add(defaultCamera, defaultCamera.Priority);
+                    if (logCameraChanges)
+                        Debug.Log(
+                            $"Stored original priority for default camera: {defaultCamera.Priority}"
+                        );
+                }
+
                 defaultCamera.Priority = 0;
+            }
+        } // This method is kept for backward compatibility
 
-            if (currentInteractionCamera != null && currentInteractionCamera != camera)
-                currentInteractionCamera.Priority = 0;
+        private void DisableAllCameras()
+        {
+            DisableAllCameras(null);
+        }
 
-            camera.Priority = 10;
+        private void SetCameraPriority(Component camera, int priority)
+        {
+            if (camera == null)
+                return;
+
+            string cameraName = camera.gameObject.name;
+
+            // Handle different types of Cinemachine cameras
+            if (camera is CinemachineVirtualCamera vcam)
+            {
+                if (logCameraChanges)
+                    Debug.Log(
+                        $"Setting CinemachineVirtualCamera '{cameraName}' priority to {priority}"
+                    );
+                vcam.Priority = priority;
+            }
+            else if (camera is CinemachineFreeLook freelook)
+            {
+                if (logCameraChanges)
+                    Debug.Log($"Setting CinemachineFreeLook '{cameraName}' priority to {priority}");
+
+                // For freelook cameras, ensure we're setting a high enough priority difference
+                // to override any other cameras in the scene
+                freelook.Priority = priority;
+
+                // Check if we actually need to reset the camera position
+                if (priority == 0)
+                {
+                    // Clear targets to avoid lingering influences
+                    if (freelook.Follow != null || freelook.LookAt != null)
+                    {
+                        if (logCameraChanges)
+                            Debug.Log($"Clearing targets for FreeLook camera '{cameraName}'");
+                    }
+                }
+            }
+            else if (camera is CinemachineBrain brain)
+            {
+                // Special handling for CinemachineBrain if needed
+                if (logCameraChanges)
+                    Debug.Log("CinemachineBrain camera handling not implemented");
+            }
+            else
+            {
+                // Try to use reflection to set priority for other Cinemachine camera types
+                var priorityProperty = camera.GetType().GetProperty("Priority");
+                if (priorityProperty != null && priorityProperty.PropertyType == typeof(int))
+                {
+                    if (logCameraChanges)
+                        Debug.Log(
+                            $"Setting {camera.GetType().Name} '{cameraName}' priority to {priority} via reflection"
+                        );
+                    priorityProperty.SetValue(camera, priority);
+                }
+                else
+                {
+                    Debug.LogWarning(
+                        $"Unsupported camera type: {camera.GetType().Name}. Cannot set priority."
+                    );
+                }
+            }
         }
 
         private bool IsValidSource()
@@ -130,7 +300,8 @@ namespace TruthAndShadows.Interaction
         private Vector3 GetInteractionOrigin()
         {
             // Offset the origin slightly backward to ensure detection when close to objects
-            Vector3 offset = interactionSource.position - (interactionSource.forward * interactionRadius);
+            Vector3 offset =
+                interactionSource.position - (interactionSource.forward * interactionRadius);
             return offset + Vector3.up;
         }
 
@@ -156,43 +327,124 @@ namespace TruthAndShadows.Interaction
             if (!isInteracting || currentInteractable == null)
                 return;
 
-            currentInteractable.EndInteraction(); // Switch back to default camera if we switched away from it
+            currentInteractable.EndInteraction();
+
+            // First disable the interaction camera
             if (currentInteractionCamera != null)
             {
-                currentInteractionCamera.Priority = 0;
-                if (defaultCamera != null)
-                    defaultCamera.Priority = 10;
+                if (logCameraChanges)
+                    Debug.Log(
+                        $"Setting interaction camera {currentInteractionCamera.gameObject.name} priority to 0"
+                    );
+
+                SetCameraPriority(currentInteractionCamera, 0);
                 currentInteractionCamera = null;
             }
+
+            // Restore all camera priorities to their original values
+            RestoreAllCameraPriorities();
 
             // Clear interaction state for all types of interactions
             currentInteractable = null;
             isInteracting = false;
         }
 
+        /// <summary>
+        /// Restores all camera priorities to their original values before the interaction
+        /// </summary>
+        private void RestoreAllCameraPriorities()
+        {
+            if (originalCameraPriorities.Count == 0)
+            {
+                Debug.LogWarning("No original camera priorities stored to restore!");
+
+                // Fallback to default camera if available
+                if (defaultCamera != null)
+                {
+                    if (logCameraChanges)
+                        Debug.Log(
+                            $"Fallback: Setting default camera {defaultCamera.gameObject.name} priority to 10"
+                        );
+
+                    defaultCamera.Priority = 10;
+                }
+                return;
+            }
+
+            if (logCameraChanges)
+                Debug.Log($"Restoring {originalCameraPriorities.Count} camera priorities...");
+
+            // Restore all stored priorities
+            foreach (var cameraPair in originalCameraPriorities)
+            {
+                CinemachineVirtualCameraBase camera = cameraPair.Key;
+                int originalPriority = cameraPair.Value;
+
+                if (camera == null)
+                {
+                    Debug.LogWarning("Stored camera reference is null, cannot restore priority");
+                    continue;
+                }
+
+                if (logCameraChanges)
+                    Debug.Log($"Restoring {camera.gameObject.name} priority to {originalPriority}");
+
+                camera.Priority = originalPriority;
+            }
+
+            // Clear the stored priorities after restoring
+            originalCameraPriorities.Clear();
+        }
+
         public void PreserveInteraction()
         {
             if (currentInteractable?.RequiresContinuousInteraction == true)
-                isInteracting = Input.GetKey(KeyCode.R);
+            {
+                // Safe null check for InputManager.Instance
+                if (InputManager.Instance != null)
+                {
+                    isInteracting = InputManager.Instance.GetInteractButton();
+                }
+                else
+                {
+                    Debug.LogError("InputManager.Instance is null in PreserveInteraction!");
+                    // Default to not interacting if we can't check the button state
+                    isInteracting = false;
+                }
+            }
         }
 
         private void HandlePickupInput()
         {
-            if (Input.GetKeyDown(KeyCode.F) && pickedUpInteractable == null)
+            // Check if InputManager is available
+            if (InputManager.Instance == null)
             {
-                //Debug.Log("F key pressed - attempting pickup");
+                Debug.LogError("InputManager.Instance is null! Cannot process pickup input.");
+                return;
+            }
+
+            if (InputManager.Instance.GetPickupButtonDown() && pickedUpInteractable == null)
+            {
+                //Debug.Log("Pickup button pressed - attempting pickup");
                 TryPickupItem();
             }
-            else if (Input.GetKeyUp(KeyCode.F) && pickedUpInteractable != null)
+            else if (InputManager.Instance.GetPickupButtonUp() && pickedUpInteractable != null)
             {
-                //Debug.Log("F key released - dropping item");
+                //Debug.Log("Pickup button released - dropping item");
                 DropPickedUpItem();
             }
         }
 
         private void Reset()
         {
-            if (Input.GetKeyDown(KeyCode.L))
+            // Check if InputManager is available
+            if (InputManager.Instance == null)
+            {
+                Debug.LogError("InputManager.Instance is null! Cannot process reset input.");
+                return;
+            }
+
+            if (InputManager.Instance.GetResetButtonDown())
             {
                 //Debug.Log("Trying to reset...");
                 // SceneManager.LoadSceneAsync(UseLoadingIntermediaryScene ? "Loading" : SceneManager.GetActiveScene().name);
@@ -211,26 +463,28 @@ namespace TruthAndShadows.Interaction
             Vector3 origin = GetInteractionOrigin();
             Vector3 direction = interactionSource.forward;
 
-            if (TryFindInteractable(origin, direction, out IInteractable interactable) && interactable.CanBePickedUp && !interactable.IsPickedUp)
+            if (
+                TryFindInteractable(origin, direction, out IInteractable interactable)
+                && interactable.CanBePickedUp
+                && !interactable.IsPickedUp
+            )
             {
                 if (isInteracting && currentInteractable == interactable)
                 {
                     EndCurrentInteraction();
                 }
-
                 pickedUpInteractable = interactable;
                 interactable.StartPickup(interactionSource);
 
-                if (defaultCamera != null)
-                {
-                    defaultCamera.Priority = 10;
-                }
-
+                // Restore camera priorities when picking up an item
                 if (currentInteractionCamera != null)
                 {
-                    currentInteractionCamera.Priority = 0;
+                    SetCameraPriority(currentInteractionCamera, 0);
                     currentInteractionCamera = null;
                 }
+
+                // Restore all camera priorities to their original values
+                RestoreAllCameraPriorities();
 
                 Debug.Log($"Picked up: {((MonoBehaviour)interactable).gameObject.name}");
             }
@@ -247,6 +501,99 @@ namespace TruthAndShadows.Interaction
                 //Debug.Log($"Dropping: {((MonoBehaviour)pickedUpInteractable).gameObject.name}");
                 pickedUpInteractable.EndPickup();
                 pickedUpInteractable = null;
+            }
+        }
+
+        /// <summary>
+        /// Resets to the default camera, ensuring its priority is set correctly.
+        /// Can be called from other scripts or events to ensure proper camera state.
+        /// </summary>
+        public void ResetToDefaultCamera()
+        {
+            if (logCameraChanges)
+                Debug.Log("Explicitly resetting to default camera");
+
+            if (originalCameraPriorities.Count > 0)
+            {
+                // Restore all camera priorities if we have them stored
+                RestoreAllCameraPriorities();
+            }
+            else
+            {
+                // If we don't have stored priorities, just ensure default camera is enabled
+                if (defaultCamera != null)
+                {
+                    if (logCameraChanges)
+                        Debug.Log(
+                            $"No priorities stored - setting default camera {defaultCamera.gameObject.name} priority to 10"
+                        );
+
+                    defaultCamera.Priority = 10;
+                }
+                else
+                {
+                    // If no default camera, try to find the highest priority camera in the scene
+                    var cameras = FindObjectsOfType<CinemachineVirtualCameraBase>();
+                    if (cameras.Length > 0)
+                    {
+                        // Enable the first camera we find with priority > 0
+                        foreach (var cam in cameras)
+                        {
+                            if (cam.Priority > 0)
+                            {
+                                if (logCameraChanges)
+                                    Debug.Log(
+                                        $"No default camera - using {cam.gameObject.name} as default with priority {cam.Priority}"
+                                    );
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("No Cinemachine cameras found in the scene!");
+                    }
+                }
+            }
+
+            // Clear any current interaction camera reference
+            currentInteractionCamera = null;
+        }
+
+        private void OnDisable()
+        {
+            // Ensure we restore all camera priorities when script is disabled
+            if (originalCameraPriorities.Count > 0)
+            {
+                RestoreAllCameraPriorities();
+            }
+            currentInteractionCamera = null;
+        }
+
+        private void OnEnable()
+        {
+            // Check if we need to initialize camera priorities on enable
+            var cameras = FindObjectsOfType<CinemachineVirtualCameraBase>();
+            bool anyActiveCameras = false;
+
+            foreach (var cam in cameras)
+            {
+                if (cam.Priority > 0)
+                {
+                    anyActiveCameras = true;
+                    break;
+                }
+            }
+
+            // If no active cameras and we have a default, enable it
+            if (!anyActiveCameras && defaultCamera != null)
+            {
+                if (logCameraChanges)
+                    Debug.Log(
+                        $"No active cameras found - enabling default camera with priority 10"
+                    );
+
+                defaultCamera.Priority = 10;
             }
         }
 

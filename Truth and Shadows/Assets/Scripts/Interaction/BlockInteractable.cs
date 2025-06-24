@@ -16,13 +16,13 @@ namespace TruthAndShadows.Interaction
         private Color pickedUpColor = Color.green;
 
         [SerializeField]
+        private Color collisionColor = Color.red;
+
+        [SerializeField]
         private float colorChangeSpeed = 5f;
 
         [SerializeField]
         private float cubeMass = 1000f;
-
-        [SerializeField]
-        private float minPickupDistance = 1.25f;
 
         [Header("Pickup Detection")]
         [SerializeField]
@@ -40,15 +40,15 @@ namespace TruthAndShadows.Interaction
 
         [SerializeField]
         private bool isColorChanging = false;
-        private Rigidbody cubeRigidbody;
 
-        private Vector3 cubeRelativePosition;
-        private bool cubeHasCalculatedRelativePosition = false;
-        private Transform cubePlayerTransform;
+        private bool isCollidingWithWall = false;
 
         protected override void Start()
         {
             base.Start();
+
+            // Set movement style for base class to handle push/pull physics
+            movementStyle = PickupMovementStyle.HorizontalPushPull;
 
             cubeRenderer = GetComponent<Renderer>();
             if (cubeRenderer == null)
@@ -62,25 +62,18 @@ namespace TruthAndShadows.Interaction
                 return;
             }
 
-            cubeRigidbody = GetComponent<Rigidbody>();
-            if (cubeRigidbody == null)
+            // Configure the rigidbody from the base class
+            if (rigidBody != null)
             {
-                cubeRigidbody = gameObject.AddComponent<Rigidbody>();
+                rigidBody.mass = cubeMass;
             }
-
-            cubeRigidbody.mass = cubeMass;
-            cubeRigidbody.freezeRotation = true;
-            cubeRigidbody.drag = 5f;
 
             originalColor = cubeRenderer.material.color;
             currentColor = originalColor;
             targetColor = originalColor;
 
+            // Use pickupDetectionRadius for interaction distance
             interactionDistance = pickupDetectionRadius;
-
-            //Debug.Log(
-            //    $"GiantCubeInteractable initialized on {gameObject.name} with mass: {cubeMass}"
-            //);
         }
 
         public override bool CanInteract(Vector3 playerPosition)
@@ -114,45 +107,58 @@ namespace TruthAndShadows.Interaction
 
         public override void StartPickup(Transform playerTransform)
         {
-            base.StartPickup(playerTransform);
+            // Call base class to handle physics setup and state changes
+            base.StartPickup(playerTransform); 
+            // IsPickedUp is set in the base class. If it failed, don't proceed.
+            if (!IsPickedUp)
+                return;
 
-            cubePlayerTransform = playerTransform;
+            // Reset collision flags
+            isCollidingWithWall = false;
 
-            if (cubeRigidbody != null)
+            if (source != null && pickUpClip != null)
             {
-                cubeRigidbody.isKinematic = true;
+                source.PlayOneShot(pickUpClip);
+            }
+
+            // Reset velocity when picked up
+            if (rigidBody != null)
+            {
+                rigidBody.velocity = Vector3.zero;
+                rigidBody.angularVelocity = Vector3.zero;
             }
 
             targetColor = pickedUpColor;
             isColorChanging = true;
 
+            // Check for initial wall collisions
+            CheckWallCollisions();
+
             Debug.Log(
-                $"Giant cube {gameObject.name} picked up - changing color and following player horizontally"
+                $"Giant cube {gameObject.name} picked up - changing color and ready to push/pull"
             );
         }
 
         public override void EndPickup()
         {
-            base.EndPickup();
+            if (!IsPickedUp)
+                return;
 
-            if (cubeRigidbody != null)
-            {
-                cubeRigidbody.isKinematic = false;
-            }
-
-            cubePlayerTransform = null;
-            cubeHasCalculatedRelativePosition = false;
-
+            // Set color back to original before calling base
             targetColor = originalColor;
             isColorChanging = true;
 
+            // Call base class to handle physics and state changes
+            base.EndPickup();
+
             Debug.Log(
-                $"Giant cube {gameObject.name} dropped - returning to physics and original color"
+                $"Giant cube {gameObject.name} dropped - returning to normal physics and original color"
             );
         }
 
         protected override void Update()
         {
+            // Handle the smooth color transition
             if (isColorChanging && cubeRenderer != null)
             {
                 currentColor = Color.Lerp(
@@ -160,7 +166,12 @@ namespace TruthAndShadows.Interaction
                     targetColor,
                     Time.deltaTime * colorChangeSpeed
                 );
-                cubeRenderer.material.color = currentColor;
+                var mats = cubeRenderer.materials;
+                if (mats.Length > 0)
+                {
+                    mats[0].color = currentColor;
+                }
+                cubeRenderer.materials = mats;
 
                 if (
                     Vector3.Distance(
@@ -170,65 +181,64 @@ namespace TruthAndShadows.Interaction
                 )
                 {
                     currentColor = targetColor;
-                    cubeRenderer.material.color = currentColor;
+                    if (mats.Length > 0)
+                    {
+                        mats[0].color = currentColor;
+                    }
+                    cubeRenderer.materials = mats;
                     isColorChanging = false;
                 }
             }
 
-            if (IsPickedUp && cubePlayerTransform != null)
+            // Call base update for outline effects
+            base.Update();
+        }
+
+        protected override void FixedUpdate()
+        {
+            // Let the base class handle the movement physics
+            base.FixedUpdate(); 
+            
+            // If picked up, check for wall collisions to update color
+            if (IsPickedUp)
             {
-                UpdateHorizontalOnlyPickupPosition();
-            }
-            else
-            {
-                base.Update();
+                // Update color based on wall collision status
+                bool wasColliding = isCollidingWithWall;
+                CheckWallCollisions();
+
+                if (isCollidingWithWall && !wasColliding)
+                {
+                    targetColor = collisionColor;
+                    isColorChanging = true;
+                }
+                else if (!isCollidingWithWall && wasColliding)
+                {
+                    targetColor = pickedUpColor;
+                    isColorChanging = true;
+                }
             }
         }
 
-        private void UpdateHorizontalOnlyPickupPosition()
+        private void CheckWallCollisions()
         {
-            if (!cubeHasCalculatedRelativePosition)
+            isCollidingWithWall = false;
+
+            Vector3[] directions = new Vector3[]
             {
-                Vector3 playerPos = cubePlayerTransform.position;
-                Vector3 cubePos = transform.position;
+                Vector3.forward,
+                Vector3.back,
+                Vector3.right,
+                Vector3.left,
+            };
 
-                Vector3 horizontalOffset = new Vector3(
-                    cubePos.x - playerPos.x,
-                    0f,
-                    cubePos.z - playerPos.z
-                );
-
-                float currentDistance = horizontalOffset.magnitude;
-                if (currentDistance < minPickupDistance)
+            foreach (Vector3 dir in directions)
+            {
+                if (Physics.Raycast(transform.position, dir, 0.75f, ~LayerMask.GetMask("Player")))
                 {
-                    if (currentDistance > 0.1f)
-                    {
-                        horizontalOffset = horizontalOffset.normalized * minPickupDistance;
-                    }
-                    else
-                    {
-                        horizontalOffset = cubePlayerTransform.forward * minPickupDistance;
-                        horizontalOffset.y = 0f;
-                    }
+                    isCollidingWithWall = true;
+                    return;
                 }
-
-                cubeRelativePosition = horizontalOffset;
-                cubeHasCalculatedRelativePosition = true;
             }
-
-            Vector3 targetHorizontalPosition = cubePlayerTransform.position + cubeRelativePosition;
-
-            Vector3 finalTargetPosition = new Vector3(
-                targetHorizontalPosition.x,
-                transform.position.y,
-                targetHorizontalPosition.z
-            );
-
-            transform.position = Vector3.Lerp(
-                transform.position,
-                finalTargetPosition,
-                Time.deltaTime * pickupSmoothness
-            );
         }
     }
 }
