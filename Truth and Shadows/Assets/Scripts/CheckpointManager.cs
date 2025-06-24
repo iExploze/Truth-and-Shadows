@@ -41,9 +41,7 @@ public class CheckpointManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-    }
-
-    private void Start()
+    }    private void Start()
     {
         // Set the initial checkpoint to the first one in the list if any exist
         if (checkpoints.Count > 0)
@@ -51,102 +49,119 @@ public class CheckpointManager : MonoBehaviour
             currentCheckpoint = checkpoints[0];
             Debug.Log("Initial spawn point set to: " + currentCheckpoint.name);
 
-            // If player is assigned, ensure they start at the initial spawn point
-            if (playerTransform != null)
-            {
-                MovePlayerToCheckpoint(currentCheckpoint);
-            }
+            // Move all player objects to the initial spawn point
+            MovePlayerToCheckpoint(currentCheckpoint);
         }
     }
 
     private void Update()
     {
         CheckForCheckpointReached();
-    }
-
-    private void CheckForCheckpointReached()
+    }    private void CheckForCheckpointReached()
     {
-        if (playerTransform == null || checkpoints.Count == 0)
+        if (checkpoints.Count == 0)
             return;
 
-        foreach (Transform checkpoint in checkpoints)
+        // Find all GameObjects with the "Player" tag
+        GameObject[] playerObjects = GameObject.FindGameObjectsWithTag("Player");
+        
+        if (playerObjects.Length == 0)
+            return;
+
+        // Check distance from any player object to checkpoints
+        foreach (GameObject playerObj in playerObjects)
         {
-            float distance = Vector3.Distance(playerTransform.position, checkpoint.position);
-
-            // If player is within reach distance of a checkpoint
-            if (distance <= checkpointReachDistance)
+            foreach (Transform checkpoint in checkpoints)
             {
-                // Only update if this is a new checkpoint
-                if (currentCheckpoint != checkpoint)
+                float distance = Vector3.Distance(playerObj.transform.position, checkpoint.position);
+
+                // If player is within reach distance of a checkpoint
+                if (distance <= checkpointReachDistance)
                 {
-                    // Find the index of the current and new checkpoints
-                    int currentIndex = checkpoints.IndexOf(currentCheckpoint);
-                    int newIndex = checkpoints.IndexOf(checkpoint); // Only update if the new checkpoint is further in the list than the current one
-                    if (newIndex > currentIndex || currentCheckpoint == null)
+                    // Only update if this is a new checkpoint
+                    if (currentCheckpoint != checkpoint)
                     {
-                        currentCheckpoint = checkpoint;
-                        Debug.Log("New checkpoint reached: " + checkpoint.name);
-
-                        // Activate checkpoint visual effect if it has a Checkpoint component
-                        Checkpoint checkpointComponent = checkpoint.GetComponent<Checkpoint>();
-                        if (checkpointComponent != null)
+                        // Find the index of the current and new checkpoints
+                        int currentIndex = checkpoints.IndexOf(currentCheckpoint);
+                        int newIndex = checkpoints.IndexOf(checkpoint); // Only update if the new checkpoint is further in the list than the current one
+                        if (newIndex > currentIndex || currentCheckpoint == null)
                         {
-                            checkpointComponent.Activate();
-                        }
+                            currentCheckpoint = checkpoint;
+                            Debug.Log("New checkpoint reached: " + checkpoint.name);
 
-                        OnCheckpointReached?.Invoke(checkpoint); // Invoke the event
+                            // Activate checkpoint visual effect if it has a Checkpoint component
+                            Checkpoint checkpointComponent = checkpoint.GetComponent<Checkpoint>();
+                            if (checkpointComponent != null)
+                            {
+                                checkpointComponent.Activate();
+                            }
+
+                            OnCheckpointReached?.Invoke(checkpoint); // Invoke the event
+                            return; // Exit early once a checkpoint is reached
+                        }
                     }
                 }
             }
         }
-    }
-
-    // Helper method to move player to a checkpoint consistently
+    }// Helper method to move player to a checkpoint consistently
     private void MovePlayerToCheckpoint(Transform checkpoint)
     {
-        if (checkpoint == null || playerTransform == null) return;
+        if (checkpoint == null)
+            return;
 
-        if (playerTransform.parent != null)
+        // Find all GameObjects with the "Player" tag
+        GameObject[] playerObjects = GameObject.FindGameObjectsWithTag("Player");
+        
+        if (playerObjects.Length == 0)
         {
-            // Calculate the player's local position relative to its parent
-            playerTransform.localPosition = checkpoint.position - playerTransform.parent.position;
-
-            // Directly set the local rotation
-            playerTransform.localRotation = checkpoint.rotation; // Assuming rotation is directly applied
-        }
-        else
-        {
-            // No parent, directly set world position
-            playerTransform.position = checkpoint.position;
-            playerTransform.rotation = checkpoint.rotation;
+            Debug.LogWarning("No GameObjects with 'Player' tag found!");
+            return;
         }
 
-        // Also update Rigidbody if present
-        Rigidbody rb = playerTransform.GetComponent<Rigidbody>();
-        if (rb != null)
+        foreach (GameObject playerObj in playerObjects)
         {
-            rb.velocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            rb.position = playerTransform.position;
-            rb.rotation = playerTransform.rotation;
+            Transform playerTransform = playerObj.transform;
+            
+            if (playerTransform.parent != null)
+            {
+                // Convert checkpoint world position to local position relative to the player's parent
+                playerTransform.localPosition = playerTransform.parent.InverseTransformPoint(checkpoint.position);
+
+                // Convert checkpoint world rotation to local rotation relative to the player's parent
+                playerTransform.localRotation = Quaternion.Inverse(playerTransform.parent.rotation) * checkpoint.rotation;
+            }
+            else
+            {
+                // No parent, directly set world position
+                playerTransform.position = checkpoint.position;
+                playerTransform.rotation = checkpoint.rotation;
+            }
+
+            // Also update Rigidbody if present
+            Rigidbody rb = playerTransform.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.velocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.position = playerTransform.position;
+                rb.rotation = playerTransform.rotation;
+            }
+
+            Debug.Log($"Player object '{playerObj.name}' moved to checkpoint: {checkpoint.position}");
         }
-
-        Debug.Log($"Player moved to checkpoint: {checkpoint.position}");
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Respawns the player at the current checkpoint
     /// </summary>
     public void RespawnAtCheckpoint()
     {
-        if (currentCheckpoint != null && playerTransform != null)
+        if (currentCheckpoint != null)
         {
             MovePlayerToCheckpoint(currentCheckpoint);
             Debug.Log("Player respawned at checkpoint: " + currentCheckpoint.name);
         }
         else
         {
-            Debug.LogWarning("Cannot respawn player: no checkpoint or player transform set");
+            Debug.LogWarning("Cannot respawn player: no checkpoint set");
         }
     }
 
