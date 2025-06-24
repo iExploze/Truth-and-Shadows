@@ -74,7 +74,21 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
 
             if (timeInDark >= maxTimeInDark)
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                // Instead of reloading the scene, use the CheckpointManager to respawn at checkpoint
+                if (CheckpointManager.Instance != null)
+                {
+                    // Use the CheckpointManager's HandleShadowFormTimeout method
+                    CheckpointManager.Instance.HandleShadowFormTimeout();
+                    // Reset darkness effect and timer after respawn
+                    timeInDark = 0f;
+                    SetDarknessAlpha(0f);
+                }
+                else
+                {
+                    // Fallback to scene reload if CheckpointManager isn't available
+                    Debug.LogWarning("CheckpointManager not found, falling back to scene reload");
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                }
             }
         }
         else
@@ -85,12 +99,11 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
         }
     }
 
-    void LateUpdate() 
+    void LateUpdate()
     {
         // Prepare for next frame
         isInLight = false; // This forces you to call OnLightStay every frame
     }
-
 
     private void SetDarknessAlpha(float alpha)
     {
