@@ -1171,14 +1171,6 @@ namespace TruthAndShadows.Interaction
             }
         }
 
-        protected override void Update()
-        {
-            base.Update();
-
-            // No need to track rotation mode anymore
-            // Additional spotlight-specific update logic if needed
-        }
-
         private void VerifyOutlineComponents()
         {
             if (outlineComponents == null || outlineComponents.Length == 0)

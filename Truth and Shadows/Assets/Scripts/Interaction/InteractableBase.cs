@@ -208,6 +208,9 @@ namespace TruthAndShadows.Interaction
             {
                 rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
                 rigidBody.collisionDetectionMode = CollisionDetectionMode.Continuous;
+                rigidBody.constraints =
+                            RigidbodyConstraints.FreezePositionY
+                            | RigidbodyConstraints.FreezeRotation;
 
                 switch (movementStyle)
                 {
@@ -220,9 +223,6 @@ namespace TruthAndShadows.Interaction
                         rigidBody.useGravity = true;
                         rigidBody.drag = 5f;
                         rigidBody.angularDrag = 10f;
-                        rigidBody.constraints =
-                            RigidbodyConstraints.FreezePositionY
-                            | RigidbodyConstraints.FreezeRotation;
                         break;
                 }
             }
