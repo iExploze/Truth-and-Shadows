@@ -1,52 +1,75 @@
-﻿using UnityEngine;
+﻿using TruthAndShadows.InputSystem;
+using UnityEngine;
 
 namespace Cinemachine.Examples
 {
+    [AddComponentMenu("")] // Don't display in add component menu
+    public class CharacterMovement : MonoBehaviour
+    {
+        public bool useCharacterForward = false;
+        public bool lockToCameraForward = false;
+        public float turnSpeed = 10f;
 
-[AddComponentMenu("")] // Don't display in add component menu
-public class CharacterMovement : MonoBehaviour
-{
-    public bool useCharacterForward = false;
-    public bool lockToCameraForward = false;
-    public float turnSpeed = 10f;
+        private float turnSpeedMultiplier;
+        private float speed = 0f;
+        private float direction = 0f;
+        private Animator anim;
+        private Vector3 targetDirection;
+        private Vector2 input;
+        private Quaternion freeRotation;
+        private Camera mainCamera;
+        private float velocity;
 
-    private float turnSpeedMultiplier;
-    private float speed = 0f;
-    private float direction = 0f;
-    private Animator anim;
-    private Vector3 targetDirection;
-    private Vector2 input;
-    private Quaternion freeRotation;
-    private Camera mainCamera;
-    private float velocity;
+        [SerializeField]
+        private AudioSource walkAudioSource;
 
-    [SerializeField]private AudioSource walkAudioSource;
-        //Rashai was here
-        public bool canMove;
+        public bool canMove = true;
 
-	// Use this for initialization
-	void Start ()
-	{
-	    anim = GetComponent<Animator>();
-	    mainCamera = Camera.main;
-	}
+        // Use this for initialization
+        void Start()
+        {
+            anim = GetComponent<Animator>();
+            mainCamera = Camera.main;
+        }
 
-	// Update is called once per frame
-	void FixedUpdate ()
-	{
+        // Update is called once per frame
+        void FixedUpdate()
+        {
 #if ENABLE_LEGACY_INPUT_MANAGER
-	    input.x = Input.GetAxis("Horizontal");
-	    input.y = Input.GetAxis("Vertical");
+            // Always use InputManager for input
+            if (InputManager.Instance != null)
+            {
+                // Get movement input from the centralized InputManager
+                input = InputManager.Instance.MoveInput;
+                
+                // Block movement if rotating spotlight
+                if (InputManager.Instance.RotateHeld)
+                {
+                    input = Vector2.zero;
+                }
+                
+                // Handle pickup state - use special movement handling if needed
+                if (InputManager.Instance.PickupHeld && input.magnitude < 0.1f)
+                {
+                    // Get raw input through the InputManager
+                    input = InputManager.Instance.MoveInputRaw;
+                    
+                    if (input.magnitude > 0.1f && Time.frameCount % 120 == 0)
+                    {
+                        Debug.Log($"Using raw input during pickup: {input}");
+                    }
+                }
+            }
 
-		// set speed to both vertical and horizontal inputs
-        if (useCharacterForward)
-            speed = Mathf.Abs(input.x) + input.y;
-        else
-            speed = Mathf.Abs(input.x) + Mathf.Abs(input.y);
+            // set speed to both vertical and horizontal inputs
+            if (useCharacterForward)
+                speed = Mathf.Abs(input.x) + input.y;
+            else
+                speed = Mathf.Abs(input.x) + Mathf.Abs(input.y);
 
-        speed = Mathf.Clamp(speed, 0f, 1f);
-        speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
-        anim.SetFloat("Speed", speed);
+            speed = Mathf.Clamp(speed, 0f, 1f);
+            speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
+            anim.SetFloat("Speed", speed);
 
             // Play walking sound if moving, stop if not
             if (walkAudioSource != null)
@@ -61,65 +84,66 @@ public class CharacterMovement : MonoBehaviour
                     walkAudioSource.Stop();
                 }
             }
-            //Rashai was here
-            if (speed > 0.05f && Input.GetKey(KeyCode.F))
-            {
-                  walkAudioSource.Play();
-            }
 
             if (input.y < 0f && useCharacterForward)
-            direction = input.y;
-	    else
-            direction = 0f;
+                direction = input.y;
+            else
+                direction = 0f;
 
-        anim.SetFloat("Direction", direction);
+            anim.SetFloat("Direction", direction);
 
-        // Update target direction relative to the camera view (or not if the Keep Direction option is checked)
-        UpdateTargetDirection();
+            // Update target direction relative to the camera view (or not if the Keep Direction option is checked)
+            UpdateTargetDirection();
 
-            if (!canMove) return;
-        if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
-        {
-            Vector3 lookDirection = targetDirection.normalized;
-            freeRotation = Quaternion.LookRotation(lookDirection, transform.up);
-            var diferenceRotation = freeRotation.eulerAngles.y - transform.eulerAngles.y;
-            var eulerY = transform.eulerAngles.y;
+            if (!canMove)
+                return;
+                
+            if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
+            {
+                Vector3 lookDirection = targetDirection.normalized;
+                freeRotation = Quaternion.LookRotation(lookDirection, transform.up);
+                var diferenceRotation = freeRotation.eulerAngles.y - transform.eulerAngles.y;
+                var eulerY = transform.eulerAngles.y;
 
-            if (diferenceRotation < 0 || diferenceRotation > 0) eulerY = freeRotation.eulerAngles.y;
-            var euler = new Vector3(0, eulerY, 0);
+                if (diferenceRotation < 0 || diferenceRotation > 0)
+                    eulerY = freeRotation.eulerAngles.y;
+                var euler = new Vector3(0, eulerY, 0);
 
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(euler), turnSpeed * turnSpeedMultiplier * Time.deltaTime);
-        }
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    Quaternion.Euler(euler),
+                    turnSpeed * turnSpeedMultiplier * Time.deltaTime
+                );
+            }
 #else
-        InputSystemHelper.EnableBackendsWarningMessage();
+            InputSystemHelper.EnableBackendsWarningMessage();
 #endif
-	}
-
-    public virtual void UpdateTargetDirection()
-    {
-        if (!useCharacterForward)
-        {
-            turnSpeedMultiplier = 1f;
-            var forward = mainCamera.transform.TransformDirection(Vector3.forward);
-            forward.y = 0;
-
-            //get the right-facing direction of the referenceTransform
-            var right = mainCamera.transform.TransformDirection(Vector3.right);
-
-            // determine the direction the player will face based on input and the referenceTransform's right and forward directions
-            targetDirection = input.x * right + input.y * forward;
         }
-        else
-        {
-            turnSpeedMultiplier = 0.2f;
-            var forward = transform.TransformDirection(Vector3.forward);
-            forward.y = 0;
 
-            //get the right-facing direction of the referenceTransform
-            var right = transform.TransformDirection(Vector3.right);
-            targetDirection = input.x * right + Mathf.Abs(input.y) * forward;
+        public virtual void UpdateTargetDirection()
+        {
+            if (!useCharacterForward)
+            {
+                turnSpeedMultiplier = 1f;
+                var forward = mainCamera.transform.TransformDirection(Vector3.forward);
+                forward.y = 0;
+
+                //get the right-facing direction of the referenceTransform
+                var right = mainCamera.transform.TransformDirection(Vector3.right);
+
+                // determine the direction the player will face based on input and the referenceTransform's right and forward directions
+                targetDirection = input.x * right + input.y * forward;
+            }
+            else
+            {
+                turnSpeedMultiplier = 0.2f;
+                var forward = transform.TransformDirection(Vector3.forward);
+                forward.y = 0;
+
+                //get the right-facing direction of the referenceTransform
+                var right = transform.TransformDirection(Vector3.right);
+                targetDirection = input.x * right + Mathf.Abs(input.y) * forward;
+            }
         }
     }
-}
-
 }
