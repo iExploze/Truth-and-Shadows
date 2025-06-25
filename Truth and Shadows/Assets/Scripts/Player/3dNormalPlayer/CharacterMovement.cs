@@ -71,6 +71,7 @@ namespace Cinemachine.Examples
             speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
             anim.SetFloat("Speed", speed);
 
+            //Rashai was here
             // Play walking sound if moving, stop if not
             if (walkAudioSource != null)
             {
