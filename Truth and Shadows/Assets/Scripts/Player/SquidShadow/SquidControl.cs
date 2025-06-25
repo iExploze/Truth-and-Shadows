@@ -6,7 +6,6 @@ public class SquidControl : MonoBehaviour
 {
     private Camera mainCamera;
     private Rigidbody rb;
-    private Collider selfCol;
 
     [Header("Move Settings")]
     [Tooltip("Speed (units/sec) that the indicator moves in the horizontal plane.")]
@@ -15,11 +14,8 @@ public class SquidControl : MonoBehaviour
     [Tooltip("Maximum radius from player within which the indicator can be placed.")]
     [SerializeField] private float maxRadius = 25f;
 
-    [Tooltip("LayerMask for any surface the indicator can snap to (e.g. \"Ground\").")]
-    public LayerMask groundMask;
-
     [Tooltip("LayerMask for climbable walls.")]
-    public LayerMask wallMask;
+    public LayerMask groundMask;
 
     [Header("References")]
     [Tooltip("Drag the player's root Transform here (used for clamping radius).")]
@@ -30,12 +26,9 @@ public class SquidControl : MonoBehaviour
     [SerializeField] private float climbSpeed = 5f;
 
     [Tooltip("Max distance to detect a climbable wall.")]
-    [SerializeField] private float climbCheckDistance = 0.6f;
+    [SerializeField] private float climbCheckDistance = 0.2f;
 
-
-    [SerializeField] private float snapHoldDuration = 0.7f; // seconds
-
-    private void Awake()
+    private void Start()
     {
         mainCamera = Camera.main;
         rb = GetComponent<Rigidbody>();
@@ -61,7 +54,7 @@ public class SquidControl : MonoBehaviour
         bool pressingForward = v > 0f;
         bool againstWall = pressingForward
             && inputDir.sqrMagnitude > 0f
-            && Physics.Raycast(transform.position, inputDir, out _, climbCheckDistance, wallMask);
+            && Physics.Raycast(transform.position, inputDir, out _, climbCheckDistance, groundMask);
 
         // 3) Compose new velocity
         Vector3 newVel = rb.velocity;
