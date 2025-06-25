@@ -1,4 +1,5 @@
 ﻿using System;
+using TruthAndShadows.InputSystem;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(Collider))]
@@ -9,10 +10,12 @@ public class SquidControl : MonoBehaviour
 
     [Header("Move Settings")]
     [Tooltip("Speed (units/sec) that the indicator moves in the horizontal plane.")]
-    [SerializeField] private float moveSpeed = 10f;
+    [SerializeField]
+    private float moveSpeed = 10f;
 
     [Tooltip("Maximum radius from player within which the indicator can be placed.")]
-    [SerializeField] private float maxRadius = 25f;
+    [SerializeField]
+    private float maxRadius = 25f;
 
     [Tooltip("LayerMask for climbable walls.")]
     public LayerMask groundMask;
@@ -23,10 +26,12 @@ public class SquidControl : MonoBehaviour
 
     [Header("Wall-Climb Settings")]
     [Tooltip("How fast you climb up/down the wall.")]
-    [SerializeField] private float climbSpeed = 5f;
+    [SerializeField]
+    private float climbSpeed = 5f;
 
     [Tooltip("Max distance to detect a climbable wall.")]
-    [SerializeField] private float climbCheckDistance = 0.2f;
+    [SerializeField]
+    private float climbCheckDistance = 0.2f;
 
     private void Start()
     {
@@ -43,15 +48,30 @@ public class SquidControl : MonoBehaviour
     private void FixedUpdate()
     {
         // 1) Read input & build flat dir
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+        Vector2 moveInput = Vector2.zero;
+        if (InputManager.Instance != null)
+        {
+            moveInput = InputManager.Instance.MoveInput; // x = horizontal, y = vertical
+        }
+        else
+        {
+            return;
+        }
 
-        Vector3 camF = mainCamera.transform.forward; camF.y = 0f; camF.Normalize();
-        Vector3 camR = mainCamera.transform.right; camR.y = 0f; camR.Normalize();
+        float h = moveInput.x;
+        float v = moveInput.y;
+
+        Vector3 camF = mainCamera.transform.forward;
+        camF.y = 0f;
+        camF.Normalize();
+        Vector3 camR = mainCamera.transform.right;
+        camR.y = 0f;
+        camR.Normalize();
         Vector3 inputDir = (camF * v + camR * h).normalized;
 
         // 2) Wall check only when pushing forward
-        bool againstWall = inputDir.sqrMagnitude > 0f
+        bool againstWall =
+            inputDir.sqrMagnitude > 0f
             && Physics.Raycast(transform.position, inputDir, out _, climbCheckDistance, groundMask);
 
         // 3) Compose new velocity
