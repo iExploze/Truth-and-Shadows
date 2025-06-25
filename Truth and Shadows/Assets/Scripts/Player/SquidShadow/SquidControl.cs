@@ -51,9 +51,7 @@ public class SquidControl : MonoBehaviour
         Vector3 inputDir = (camF * v + camR * h).normalized;
 
         // 2) Wall check only when pushing forward
-        bool pressingForward = v > 0f;
-        bool againstWall = pressingForward
-            && inputDir.sqrMagnitude > 0f
+        bool againstWall = inputDir.sqrMagnitude > 0f
             && Physics.Raycast(transform.position, inputDir, out _, climbCheckDistance, groundMask);
 
         // 3) Compose new velocity
