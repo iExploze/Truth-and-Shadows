@@ -8,7 +8,7 @@ public class CheckpointManager : MonoBehaviour
 
     [Tooltip("Distance at which a checkpoint is considered reached")]
     [SerializeField]
-    private float checkpointReachDistance = 1f;
+    private float checkpointReachDistance = 3f;
 
     [Tooltip("All checkpoint transforms in the level")]
     [SerializeField]
@@ -24,6 +24,8 @@ public class CheckpointManager : MonoBehaviour
     // Player shadow form time limit exceeded handler
     public delegate void ShadowFormTimeExceededHandler();
     public event ShadowFormTimeExceededHandler OnShadowFormTimeExceeded;
+
+    private List<GameObject> playerObjects = new List<GameObject>();
 
     private void Awake()
     {
@@ -41,6 +43,7 @@ public class CheckpointManager : MonoBehaviour
 
     private void Start()
     {
+        this.playerObjects = FindGameObjectsWithTag("Player");
         // Set the initial checkpoint to the first one in the list if any exist
         if (checkpoints.Count > 0)
         {
@@ -59,11 +62,11 @@ public class CheckpointManager : MonoBehaviour
 
     private void CheckForCheckpointReached()
     {
-        var players = GameObject.FindGameObjectsWithTag("Player");
-        if (players.Length == 0 || checkpoints.Count == 0)
+        if (playerObjects.Count == 0)
             return;
 
-        foreach (Transform checkpoint in checkpoints)
+        // Check distance from any player object to checkpoints
+        foreach (GameObject playerObj in playerObjects)
         {
             foreach (var playerObj in players)
             {
@@ -71,9 +74,7 @@ public class CheckpointManager : MonoBehaviour
                     playerObj.transform.position,
                     checkpoint.position
                 );
-                if (distance <= checkpointReachDistance)
-                {
-                    if (currentCheckpoint != checkpoint)
+                if (distance <= checkpointReachDistance && currentCheckpoint != checkpoint)
                     {
                         int currentIndex = checkpoints.IndexOf(currentCheckpoint);
                         int newIndex = checkpoints.IndexOf(checkpoint);
@@ -99,8 +100,7 @@ public class CheckpointManager : MonoBehaviour
     {
         if (checkpoint == null)
             return;
-        var players = GameObject.FindGameObjectsWithTag("Player");
-        foreach (var playerObj in players)
+        foreach (var playerObj in playerObjects)
         {
             var playerTransform = playerObj.transform;
             if (playerTransform.parent != null)
