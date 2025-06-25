@@ -79,6 +79,9 @@ public class StateManager : MonoBehaviour
         // Play squid sound if exists
         PlayAudio(squidForm);
 
+        SyncCameraState(mainCharacterCamera, squidCamera); // Copy current state to squid camera
+        UpdateCameraPriorities(main: 0, squid: 10);
+
         currentState = FormState.Squid;
     }
 
@@ -110,6 +113,9 @@ public class StateManager : MonoBehaviour
 
         // Play human sound if exists
         PlayAudio(mainCharacterForm);
+
+        SyncCameraState(squidCamera, mainCharacterCamera); // Copy current state to main camera
+        UpdateCameraPriorities(main: 10, squid: 0);
     }
 
     // Helper: resets everything for Start()
@@ -141,5 +147,20 @@ public class StateManager : MonoBehaviour
     {
         return currentState == FormState.MainCharacter;
     }
+
+    private void SyncCameraState(CinemachineFreeLook source, CinemachineFreeLook target)
+    {
+        // Copy rotation (horizontal axis & vertical axis)
+        target.m_XAxis.Value = source.m_XAxis.Value;
+        target.m_YAxis.Value = source.m_YAxis.Value;
+
+        // Copy rig settings (optional, if they differ)
+        for (int i = 0; i < 3; i++)
+        {
+            target.m_Orbits[i].m_Height = source.m_Orbits[i].m_Height;
+            target.m_Orbits[i].m_Radius = source.m_Orbits[i].m_Radius;
+        }
+    }
+
 
 }
