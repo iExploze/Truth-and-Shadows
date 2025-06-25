@@ -23,6 +23,7 @@ namespace Cinemachine.Examples
         [SerializeField]
         private AudioSource walkAudioSource;
 
+        //Rashai was here
         public bool canMove = true;
 
         // Use this for initialization
