@@ -21,7 +21,6 @@ public class lightDetection : MonoBehaviour
             Debug.LogError("This script requires a Spot Light assigned.");
         }
 
-        // Match inner angle to outer angle for sharp edges
         spotLight.innerSpotAngle = spotLight.spotAngle;
     }
 
