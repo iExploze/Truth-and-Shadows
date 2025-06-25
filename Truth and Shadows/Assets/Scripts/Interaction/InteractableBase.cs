@@ -258,7 +258,7 @@ namespace TruthAndShadows.Interaction
                 rigidBody.useGravity = true;
                 rigidBody.interpolation = RigidbodyInterpolation.None;
                 rigidBody.collisionDetectionMode = CollisionDetectionMode.Discrete;
-                rigidBody.constraints = RigidbodyConstraints.None;
+                rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
                 rigidBody.velocity = Vector3.zero;
                 rigidBody.angularVelocity = Vector3.zero;
             }

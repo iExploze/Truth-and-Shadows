@@ -29,7 +29,7 @@ namespace TruthAndShadows.Interaction
         private float colorChangeSpeed = 5f;
 
         [SerializeField]
-        private float cubeMass = 1000f;
+        private float cubeMass = 10f;
 
         [Header("Pickup Detection")]
         [SerializeField]

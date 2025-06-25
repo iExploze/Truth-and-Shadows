@@ -1113,6 +1113,8 @@ namespace TruthAndShadows.Interaction
                 // Force position update on rigidbody
                 rigidBody.position = currentPosition;
 
+                rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
+
                 Debug.Log(
                     $"Spotlight dropped at position {currentPosition} - non-kinematic, gravity enabled"
                 );
