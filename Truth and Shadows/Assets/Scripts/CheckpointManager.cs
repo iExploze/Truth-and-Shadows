@@ -43,7 +43,7 @@ public class CheckpointManager : MonoBehaviour
 
     private void Start()
     {
-        this.playerObjects = FindGameObjectsWithTag("Player");
+        playerObjects = new List<GameObject>(GameObject.FindGameObjectsWithTag("Player"));
         // Set the initial checkpoint to the first one in the list if any exist
         if (checkpoints.Count > 0)
         {
@@ -65,31 +65,24 @@ public class CheckpointManager : MonoBehaviour
         if (playerObjects.Count == 0)
             return;
 
+        int currentIndex = checkpoints.IndexOf(currentCheckpoint);
+
         // Check distance from any player object to checkpoints
         foreach (GameObject playerObj in playerObjects)
         {
-            foreach (var playerObj in players)
+            foreach (Transform checkpoint in checkpoints)
             {
-                float distance = Vector3.Distance(
-                    playerObj.transform.position,
-                    checkpoint.position
-                );
-                if (distance <= checkpointReachDistance && currentCheckpoint != checkpoint)
+                int newIndex = checkpoints.IndexOf(checkpoint);
+                if (newIndex > currentIndex || currentCheckpoint == null)
+                {
+                    currentCheckpoint = checkpoint;
+                    Debug.Log("New checkpoint reached: " + checkpoint.name);
+                    Checkpoint checkpointComponent = checkpoint.GetComponent<Checkpoint>();
+                    if (checkpointComponent != null)
                     {
-                        int currentIndex = checkpoints.IndexOf(currentCheckpoint);
-                        int newIndex = checkpoints.IndexOf(checkpoint);
-                        if (newIndex > currentIndex || currentCheckpoint == null)
-                        {
-                            currentCheckpoint = checkpoint;
-                            Debug.Log("New checkpoint reached: " + checkpoint.name);
-                            Checkpoint checkpointComponent = checkpoint.GetComponent<Checkpoint>();
-                            if (checkpointComponent != null)
-                            {
-                                checkpointComponent.Activate();
-                            }
-                            OnCheckpointReached?.Invoke(checkpoint);
-                        }
+                        checkpointComponent.Activate();
                     }
+                    OnCheckpointReached?.Invoke(checkpoint);
                 }
             }
         }
