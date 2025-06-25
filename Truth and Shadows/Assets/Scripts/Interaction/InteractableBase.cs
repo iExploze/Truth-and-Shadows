@@ -221,8 +221,8 @@ namespace TruthAndShadows.Interaction
                     case PickupMovementStyle.HorizontalPushPull:
                         rigidBody.isKinematic = false;
                         rigidBody.useGravity = true;
-                        rigidBody.drag = 5f;
-                        rigidBody.angularDrag = 10f;
+                        rigidBody.drag = 0f;
+                        rigidBody.angularDrag = 0f;
                         break;
                 }
             }
@@ -259,6 +259,8 @@ namespace TruthAndShadows.Interaction
                 rigidBody.interpolation = RigidbodyInterpolation.None;
                 rigidBody.collisionDetectionMode = CollisionDetectionMode.Discrete;
                 rigidBody.constraints = RigidbodyConstraints.None;
+                rigidBody.velocity = Vector3.zero;
+                rigidBody.angularVelocity = Vector3.zero;
             }
 
             playerTransform = null;

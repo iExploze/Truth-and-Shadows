@@ -1,5 +1,5 @@
-using UnityEngine;
 using TruthAndShadows.InputSystem;
+using UnityEngine;
 
 namespace TruthAndShadows.Interaction
 {
@@ -18,6 +18,12 @@ namespace TruthAndShadows.Interaction
 
         [SerializeField]
         private Color collisionColor = Color.red;
+
+        [SerializeField]
+        private bool enableCollisionColor = true;
+
+        [SerializeField]
+        private bool enablePickupColor = true;
 
         [SerializeField]
         private float colorChangeSpeed = 5f;
@@ -97,46 +103,54 @@ namespace TruthAndShadows.Interaction
         public override bool CanPickup(Vector3 playerPosition)
         {
             return CanInteract(playerPosition);
-        }        public override void StartInteraction()
+        }
+
+        public override void StartInteraction()
         {
             // Check permissions from the centralized provider
             bool canInteract = true;
-            
+
             // Check for interact permission from InputContextProvider if available
             if (InputContextProvider.Instance != null)
             {
                 canInteract = InputContextProvider.Instance.CanInteract;
-                
+
                 if (!canInteract)
                 {
-                    Debug.LogWarning("Block interaction attempted but permission denied by InputContextProvider");
+                    Debug.LogWarning(
+                        "Block interaction attempted but permission denied by InputContextProvider"
+                    );
                     return; // Don't proceed with interaction if not allowed
                 }
             }
-            
+
             Debug.Log(
                 $"Giant cube {gameObject.name} doesn't support R-key interaction. Use F to pick up."
             );
-        }public override void StartPickup(Transform playerTransform)
+        }
+
+        public override void StartPickup(Transform playerTransform)
         {
             // Check permissions from the centralized provider
             bool canPickupBlock = true;
-            
+
             // Get permission from InputContextProvider if available
-            if (TruthAndShadows.InputSystem.InputContextProvider.Instance != null)
+            if (InputContextProvider.Instance != null)
             {
-                canPickupBlock = TruthAndShadows.InputSystem.InputContextProvider.Instance.CanPickup;
-                
+                canPickupBlock = InputContextProvider.Instance.CanPickup;
+
                 if (!canPickupBlock)
                 {
-                    Debug.LogWarning("Block pickup attempted but permission denied by InputContextProvider");
+                    Debug.LogWarning(
+                        "Block pickup attempted but permission denied by InputContextProvider"
+                    );
                     return; // Don't proceed with pickup if not allowed
                 }
             }
-            
+
             // Call base class to handle physics setup and state changes
-            base.StartPickup(playerTransform); 
-            
+            base.StartPickup(playerTransform);
+
             // IsPickedUp is set in the base class. If it failed, don't proceed.
             if (!IsPickedUp)
                 return;
@@ -156,8 +170,11 @@ namespace TruthAndShadows.Interaction
                 rigidBody.angularVelocity = Vector3.zero;
             }
 
-            targetColor = pickedUpColor;
-            isColorChanging = true;
+            if (enablePickupColor)
+            {
+                targetColor = pickedUpColor;
+                isColorChanging = true;
+            }
 
             // Check for initial wall collisions
             CheckWallCollisions();
@@ -165,14 +182,18 @@ namespace TruthAndShadows.Interaction
             Debug.Log(
                 $"Giant cube {gameObject.name} picked up - changing color and ready to push/pull"
             );
-        }        public override void EndPickup()
+        }
+
+        public override void EndPickup()
         {
             if (!IsPickedUp)
                 return;
 
-            // Set color back to original before calling base
-            targetColor = originalColor;
-            isColorChanging = true;
+            if (enablePickupColor)
+            {
+                targetColor = originalColor;
+                isColorChanging = true;
+            }
 
             // Call base class to handle physics and state changes
             base.EndPickup();
@@ -218,32 +239,37 @@ namespace TruthAndShadows.Interaction
 
             // Call base update for outline effects
             base.Update();
-        }        protected override void FixedUpdate()
+        }
+
+        protected override void FixedUpdate()
         {
             // Let the base class handle the movement physics
-            base.FixedUpdate(); 
-            
+            base.FixedUpdate();
+
             // If picked up, check for wall collisions to update color
             if (IsPickedUp)
             {
                 // Check if pickup permission has been revoked during movement
-                if (InputContextProvider.Instance != null && !InputContextProvider.Instance.CanPickup)
+                if (
+                    InputContextProvider.Instance != null
+                    && !InputContextProvider.Instance.CanPickup
+                )
                 {
                     Debug.LogWarning("Block pickup permissions revoked - forcing drop");
                     EndPickup();
                     return;
                 }
-                
+
                 // Update color based on wall collision status
                 bool wasColliding = isCollidingWithWall;
                 CheckWallCollisions();
 
-                if (isCollidingWithWall && !wasColliding)
+                if (enableCollisionColor && isCollidingWithWall && !wasColliding)
                 {
                     targetColor = collisionColor;
                     isColorChanging = true;
                 }
-                else if (!isCollidingWithWall && wasColliding)
+                else if (enablePickupColor && !isCollidingWithWall && wasColliding)
                 {
                     targetColor = pickedUpColor;
                     isColorChanging = true;
