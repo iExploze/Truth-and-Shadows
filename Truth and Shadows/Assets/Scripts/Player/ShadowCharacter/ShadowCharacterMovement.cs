@@ -1,7 +1,7 @@
 using TruthAndShadows.InputSystem;
 using UnityEngine;
 
-namespace Cinemachine.Examples
+namespace TruthAndShadows.Player
 {
     [AddComponentMenu("")] // Don't display in add component menu
     public class ShadowCharacterMovement : MonoBehaviour
@@ -34,10 +34,14 @@ namespace Cinemachine.Examples
             input.x = Input.GetAxis("Horizontal");
             input.y = Input.GetAxis("Vertical");
 
-            // Check if spotlight aiming - block movement if rotating spotlight
-            if (InputManager.Instance != null && InputManager.Instance.GetRotateButton())
+            if (InputManager.Instance != null)
             {
-                // Zero out input to prevent movement during spotlight aiming
+                input = InputManager.Instance.MoveInput;
+            }
+
+            // Check if spotlight aiming - block movement if rotating spotlight
+            if (InputManager.Instance.RotateHeld)
+            {
                 input = Vector2.zero;
             }
 

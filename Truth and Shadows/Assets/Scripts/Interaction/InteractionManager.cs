@@ -3,6 +3,7 @@ using System.Linq;
 using Cinemachine;
 using TruthAndShadows.InputSystem;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 namespace TruthAndShadows.Interaction
@@ -18,6 +19,13 @@ namespace TruthAndShadows.Interaction
 
         [SerializeField]
         private Transform interactionSource;
+
+        [Header("References")]
+        [SerializeField]
+        private MonoBehaviour playerController;
+
+        // Reference to the input context provider
+        private MonoBehaviour inputContextProvider;
 
         [Header("Camera")]
         [SerializeField]
@@ -45,6 +53,32 @@ namespace TruthAndShadows.Interaction
         {
             InitializeSource();
             Cursor.visible = false;
+
+            // Try to find the InputContextProvider
+            inputContextProvider =
+                FindObjectOfType(
+                    System.Type.GetType("TruthAndShadows.InputSystem.InputContextProvider")
+                ) as MonoBehaviour;
+            if (inputContextProvider == null)
+            {
+                Debug.LogWarning(
+                    "InputContextProvider not found! Input permissions will default to allowed."
+                );
+            }
+
+            // Get player controller if not already assigned
+            if (playerController == null)
+            {
+                // Try to find it by type name to avoid direct reference issues
+                playerController =
+                    FindObjectOfType<TruthAndShadows.Player.CharacterMovement>();
+                if (playerController == null)
+                {
+                    Debug.LogWarning(
+                        "PlayerController not found! Interactable custom conditions may not work properly."
+                    );
+                }
+            }
         }
 
         void Update()
@@ -59,6 +93,80 @@ namespace TruthAndShadows.Interaction
                 interactionSource = transform;
         }
 
+        /// <summary>
+        /// Tries to invoke a method on an InteractableEvents component attached to the given GameObject
+        /// </summary>
+        /// <param name="gameObject">The GameObject that might have an InteractableEvents component</param>
+        /// <param name="methodName">The name of the method to invoke</param>
+        /// <param name="interactorGameObject">The GameObject to pass to the method</param>
+        private void TryInvokeInteractableEvent(
+            GameObject gameObject,
+            string methodName,
+            GameObject interactorGameObject
+        )
+        {
+            if (
+                gameObject == null
+                || string.IsNullOrEmpty(methodName)
+                || interactorGameObject == null
+            )
+                return;
+
+            try
+            {
+                // Find components with names containing "InteractableEvents"
+                var components = gameObject.GetComponents<MonoBehaviour>();
+                foreach (var component in components)
+                {
+                    if (component.GetType().Name.Contains("InteractableEvents"))
+                    {
+                        // Try to find the method by name
+                        var method = component.GetType().GetMethod(methodName);
+                        if (method != null)
+                        {
+                            // Invoke the method with the interactor GameObject
+                            method.Invoke(component, new object[] { interactorGameObject });
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error invoking interactable event: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Checks if an interactable can be interacted with based on its own custom conditions
+        /// </summary>
+        /// <param name="interactable">The interactable to check</param>
+        /// <returns>True if the interactable can be interacted with, false otherwise</returns>
+        private bool CheckInteractableConditions(IInteractable interactable)
+        {
+            try
+            {
+                // If the playerController is set, pass it to the CanInteract method
+                if (playerController != null)
+                {
+                    return interactable.CanInteract(playerController);
+                }
+                else
+                {
+                    // Fall back to returning true if we don't have a player reference
+                    Debug.LogWarning(
+                        "PlayerController reference not set in InteractionManager. Assuming interaction is allowed."
+                    );
+                    return true;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error checking interactable conditions: {e.Message}");
+                return true; // Default to allowing interaction on error
+            }
+        }
+
         private void HandleInteractionInput()
         {
             // Check if InputManager is available
@@ -68,12 +176,28 @@ namespace TruthAndShadows.Interaction
                     "InputManager.Instance is null! This will prevent interaction input from working correctly."
                 );
                 return;
+            } // Use InputManager's properties for consistent input handling across devices            // Check if interaction is allowed based on the current player state
+            // Using the centralized InputContextProvider to check permissions
+            bool canInteract = true; // Default to allowed            // Get permission from InputContextProvider if available
+            if (inputContextProvider != null)
+            {
+                // Use reflection to safely access the CanInteract property
+                System.Reflection.PropertyInfo propertyInfo = inputContextProvider
+                    .GetType()
+                    .GetProperty("CanInteract");
+                if (propertyInfo != null)
+                {
+                    bool? value = propertyInfo.GetValue(inputContextProvider) as bool?;
+                    if (value.HasValue)
+                    {
+                        canInteract = value.Value;
+                    }
+                }
             }
 
-            // Use InputManager for consistent input handling across devices
-            if (InputManager.Instance.GetInteractButtonDown())
+            if (InputManager.Instance.InteractPressed && canInteract)
             {
-                //Debug.Log("Interact button pressed - attempting interaction");
+                Debug.Log("Interact button pressed and allowed - attempting interaction");
 
                 // If we have a picked-up item, drop it before starting a new interaction
                 if (pickedUpInteractable != null)
@@ -83,10 +207,14 @@ namespace TruthAndShadows.Interaction
 
                 TryStartInteraction();
             }
-            else if (InputManager.Instance.GetInteractButtonUp())
+            else if (InputManager.Instance.InteractReleased)
             {
-                //Debug.Log("Interact button released - ending interaction");
-                EndCurrentInteraction();
+                // Only end interaction on release if not a continuous interaction
+                if (isInteracting && currentInteractable != null && !currentInteractable.RequiresContinuousInteraction)
+                {
+                    Debug.Log("Interact button released - ending interaction (non-continuous)");
+                    EndCurrentInteraction();
+                }
             }
 
             // Handle pickup functionality
@@ -97,7 +225,18 @@ namespace TruthAndShadows.Interaction
         private void UpdateContinuousInteraction()
         {
             if (isInteracting && currentInteractable?.RequiresContinuousInteraction == true)
-                currentInteractable.ContinueInteraction();
+            {
+                // If the interact button is no longer held, end the interaction
+                if (!InputManager.Instance.InteractHeld)
+                {
+                    Debug.Log("Interact button no longer held - ending continuous interaction");
+                    EndCurrentInteraction();
+                }
+                else
+                {
+                    currentInteractable.ContinueInteraction();
+                }
+            }
         }
 
         private void TryStartInteraction()
@@ -119,16 +258,44 @@ namespace TruthAndShadows.Interaction
 
             if (showDebugRay)
                 Debug.DrawRay(origin, direction * interactionRange, Color.yellow, 0.1f);
-
             if (TryFindInteractable(origin, direction, out IInteractable interactable))
             {
                 Debug.Log($"Found interactable: {((MonoBehaviour)interactable).gameObject.name}");
-                currentInteractable = interactable;
-                isInteracting = true;
-                currentInteractable.StartInteraction(); // Switch to interactable's camera if it has one                if (currentInteractable.InteractionCamera != null)
+
+                // Check if the interactable can be interacted with based on its own conditions
+                bool canInteract = CheckInteractableConditions(interactable);
+                if (canInteract)
                 {
-                    currentInteractionCamera = currentInteractable.InteractionCamera;
-                    SwitchToCamera(currentInteractionCamera);
+                    currentInteractable = interactable;
+                    isInteracting = true;
+
+                    // Start the interaction
+                    currentInteractable.StartInteraction();
+                    // Find attached InteractableEvents component if it exists (using reflection since we might have assembly reference issues)
+                    var interactableGameObject = ((MonoBehaviour)interactable).gameObject;
+                    TryInvokeInteractableEvent(
+                        interactableGameObject,
+                        "InvokeContinuedInteraction",
+                        playerController?.gameObject
+                    );
+
+                    // Switch to interactable's camera if it has one
+                    if (currentInteractable.InteractionCamera != null)
+                    {
+                        currentInteractionCamera = currentInteractable.InteractionCamera;
+                        SwitchToCamera(currentInteractionCamera);
+                    }
+                }
+                else
+                {
+                    Debug.Log("Interactable conditions not met - interaction denied");
+                    // Find attached InteractableEvents component if it exists
+                    var interactableGameObject = ((MonoBehaviour)interactable).gameObject;
+                    TryInvokeInteractableEvent(
+                        interactableGameObject,
+                        "InvokeInteractionFailed",
+                        playerController?.gameObject
+                    );
                 }
             }
             else
@@ -312,14 +479,48 @@ namespace TruthAndShadows.Interaction
         )
         {
             interactable = null;
-            RaycastHit hit;
 
+            // First attempt - sphere cast to find interactables in line of sight
+            RaycastHit hit;
             if (Physics.SphereCast(origin, interactionRadius, direction, out hit, interactionRange))
             {
                 interactable = hit.collider.GetComponent<IInteractable>();
+                if (interactable != null)
+                {
+                    return true;
+                }
             }
 
-            return interactable != null;
+            // Second attempt - proximity check for items very close to the player
+            // This helps with interactables that might be partially behind the player or just outside the forward view
+            Collider[] nearbyColliders = Physics.OverlapSphere(origin, interactionRadius * 1.5f);
+
+            float closestDistance = float.MaxValue;
+            IInteractable closestInteractable = null;
+
+            foreach (Collider col in nearbyColliders)
+            {
+                IInteractable potentialInteractable = col.GetComponent<IInteractable>();
+                if (potentialInteractable != null)
+                {
+                    // Check distance to find the closest one
+                    float distance = Vector3.Distance(origin, col.transform.position);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        closestInteractable = potentialInteractable;
+                    }
+                }
+            }
+
+            // If we found any interactable in proximity and it's within our interaction range
+            if (closestInteractable != null && closestDistance <= interactionRange)
+            {
+                interactable = closestInteractable;
+                return true;
+            }
+
+            return false;
         }
 
         public void EndCurrentInteraction()
@@ -327,7 +528,17 @@ namespace TruthAndShadows.Interaction
             if (!isInteracting || currentInteractable == null)
                 return;
 
+            // Get a reference to the interactable's GameObject before ending the interaction
+            GameObject interactableGameObject = ((MonoBehaviour)currentInteractable).gameObject;
+
+            // End the interaction
             currentInteractable.EndInteraction();
+            // Find attached InteractableEvents component if it exists
+            TryInvokeInteractableEvent(
+                interactableGameObject,
+                "InvokeInteractionEnded",
+                playerController?.gameObject
+            );
 
             // First disable the interaction camera
             if (currentInteractionCamera != null)
@@ -403,7 +614,7 @@ namespace TruthAndShadows.Interaction
                 // Safe null check for InputManager.Instance
                 if (InputManager.Instance != null)
                 {
-                    isInteracting = InputManager.Instance.GetInteractButton();
+                    isInteracting = InputManager.Instance.InteractHeld;
                 }
                 else
                 {
@@ -421,16 +632,33 @@ namespace TruthAndShadows.Interaction
             {
                 Debug.LogError("InputManager.Instance is null! Cannot process pickup input.");
                 return;
+            } // Check if pickup is allowed based on the current player state
+            bool canPickup = true; // Default to allowed
+            // Get permission from InputContextProvider if available
+            if (inputContextProvider != null)
+            {
+                // Use reflection to safely access the CanPickup property
+                System.Reflection.PropertyInfo propertyInfo = inputContextProvider
+                    .GetType()
+                    .GetProperty("CanPickup");
+                if (propertyInfo != null)
+                {
+                    bool? value = propertyInfo.GetValue(inputContextProvider) as bool?;
+                    if (value.HasValue)
+                    {
+                        canPickup = value.Value;
+                    }
+                }
             }
 
-            if (InputManager.Instance.GetPickupButtonDown() && pickedUpInteractable == null)
+            if (InputManager.Instance.PickupPressed && pickedUpInteractable == null && canPickup)
             {
-                //Debug.Log("Pickup button pressed - attempting pickup");
+                Debug.Log("Pickup button pressed and allowed - attempting pickup");
                 TryPickupItem();
             }
-            else if (InputManager.Instance.GetPickupButtonUp() && pickedUpInteractable != null)
+            else if (InputManager.Instance.PickupReleased && pickedUpInteractable != null)
             {
-                //Debug.Log("Pickup button released - dropping item");
+                Debug.Log("Pickup button released - dropping item");
                 DropPickedUpItem();
             }
         }
@@ -442,12 +670,28 @@ namespace TruthAndShadows.Interaction
             {
                 Debug.LogError("InputManager.Instance is null! Cannot process reset input.");
                 return;
+            } // Check if reset is allowed based on the current player state
+            bool canReset = true; // Default to allowed
+            // Get permission from InputContextProvider if available
+            if (inputContextProvider != null)
+            {
+                // Use reflection to safely access the CanReset property
+                System.Reflection.PropertyInfo propertyInfo = inputContextProvider
+                    .GetType()
+                    .GetProperty("CanReset");
+                if (propertyInfo != null)
+                {
+                    bool? value = propertyInfo.GetValue(inputContextProvider) as bool?;
+                    if (value.HasValue)
+                    {
+                        canReset = value.Value;
+                    }
+                }
             }
 
-            if (InputManager.Instance.GetResetButtonDown())
+            if (InputManager.Instance.ResetPressed && canReset)
             {
-                //Debug.Log("Trying to reset...");
-                // SceneManager.LoadSceneAsync(UseLoadingIntermediaryScene ? "Loading" : SceneManager.GetActiveScene().name);
+                Debug.Log("Reset button pressed and allowed - reloading scene");
                 LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
             }
         }
@@ -471,6 +715,9 @@ namespace TruthAndShadows.Interaction
             {
                 if (isInteracting && currentInteractable == interactable)
                 {
+                    Debug.Log(
+                        "Ending current interaction before picking up a new item"
+                    );
                     EndCurrentInteraction();
                 }
                 pickedUpInteractable = interactable;

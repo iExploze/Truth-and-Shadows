@@ -79,12 +79,7 @@ namespace Controller
             m_WalkSpeed = Mathf.Max(m_WalkSpeed, 0f);
             m_RunSpeed = Mathf.Max(m_RunSpeed, m_WalkSpeed);
 
-            m_Movement?.SetStats(
-                m_WalkSpeed / 3.6f,
-                m_RunSpeed / 3.6f,
-                m_RotateSpeed,
-                m_Space
-            );
+            m_Movement?.SetStats(m_WalkSpeed / 3.6f, m_RunSpeed / 3.6f, m_RotateSpeed, m_Space);
         }
 
         private void Awake()
@@ -114,18 +109,18 @@ namespace Controller
         }
 
         private void Update()
-        { 
-            // Check for hint button (K key or controller button: B on Xbox, Circle on PS, A on Switch Pro) to start sequence
+        {
+            // Use InputManager for hint input
             if (
-                (
-                    InputManager.Instance != null && InputManager.Instance.GetHintButtonDown()
-                    || (InputManager.Instance == null && Input.GetKeyDown(KeyCode.K))
-                ) && !m_IsInSequence
+                InputManager.Instance != null
+                && InputManager.Instance.HintPressed
+                && !m_IsInSequence
             )
             {
                 StartTransformSequence();
                 Debug.Log("Starting dog hint sequence");
-            }            // Only handle normal movement when not in sequence
+            }
+            // Only handle normal movement when not in sequence
             if (!m_IsInSequence)
             {
                 m_Movement.Move(

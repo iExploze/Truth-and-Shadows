@@ -123,10 +123,12 @@ MonoBehaviour:
   interactionDistance: 2
   useColliderBounds: 1
   canBePickedUp: 1
+  movementStyle: 0
   pickupRaiseAmount: 0
   pickupSmoothness: 10
+  pickupMovementSmoothing: 15
   source: {fileID: 0}
-  clip: {fileID: 0}
+  pickUpClip: {fileID: 0}
   interactionCamera: {fileID: 0}
   enableOutline: 1
   outlineColor: {r: 0.2, g: 0.6, b: 1, a: 1}
@@ -134,9 +136,11 @@ MonoBehaviour:
   outlineParticlePrefab: {fileID: 5397975728314071263, guid: 72f556a5681967b46a166b7ee4cef45a, type: 3}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
+  collisionColor: {r: 1, g: 0, b: 0, a: 1}
+  enableCollisionColor: 1
+  enablePickupColor: 1
   colorChangeSpeed: 5
-  cubeMass: 1000
-  minPickupDistance: 1
+  cubeMass: 1
   pickupDetectionRadius: 3
   cubeRenderer: {fileID: 0}
   currentColor: {r: 0, g: 0, b: 0, a: 0}
@@ -167,5 +171,5 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 112
   m_CollisionDetection: 0
