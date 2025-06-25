@@ -41,19 +41,19 @@ namespace Cinemachine.Examples
             {
                 // Get movement input from the centralized InputManager
                 input = InputManager.Instance.MoveInput;
-                
+
                 // Block movement if rotating spotlight
                 if (InputManager.Instance.RotateHeld)
                 {
                     input = Vector2.zero;
                 }
-                
+
                 // Handle pickup state - use special movement handling if needed
                 if (InputManager.Instance.PickupHeld && input.magnitude < 0.1f)
                 {
                     // Get raw input through the InputManager
                     input = InputManager.Instance.MoveInputRaw;
-                    
+
                     if (input.magnitude > 0.1f && Time.frameCount % 120 == 0)
                     {
                         Debug.Log($"Using raw input during pickup: {input}");
@@ -82,7 +82,7 @@ namespace Cinemachine.Examples
                 }
                 else if (speed <= 0.05f && walkAudioSource.isPlaying)
                 {
-                    walkAudioSource.Stop();
+                    walkAudioSource.Stop(); //stop playing
                 }
             }
 
@@ -98,7 +98,7 @@ namespace Cinemachine.Examples
 
             if (!canMove)
                 return;
-                
+
             if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
             {
                 Vector3 lookDirection = targetDirection.normalized;
