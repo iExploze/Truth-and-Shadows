@@ -27,13 +27,57 @@ Truth and Shadows is a Unity game with custom systems for input, camera, interac
 - **InputContextProvider**: Centralized permission system for input actions, allowing state-based and manual overrides.
 - **Best Practice**: Always use `InputManager` for input queries and check permissions via `InputContextProvider` before acting.
 
-### Example Usage
+### InputManager API & Usage
+
+The `InputManager` is a singleton and the only place you should query for input. Never use Unity's `Input` class directly in your scripts.
+
+#### Common Input Properties
+- `MoveInput` / `MoveInputRaw`: Player movement (Vector2)
+- `IsRunning`: Sprint toggle
+- `LookInput`: Camera look (Vector2)
+- `PickupCameraInput`: Special camera input during pickup
+- `InteractPressed`, `InteractHeld`, `InteractReleased`: Interact button states
+- `PickupPressed`, `PickupHeld`, `PickupReleased`: Pickup button states
+- `RotateHeld`: Whether rotate/aim button is held
+- `ResetPressed`: Reset action
+- `HintPressed`, `HintHeld`, `HintReleased`: Hint button states
+- `UsingController`: True if a controller is active
+
+#### Example Usage
 ```csharp
 if (InputManager.Instance.InteractPressed && InputContextProvider.Instance.CanInteract)
 {
     // Process interaction
 }
+
+if (InputManager.Instance.PickupHeld)
+{
+    // Handle pickup logic
+}
+
+Vector2 move = InputManager.Instance.MoveInput;
+Vector2 look = InputManager.Instance.LookInput;
 ```
+
+#### Legacy Support
+The InputManager also provides legacy method-based APIs for backward compatibility:
+```csharp
+Vector2 movement = InputManager.Instance.GetMovementInput();
+bool isInteracting = InputManager.Instance.GetInteractButton();
+```
+
+#### Input Exclusivity & State
+- InputManager only reports input state; exclusivity (e.g., can't interact while picking up) is handled by PlayerController and InputContextProvider.
+- Always check both the input property and the relevant permission (e.g., `CanInteract`, `CanPickup`).
+
+#### Extending InputManager
+- To add new input types, add a property to InputManager and update its internal state in the `Update()` method.
+- For new permissions, add a property to InputContextProvider and update its logic.
+
+#### Best Practices
+- Query input once per frame and store locally if needed.
+- Use property-based API for new code; legacy methods are for compatibility only.
+- Use `InputManager.Instance.UsingController` to adapt UI or controls for controller vs. mouse/keyboard.
 
 ---
 
@@ -102,7 +146,7 @@ public override bool CanInteract(MonoBehaviour player)
 
 ## Troubleshooting
 
-- **Input not working?** Ensure `InputManager` and `InputContextProvider` are present in the scene.
+- **Input not working?** Ensure `InputManager` and `InputContextProvider` are present in the scene (make sure the bootstrap scripts are present on atleast one component).
 - **Pickup issues?** Check Rigidbody/collider setup and pickup settings in the inspector.
 - **Spotlight not falling after drop?** Make sure `SpotlightController.EndPickup()` enables gravity and disables kinematic.
 - **Multiple players not respawning?** Confirm all player objects are tagged `Player`.
