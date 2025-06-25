@@ -24,6 +24,7 @@ namespace TruthAndShadows.Interaction
         [Header("Camera Settings")]
         [SerializeField]
         private CinemachineFreeLook spotlightCamera;
+        public override Component InteractionCamera => spotlightCamera;
 
         [Header("Rotation Settings")]
         [SerializeField]
@@ -101,7 +102,6 @@ namespace TruthAndShadows.Interaction
         private int originalCameraPriority = 10;
 
         public override bool RequiresContinuousInteraction => true;
-        public override Component InteractionCamera => spotlightCamera;
 
         protected override void Start()
         {
@@ -251,24 +251,29 @@ namespace TruthAndShadows.Interaction
 
             // Make sure it can be picked up
             canBePickedUp = true;
-        }        public override void StartInteraction()
+        }
+
+        public override void StartInteraction()
         {
             // Check permissions from the centralized provider
             bool canInteractWithSpotlight = true;
-            
+
             // Check for rotate permission from InputContextProvider if available
             if (InputContextProvider.Instance != null)
             {
-                canInteractWithSpotlight = InputContextProvider.Instance.CanRotate && 
-                                          InputContextProvider.Instance.CanInteract;
-                
+                canInteractWithSpotlight =
+                    InputContextProvider.Instance.CanRotate
+                    && InputContextProvider.Instance.CanInteract;
+
                 if (!canInteractWithSpotlight)
                 {
-                    Debug.LogWarning("Spotlight interaction attempted but permission denied by InputContextProvider");
+                    Debug.LogWarning(
+                        "Spotlight interaction attempted but permission denied by InputContextProvider"
+                    );
                     return; // Don't proceed with interaction if not allowed
                 }
             }
-            
+
             if (spotlightCamera != null)
             {
                 // Setup the camera and ensure proper alignment
@@ -455,17 +460,20 @@ namespace TruthAndShadows.Interaction
                     .BindingMode
                     .SimpleFollowWithWorldUp;
             }
-        }        public override void ContinueInteraction()
+        }
+
+        public override void ContinueInteraction()
         {
             // Check if we can continue the interaction based on permissions
             bool canContinueInteraction = true;
-            
+
             // Check the centralized permissions provider
             if (InputContextProvider.Instance != null)
             {
-                canContinueInteraction = InputContextProvider.Instance.CanRotate && 
-                                        InputContextProvider.Instance.CanInteract;
-                
+                canContinueInteraction =
+                    InputContextProvider.Instance.CanRotate
+                    && InputContextProvider.Instance.CanInteract;
+
                 // If permissions revoked, end the interaction early
                 if (!canContinueInteraction)
                 {
@@ -474,7 +482,7 @@ namespace TruthAndShadows.Interaction
                     return;
                 }
             }
-            
+
             HandleMouseInput();
             UpdateRotations();
             UpdateLookAtTarget();
@@ -507,7 +515,9 @@ namespace TruthAndShadows.Interaction
                 // Debug.DrawLine(cameraFollowTarget.position, spotLight.transform.position, Color.blue);
                 // Debug.DrawLine(spotLight.transform.position, cameraLookAtTarget.position, Color.red);
             }
-        }        private void HandleMouseInput()
+        }
+
+        private void HandleMouseInput()
         {
             // Camera input is handled by Cinemachine - we only need to update its sensitivity settings
             // Null check for InputManager.Instance
@@ -517,21 +527,21 @@ namespace TruthAndShadows.Interaction
                     "InputManager.Instance is null! Cannot get input for spotlight control."
                 );
                 return;
-            } 
-            
+            }
+
             // Get consistent input across devices (mouse or right stick)
             Vector2 lookInput = InputManager.Instance.LookInput;
-            
+
             // Skip spotlight aiming unless the rotate button is pressed AND rotation is permitted by the permissions system
             // Check both the local input and the centralized permission system
             bool canRotate = true;
-            
+
             // Check the centralized permission provider if available
             if (InputContextProvider.Instance != null)
             {
                 canRotate = InputContextProvider.Instance.CanRotate;
             }
-            
+
             // Only allow rotation if both the button is pressed and permissions allow it
             if (!InputManager.Instance.RotateHeld || !canRotate)
             {
@@ -1136,8 +1146,7 @@ namespace TruthAndShadows.Interaction
             if (!hasCalculatedRelativePosition)
             {
                 // Calculate position relative to player's forward direction, accounting for the pickup raise amount
-                relativePosition =
-                    playerTransform.forward * 1.3f + Vector3.up * pickupRaiseAmount;
+                relativePosition = playerTransform.forward * 1.3f + Vector3.up * pickupRaiseAmount;
                 hasCalculatedRelativePosition = true;
             }
 
@@ -1160,7 +1169,6 @@ namespace TruthAndShadows.Interaction
                 rigidBody.position = smoothedPosition;
             }
         }
-
 
         private void VerifyOutlineComponents()
         {

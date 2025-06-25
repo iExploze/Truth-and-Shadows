@@ -19,12 +19,16 @@ namespace TruthAndShadows.InputSystem
                 GameObject inputManagerObject = new GameObject("InputManager");
                 inputManagerObject.AddComponent<InputManager>();
 
+                GameObject inputContextProviderObject = new GameObject("InputContextProvider");
+                inputContextProviderObject.AddComponent<InputContextProvider>();
+
                 if (dontDestroyOnLoad)
                 {
                     DontDestroyOnLoad(inputManagerObject);
+                    DontDestroyOnLoad(inputContextProviderObject);
                 }
 
-                Debug.Log("InputManager created by bootstrap");
+                Debug.Log("InputManager and InputContextProvider created by bootstrap");
             }
         }
     }

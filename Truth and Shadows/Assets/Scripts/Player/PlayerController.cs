@@ -78,7 +78,6 @@ namespace TruthAndShadows.Player
 
         #region Private Variables
         private PlayerState _currentState = PlayerState.Normal;
-        private CharacterController _characterController;
         private Vector2 _smoothedMovement = Vector2.zero;
         private float _currentSpeed = 0f;
         private float _movementSmoothTime = 0.1f;
@@ -102,8 +101,6 @@ namespace TruthAndShadows.Player
         #region Unity Lifecycle Methods
         private void Awake()
         {
-            // Get required components
-            _characterController = GetComponent<CharacterController>();
 
             // Use the provided animator or try to get one
             if (animator == null)
@@ -198,6 +195,8 @@ namespace TruthAndShadows.Player
             {
                 OnStateChanged(previousState, _currentState);
             }
+
+            Debug.Log("Previous State: " + previousState + ", New State: " + _currentState);
         }
 
         /// <summary>
@@ -323,10 +322,6 @@ namespace TruthAndShadows.Player
                     );
                 }
             }
-
-            // Apply movement
-            Vector3 motion = moveDirection * _currentSpeed * Time.deltaTime;
-            _characterController.Move(motion);
 
             // Update animator parameters
             if (animator != null)

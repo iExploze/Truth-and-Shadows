@@ -1,7 +1,7 @@
 using TruthAndShadows.InputSystem;
 using UnityEngine;
 
-namespace Cinemachine.Examples
+namespace TruthAndShadows.Player
 {
     [AddComponentMenu("")] // Don't display in add component menu
     public class ShadowCharacterMovement : MonoBehaviour

@@ -1,4 +1,4 @@
-﻿using Cinemachine.Examples;
+﻿using TruthAndShadows.Player;
 using TruthAndShadows.InputSystem;
 using UnityEngine;
 
@@ -36,11 +36,14 @@ public class CharacterMovementNoCamera : MonoBehaviour
         // Get movement input from the InputManager's property
         Vector2 input = InputManager.Instance.MoveInput;
 
-        // Block movement if rotating spotlight
-        if (InputManager.Instance.RotateHeld)
+        InputContextProvider.Instance.LogPermissions();
+
+        // Block movement where appropriate
+        if (!InputContextProvider.Instance.CanMove)
         {
-            // Zero out input to prevent movement during spotlight aiming
             input = Vector2.zero;
+            Debug.Log("Movement blocked by InputContextProvider");
+            InputContextProvider.Instance.LogPermissions();
         }
 
         // Handle forward/backward movement

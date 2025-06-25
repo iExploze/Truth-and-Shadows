@@ -1,7 +1,7 @@
 ﻿using TruthAndShadows.InputSystem;
 using UnityEngine;
 
-namespace Cinemachine.Examples
+namespace TruthAndShadows.Player
 {
     [AddComponentMenu("")] // Don't display in add component menu
     public class CharacterMovement2D : MonoBehaviour
@@ -34,15 +34,17 @@ namespace Cinemachine.Examples
             // Check if InputManager exists
             if (InputManager.Instance == null)
                 return;
+
+            // Block movement where appropriate
+            if (!InputContextProvider.Instance.CanMove)
+            {
+                input = Vector2.zero;
+                Debug.Log("Movement blocked by InputContextProvider");
+                InputContextProvider.Instance.LogPermissions();
+            }
                 
             // Get horizontal movement from InputManager
             input.x = InputManager.Instance.MoveInput.x;
-
-            // Block movement during spotlight aiming
-            if (InputManager.Instance.RotateHeld)
-            {
-                input.x = 0f;
-            }
 
             // Check if direction changes
             if ((input.x < 0f && !headingleft) || (input.x > 0f && headingleft))

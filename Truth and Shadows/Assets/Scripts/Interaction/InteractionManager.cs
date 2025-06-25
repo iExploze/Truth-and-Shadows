@@ -71,8 +71,7 @@ namespace TruthAndShadows.Interaction
             {
                 // Try to find it by type name to avoid direct reference issues
                 playerController =
-                    FindObjectOfType(System.Type.GetType("TruthAndShadows.Player.PlayerController"))
-                    as MonoBehaviour;
+                    FindObjectOfType<TruthAndShadows.Player.CharacterMovement>();
                 if (playerController == null)
                 {
                     Debug.LogWarning(
@@ -150,7 +149,6 @@ namespace TruthAndShadows.Interaction
                 // If the playerController is set, pass it to the CanInteract method
                 if (playerController != null)
                 {
-                    // Directly call the interface method (no reflection needed anymore)
                     return interactable.CanInteract(playerController);
                 }
                 else
@@ -211,8 +209,12 @@ namespace TruthAndShadows.Interaction
             }
             else if (InputManager.Instance.InteractReleased)
             {
-                Debug.Log("Interact button released - ending interaction");
-                EndCurrentInteraction();
+                // Only end interaction on release if not a continuous interaction
+                if (isInteracting && currentInteractable != null && !currentInteractable.RequiresContinuousInteraction)
+                {
+                    Debug.Log("Interact button released - ending interaction (non-continuous)");
+                    EndCurrentInteraction();
+                }
             }
 
             // Handle pickup functionality
@@ -223,7 +225,18 @@ namespace TruthAndShadows.Interaction
         private void UpdateContinuousInteraction()
         {
             if (isInteracting && currentInteractable?.RequiresContinuousInteraction == true)
-                currentInteractable.ContinueInteraction();
+            {
+                // If the interact button is no longer held, end the interaction
+                if (!InputManager.Instance.InteractHeld)
+                {
+                    Debug.Log("Interact button no longer held - ending continuous interaction");
+                    EndCurrentInteraction();
+                }
+                else
+                {
+                    currentInteractable.ContinueInteraction();
+                }
+            }
         }
 
         private void TryStartInteraction()
@@ -702,6 +715,9 @@ namespace TruthAndShadows.Interaction
             {
                 if (isInteracting && currentInteractable == interactable)
                 {
+                    Debug.Log(
+                        "Ending current interaction before picking up a new item"
+                    );
                     EndCurrentInteraction();
                 }
                 pickedUpInteractable = interactable;

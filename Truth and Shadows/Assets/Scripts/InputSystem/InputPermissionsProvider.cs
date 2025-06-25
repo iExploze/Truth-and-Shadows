@@ -51,7 +51,7 @@ namespace TruthAndShadows.InputSystem
                     {
                         CanMove = false,
                         CanCameraLook = true,
-                        CanInteract = false,
+                        CanInteract = true,
                         CanPickup = false,
                         CanRotate = true,
                         CanRun = false,

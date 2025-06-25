@@ -180,7 +180,7 @@ namespace TruthAndShadows.InputSystem
             _canHint = permissions.CanHint;
         }
 
-        private void LogPermissions()
+        public void LogPermissions()
         {
             Debug.Log(
                 $"[InputContextProvider] Permissions for state {_currentPlayerState}:"

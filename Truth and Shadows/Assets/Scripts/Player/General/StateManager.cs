@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
-using Cinemachine.Examples;
+using TruthAndShadows.Player;
 using UnityEngine;
 using InteractionManager = TruthAndShadows.Interaction.InteractionManager;
 
