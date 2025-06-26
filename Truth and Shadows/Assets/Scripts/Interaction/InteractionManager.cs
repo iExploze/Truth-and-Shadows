@@ -691,8 +691,10 @@ namespace TruthAndShadows.Interaction
 
             if (InputManager.Instance.ResetPressed && canReset)
             {
-                Debug.Log("Reset button pressed and allowed - reloading scene");
+                Debug.Log("Reseppt button pressed and allowed - reloading scene");
+                //CheckpointManager.Instance.RespawnAtCheckpoint();//
                 LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
+                //LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
             }
         }
 

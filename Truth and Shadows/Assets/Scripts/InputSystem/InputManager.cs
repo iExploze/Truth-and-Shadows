@@ -39,6 +39,7 @@ namespace TruthAndShadows.InputSystem
 
         public bool RotateHeld { get; private set; }
         public bool ResetPressed { get; private set; }
+        public bool MenuPressed { get; private set; }
 
         public bool HintPressed { get; private set; }
         public bool HintHeld { get; private set; }
@@ -84,6 +85,12 @@ namespace TruthAndShadows.InputSystem
         {
             KeyCode.K, // Keyboard
             KeyCode.JoystickButton0, // Xbox B, PS Circle, Switch A
+        };
+
+        private readonly KeyCode[] menuButtons = new KeyCode[]
+        {
+            KeyCode.U,
+            KeyCode.JoystickButton7,
         };
         #endregion
 
