@@ -27,19 +27,20 @@ public class CheckpointManager : MonoBehaviour
 
     private List<GameObject> playerObjects = new List<GameObject>();
 
-    private void Awake()
-    {
-        // Singleton pattern
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
+    // removing this appears to fix the issue of checkpoints resetting. does not appear to have any side effects as of now
+    // private void Awake()
+    // {
+    //     // Singleton pattern
+    //     if (Instance == null)
+    //     {
+    //         Instance = this;
+    //         DontDestroyOnLoad(gameObject);
+    //     }
+    //     else
+    //     {
+    //         Destroy(gameObject);
+    //     }
+    // }
 
     private void Start()
     {
