@@ -78,7 +78,7 @@ namespace TruthAndShadows.InputSystem
         private readonly KeyCode[] resetButtons = new KeyCode[]
         {
             KeyCode.L, // Keyboard
-            KeyCode.JoystickButton6, // Xbox Back/View, PS Share, Switch -
+            KeyCode.JoystickButton8, // Xbox Back/View, PS Share, Switch -
         };
 
         private readonly KeyCode[] hintButtons = new KeyCode[]
