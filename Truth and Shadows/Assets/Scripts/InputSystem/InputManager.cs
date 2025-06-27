@@ -90,7 +90,7 @@ namespace TruthAndShadows.InputSystem
         private readonly KeyCode[] menuButtons = new KeyCode[]
         {
             KeyCode.U,
-            KeyCode.JoystickButton7,
+            KeyCode.JoystickButton3, // Xbox X, PS Square, Switch Y
         };
         #endregion
 
@@ -137,6 +137,7 @@ namespace TruthAndShadows.InputSystem
             bool allowRun = true;
             bool allowHint = true;
             bool allowReset = true;
+            bool allowMenu = true;
 
             // Get permissions from InputContextProvider if available
             var contextProvider = InputContextProvider.Instance;
@@ -150,6 +151,7 @@ namespace TruthAndShadows.InputSystem
                 allowRun = contextProvider.CanRun;
                 allowHint = contextProvider.CanHint;
                 allowReset = contextProvider.CanReset;
+                allowMenu = contextProvider.CanMenu;
             }
 
             // Always detect raw inputs first (for state tracking)
@@ -157,6 +159,7 @@ namespace TruthAndShadows.InputSystem
             bool rawPickupHeld = GetPickupButtonInternal();
             bool rawRotateHeld = GetRotateButtonInternal();
             bool rawResetPressed = GetResetButtonDownInternal();
+            bool rawMenuPressed = GetMenuButtonDownInternal();
             bool rawHintHeld = GetHintButtonInternal();
             bool rawSprintHeld = IsSprintHeldInternal();
 
@@ -189,6 +192,7 @@ namespace TruthAndShadows.InputSystem
 
             RotateHeld = allowRotate && rawRotateHeld;
             ResetPressed = allowReset && rawResetPressed;
+            MenuPressed = allowMenu && rawMenuPressed;
 
             HintHeld = allowHint && rawHintHeld;
             HintPressed = HintHeld && !_prevHintHeld;
@@ -313,6 +317,7 @@ namespace TruthAndShadows.InputSystem
         private bool GetRotateButtonInternal() => AnyKey(rotateButtons);
 
         private bool GetResetButtonDownInternal() => AnyKeyDown(resetButtons);
+        private bool GetMenuButtonDownInternal() => AnyKey(menuButtons);
 
         private bool GetHintButtonDownInternal() => AnyKeyDown(hintButtons);
 

@@ -12,6 +12,13 @@ public class MainMenuController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Debug.Log(GameObject.Find("CheckpointManager"));
+        //GameObject.Find("CheckpointManager").SetActive(false);
+        if (GameObject.Find("CheckpointManager") != null)
+        {
+            Debug.Log("AAAAAA");
+            GameObject.Find("CheckpointManager").SetActive(false);
+        }
         gamepad = Gamepad.current;
     }
 

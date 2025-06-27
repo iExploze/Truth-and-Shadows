@@ -34,6 +34,13 @@ public class LevelManager : MonoBehaviour
     
     private IEnumerator LoadSceneAsync(string sceneName, string transitionName)
     {
+        Debug.Log(GameObject.Find("CheckpointManager"));
+        //GameObject.Find("CheckpointManager").SetActive(false);
+        if (GameObject.Find("CheckpointManager") != null)
+        {
+            Debug.Log("AAAAAA");
+            GameObject.Find("CheckpointManager").SetActive(false);
+        }
         // 1 line for loop. loop thru transitions until name matches transitionName
         SceneTransition transition = transitions.First(t => t.name == transitionName);
 
@@ -65,5 +72,13 @@ public class LevelManager : MonoBehaviour
         }
 
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
+        
+        // Debug.Log(GameObject.Find("CheckpointManager"));
+        // //GameObject.Find("CheckpointManager").SetActive(false);
+        // if (GameObject.Find("CheckpointManager") != null)
+        // {
+        //     Debug.Log("AAAAAA");
+        //     GameObject.Find("CheckpointManager").SetActive(false);
+        // }
     }
 }
