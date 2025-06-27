@@ -5,8 +5,6 @@ using UnityEngine.SceneManagement;
 public class EnemyAI : MonoBehaviour
 {
     public Transform[] patrolPoints;
-    public float viewDistance = 10f;
-    public float viewAngle = 90f;
     public LayerMask obstructionMask;
 
     private NavMeshAgent agent;
@@ -16,7 +14,7 @@ public class EnemyAI : MonoBehaviour
     private bool chasing = false;
     private bool noticed = false;
     private float noticedTimer = 0f;
-    private float noticedDuration = 2.5f;
+    [SerializeField] private float noticedDuration = 2.5f;
     [SerializeField] private AudioSource chaseMusicSource;
 
     [SerializeField] private float distanceToKill = 3f;

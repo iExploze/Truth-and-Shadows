@@ -68,7 +68,7 @@ public class DirectionalLightDetection : MonoBehaviour
         Vector3 rayDir = -transform.forward;
         Vector3 origin = target.position + rayDir * 0.1f;  // nudge outside the collider
 
-        if (Physics.Raycast(origin, rayDir, out RaycastHit hit, Mathf.Infinity, occlusionMask))
+        if (Physics.Raycast(origin, rayDir, out RaycastHit hit, 1000, occlusionMask))
         {
             Debug.DrawLine(origin, hit.point, Color.red);
             return true;    // hit something → in shadow
