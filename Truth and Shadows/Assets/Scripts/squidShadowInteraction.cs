@@ -1,4 +1,5 @@
 using System.Collections;
+using TruthAndShadows.CheckpointSystem; // For CheckpointManager
 using UnityEngine;
 using UnityEngine.SceneManagement; // For scene reset
 using UnityEngine.UI; // For darkness overlay
