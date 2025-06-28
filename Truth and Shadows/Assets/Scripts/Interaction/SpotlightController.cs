@@ -24,6 +24,7 @@ namespace TruthAndShadows.Interaction
         [Header("Camera Settings")]
         [SerializeField]
         private CinemachineFreeLook spotlightCamera;
+        public override Component InteractionCamera => spotlightCamera;
 
         [Header("Rotation Settings")]
         [SerializeField]
@@ -101,7 +102,6 @@ namespace TruthAndShadows.Interaction
         private int originalCameraPriority = 10;
 
         public override bool RequiresContinuousInteraction => true;
-        public override Component InteractionCamera => spotlightCamera;
 
         protected override void Start()
         {
@@ -255,6 +255,25 @@ namespace TruthAndShadows.Interaction
 
         public override void StartInteraction()
         {
+            // Check permissions from the centralized provider
+            bool canInteractWithSpotlight = true;
+
+            // Check for rotate permission from InputContextProvider if available
+            if (InputContextProvider.Instance != null)
+            {
+                canInteractWithSpotlight =
+                    InputContextProvider.Instance.CanRotate
+                    && InputContextProvider.Instance.CanInteract;
+
+                if (!canInteractWithSpotlight)
+                {
+                    Debug.LogWarning(
+                        "Spotlight interaction attempted but permission denied by InputContextProvider"
+                    );
+                    return; // Don't proceed with interaction if not allowed
+                }
+            }
+
             if (spotlightCamera != null)
             {
                 // Setup the camera and ensure proper alignment
@@ -445,6 +464,25 @@ namespace TruthAndShadows.Interaction
 
         public override void ContinueInteraction()
         {
+            // Check if we can continue the interaction based on permissions
+            bool canContinueInteraction = true;
+
+            // Check the centralized permissions provider
+            if (InputContextProvider.Instance != null)
+            {
+                canContinueInteraction =
+                    InputContextProvider.Instance.CanRotate
+                    && InputContextProvider.Instance.CanInteract;
+
+                // If permissions revoked, end the interaction early
+                if (!canContinueInteraction)
+                {
+                    Debug.Log("Spotlight interaction permissions revoked - ending interaction");
+                    EndInteraction(); // End interaction if permissions have been revoked
+                    return;
+                }
+            }
+
             HandleMouseInput();
             UpdateRotations();
             UpdateLookAtTarget();
@@ -481,19 +519,31 @@ namespace TruthAndShadows.Interaction
 
         private void HandleMouseInput()
         {
-            // Camera input is handled by Cinemachine - we only need to update its sensitivity settings            // Null check for InputManager.Instance
+            // Camera input is handled by Cinemachine - we only need to update its sensitivity settings
+            // Null check for InputManager.Instance
             if (InputManager.Instance == null)
             {
                 Debug.LogError(
                     "InputManager.Instance is null! Cannot get input for spotlight control."
                 );
                 return;
-            } // Get consistent input across devices (mouse or right stick)
-            Vector2 lookInput = InputManager.Instance.GetLookInput();
+            }
 
-            // Skip spotlight aiming unless the rotate button is pressed (R key or left bumper)
-            // Note: GetRotateButton already handles mutual exclusivity with pickup
-            if (!InputManager.Instance.GetRotateButton())
+            // Get consistent input across devices (mouse or right stick)
+            Vector2 lookInput = InputManager.Instance.LookInput;
+
+            // Skip spotlight aiming unless the rotate button is pressed AND rotation is permitted by the permissions system
+            // Check both the local input and the centralized permission system
+            bool canRotate = true;
+
+            // Check the centralized permission provider if available
+            if (InputContextProvider.Instance != null)
+            {
+                canRotate = InputContextProvider.Instance.CanRotate;
+            }
+
+            // Only allow rotation if both the button is pressed and permissions allow it
+            if (!InputManager.Instance.RotateHeld || !canRotate)
             {
                 return;
             }
@@ -1063,6 +1113,8 @@ namespace TruthAndShadows.Interaction
                 // Force position update on rigidbody
                 rigidBody.position = currentPosition;
 
+                rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
+
                 Debug.Log(
                     $"Spotlight dropped at position {currentPosition} - non-kinematic, gravity enabled"
                 );
@@ -1096,8 +1148,7 @@ namespace TruthAndShadows.Interaction
             if (!hasCalculatedRelativePosition)
             {
                 // Calculate position relative to player's forward direction, accounting for the pickup raise amount
-                relativePosition =
-                    playerTransform.forward * 2f + Vector3.up * (1f + pickupRaiseAmount);
+                relativePosition = playerTransform.forward * 1.3f + Vector3.up * pickupRaiseAmount;
                 hasCalculatedRelativePosition = true;
             }
 
@@ -1119,24 +1170,6 @@ namespace TruthAndShadows.Interaction
             {
                 rigidBody.position = smoothedPosition;
             }
-        }
-
-        protected override void FixedUpdate()
-        {
-            // Skip base implementation - handle pickup ourselves
-            if (IsPickedUp && playerTransform != null)
-            {
-                // Call our custom position update directly
-                UpdatePickupPosition();
-            }
-        }
-
-        protected override void Update()
-        {
-            base.Update();
-
-            // No need to track rotation mode anymore
-            // Additional spotlight-specific update logic if needed
         }
 
         private void VerifyOutlineComponents()

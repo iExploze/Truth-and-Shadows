@@ -4,10 +4,11 @@ using UnityEngine;
 namespace TruthAndShadows.InputSystem
 {
     /// <summary>
-    /// Version of CameraControllerConfig that uses input axis names
-    /// instead of directly setting input values.
+    /// Configures all CinemachineFreeLook cameras in the scene to support both mouse and controller input.
+    /// Automatically detects input device, applies sensitivity and inversion settings, and ensures smooth camera control during normal gameplay and object pickup.
+    /// Handles direct input enforcement to resolve input conflicts (e.g., while holding the pickup key).
     /// </summary>
-    public class CameraControllerConfigAlt : MonoBehaviour
+    public class CameraControllerConfig : MonoBehaviour
     {
         [Header("Camera Settings")]
         [SerializeField]
@@ -17,7 +18,7 @@ namespace TruthAndShadows.InputSystem
         public float controllerSensitivity = 1.0f;
 
         [SerializeField]
-        public bool invertY = true; // Default to inverted vertical for more natural camera feel
+        public bool invertY = true;
 
         [Header("Input Axes")]
         [SerializeField]
@@ -29,12 +30,21 @@ namespace TruthAndShadows.InputSystem
         [SerializeField]
         public bool autoDetectController = true;
 
-        // Store references to modified cameras
         private CinemachineFreeLook[] cameras;
+
+        private Vector3 lastMousePosition;
+
+        private bool lastUsingController = false;
 
         private void Start()
         {
+            lastMousePosition = Input.mousePosition;
+
+            RegisterForEvents();
+
             ConfigureAllCameras();
+
+            Debug.Log("CameraControllerConfig initialized");
         }
 
         private void OnEnable()
@@ -42,9 +52,36 @@ namespace TruthAndShadows.InputSystem
             ConfigureAllCameras();
         }
 
+        private void OnDisable()
+        {
+            if (cameras != null)
+            {
+                foreach (var camera in cameras)
+                {
+                    if (camera == null)
+                        continue;
+                    camera.m_XAxis.m_InputAxisValue = 0;
+                    camera.m_YAxis.m_InputAxisValue = 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds this component as a listener for important Unity events
+        /// </summary>
+        private void RegisterForEvents()
+        {
+            Application.focusChanged += (hasFocus) =>
+            {
+                if (hasFocus)
+                {
+                    lastMousePosition = Input.mousePosition;
+                }
+            };
+        }
+
         public void ConfigureAllCameras()
         {
-            // Find all CinemachineFreeLook cameras in the scene
             cameras = FindObjectsOfType<CinemachineFreeLook>();
 
             foreach (var camera in cameras)
@@ -55,26 +92,27 @@ namespace TruthAndShadows.InputSystem
             Debug.Log($"Configured {cameras.Length} cameras for controller input");
         }
 
+        /// <summary>
+        /// Configures a single CinemachineFreeLook camera for both mouse and controller input.
+        /// Sets axis names, sensitivity, inversion, and disables recentering for smooth manual control.
+        /// Called automatically for all cameras in the scene and whenever input device changes.
+        /// </summary>
         private void ConfigureCamera(CinemachineFreeLook camera)
         {
             if (camera == null)
                 return;
 
-            // For mouse/keyboard input
             float mouseXSpeed = 200f * mouseSensitivity;
             float mouseYSpeed = 2f * mouseSensitivity;
 
-            // For controller input
             float controllerXSpeed = 80f * controllerSensitivity;
             float controllerYSpeed = 1f * controllerSensitivity;
 
-            // Choose speed based on input device
             float xSpeed =
                 autoDetectController && IsUsingController() ? controllerXSpeed : mouseXSpeed;
             float ySpeed =
                 autoDetectController && IsUsingController() ? controllerYSpeed : mouseYSpeed;
 
-            // Configure X axis (horizontal rotation)
             if (autoDetectController && IsUsingController())
             {
                 camera.m_XAxis.m_InputAxisName = horizontalAxisName;
@@ -85,10 +123,9 @@ namespace TruthAndShadows.InputSystem
             }
 
             camera.m_XAxis.m_MaxSpeed = xSpeed;
-            camera.m_XAxis.m_AccelTime = 0.05f; // Faster acceleration for more responsive feeling
+            camera.m_XAxis.m_AccelTime = 0.05f;
             camera.m_XAxis.m_DecelTime = 0.1f;
 
-            // Configure Y axis (vertical rotation)
             if (autoDetectController && IsUsingController())
             {
                 camera.m_YAxis.m_InputAxisName = verticalAxisName;
@@ -99,22 +136,17 @@ namespace TruthAndShadows.InputSystem
             }
 
             camera.m_YAxis.m_MaxSpeed = ySpeed;
-            camera.m_YAxis.m_AccelTime = 0.05f; // Faster acceleration for more responsive feeling
+            camera.m_YAxis.m_AccelTime = 0.05f;
             camera.m_YAxis.m_DecelTime = 0.1f;
 
-            // Configure inversions
             camera.m_XAxis.m_InvertInput = false;
             camera.m_YAxis.m_InvertInput = invertY;
 
-            // Disable any automatic recentering to give player full camera control
             camera.m_RecenterToTargetHeading.m_enabled = false;
             camera.m_YAxisRecentering.m_enabled = false;
 
             Debug.Log($"Configured camera: {camera.name} - recentering disabled");
         }
-
-        // Track input device state
-        private bool lastUsingController = false;
 
         private void Update()
         {
@@ -141,38 +173,15 @@ namespace TruthAndShadows.InputSystem
 
         private bool IsUsingController()
         {
-            float deadzone = 0.2f;
-
             // Check if InputManager exists and use its detection
             if (InputManager.Instance != null)
             {
                 return InputManager.Instance.UsingController;
             }
 
-            // Fallback to direct input check
-            try
-            {
-                // Check for controller input - first check axis movement
-                if (Mathf.Abs(Input.GetAxis(horizontalAxisName)) > deadzone)
-                    return true;
-                
-                if (Mathf.Abs(Input.GetAxis(verticalAxisName)) > deadzone)
-                    return true;
-                
-                // Then check for any joystick buttons
-                for (int i = 0; i < 20; i++)
-                {
-                    if (Input.GetKey(KeyCode.JoystickButton0 + i))
-                        return true;
-                }
-            }
-            catch (System.Exception)
-            {
-                // Input axes probably don't exist, assume mouse/keyboard
-                return false;
-            }
-
-            // If we get here, no controller input was detected
+            Debug.LogWarning(
+                "InputManager not found! Interaction may not work correctly without it."
+            );
             return false;
         }
     }

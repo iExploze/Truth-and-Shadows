@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
-using Cinemachine.Examples;
+using TruthAndShadows.Player;
 using UnityEngine;
 using InteractionManager = TruthAndShadows.Interaction.InteractionManager;
 
@@ -79,6 +79,9 @@ public class StateManager : MonoBehaviour
         // Play squid sound if exists
         PlayAudio(squidForm);
 
+        SyncCameraDirectionOnly(mainCharacterCamera, squidCamera);
+        UpdateCameraPriorities(main: 0, squid: 10);
+
         currentState = FormState.Squid;
     }
 
@@ -110,6 +113,9 @@ public class StateManager : MonoBehaviour
 
         // Play human sound if exists
         PlayAudio(mainCharacterForm);
+
+        SyncCameraDirectionOnly(squidCamera, mainCharacterCamera);
+        UpdateCameraPriorities(main: 10, squid: 0);
     }
 
     // Helper: resets everything for Start()
@@ -141,5 +147,12 @@ public class StateManager : MonoBehaviour
     {
         return currentState == FormState.MainCharacter;
     }
+
+    private void SyncCameraDirectionOnly(CinemachineFreeLook source, CinemachineFreeLook target)
+    {
+        target.m_XAxis.Value = source.m_XAxis.Value;
+        target.m_YAxis.Value = source.m_YAxis.Value;
+    }
+
 
 }

@@ -1,4 +1,4 @@
-﻿using Cinemachine.Examples;
+﻿using TruthAndShadows.Player;
 using TruthAndShadows.InputSystem;
 using UnityEngine;
 
@@ -12,8 +12,6 @@ public class CharacterMovementNoCamera : MonoBehaviour
     public float Damping = 0.2f;
     public float VerticalRotMin = -80;
     public float VerticalRotMax = 80;
-    public KeyCode sprintJoystick = KeyCode.JoystickButton2;
-    public KeyCode sprintKeyboard = KeyCode.E;
 
     private bool isSprinting;
     private Animator anim;
@@ -30,27 +28,36 @@ public class CharacterMovementNoCamera : MonoBehaviour
 
     void FixedUpdate()
     {
-#if ENABLE_LEGACY_INPUT_MANAGER        // Get consistent movement input across devices (WASD or left stick)
-        var input = InputManager.Instance.GetMovementInput();
+#if ENABLE_LEGACY_INPUT_MANAGER
+        // Check for InputManager existence
+        if (InputManager.Instance == null)
+            return;
+            
+        // Get movement input from the InputManager's property
+        Vector2 input = InputManager.Instance.MoveInput;
 
-        // Check if spotlight aiming - block movement if rotating spotlight
-        if (InputManager.Instance.GetRotateButton())
+        InputContextProvider.Instance.LogPermissions();
+
+        // Block movement where appropriate
+        if (!InputContextProvider.Instance.CanMove)
         {
-            // Zero out input to prevent movement during spotlight aiming
             input = Vector2.zero;
+            Debug.Log("Movement blocked by InputContextProvider");
+            InputContextProvider.Instance.LogPermissions();
         }
 
+        // Handle forward/backward movement
         var speed = input.y;
         speed = Mathf.Clamp(speed, -1f, 1f);
         speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref currentVelocity.y, Damping);
         anim.SetFloat("Speed", speed);
         anim.SetFloat("Direction", speed);
 
-        // set sprinting
-        isSprinting = InputManager.Instance.IsSprintHeld() && speed > 0;
+        // Set sprinting state using InputManager's IsRunning property
+        isSprinting = InputManager.Instance.IsRunning && speed > 0;
         anim.SetBool("isSprinting", isSprinting);
 
-        // strafing
+        // Handle strafing (left/right movement)
         currentStrafeSpeed = Mathf.SmoothDamp(
             currentStrafeSpeed,
             input.x * StrafeSpeed,
@@ -59,12 +66,21 @@ public class CharacterMovementNoCamera : MonoBehaviour
         );
         transform.position += transform.TransformDirection(Vector3.right) * currentStrafeSpeed;
 
-        // Get consistent camera input across devices (mouse or right stick)
-        var rotInput = InputManager.Instance.GetLookInput();
+        // Get camera look input from InputManager's property
+        Vector2 rotInput = InputManager.Instance.LookInput;
+        
+        // During pickup, use the special pickup camera input to prevent input blocking
+        if (InputManager.Instance.PickupHeld)
+        {
+            rotInput = InputManager.Instance.PickupCameraInput;
+        }
+        
+        // Apply horizontal rotation (turning)
         var rot = transform.eulerAngles;
         rot.y += rotInput.x * TurnSpeed;
         transform.rotation = Quaternion.Euler(rot);
 
+        // Apply vertical rotation (looking up/down) to the camera pivot
         if (InvisibleCameraOrigin != null)
         {
             rot = InvisibleCameraOrigin.localRotation.eulerAngles;

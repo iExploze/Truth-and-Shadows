@@ -1,15 +1,11 @@
 ﻿using TruthAndShadows.InputSystem;
 using UnityEngine;
 
-namespace Cinemachine.Examples
+namespace TruthAndShadows.Player
 {
     [AddComponentMenu("")] // Don't display in add component menu
     public class CharacterMovement2D : MonoBehaviour
     {
-        public KeyCode sprintJoystick = KeyCode.JoystickButton2;
-        public KeyCode jumpJoystick = KeyCode.JoystickButton0;
-        public KeyCode sprintKeyboard = KeyCode.LeftShift;
-        public KeyCode jumpKeyboard = KeyCode.Space;
         public float jumpVelocity = 7f;
         public float groundTolerance = 0.2f;
         public bool checkGroundForJump = true;
@@ -35,14 +31,20 @@ namespace Cinemachine.Examples
         // Update is called once per frame
         void FixedUpdate()
         {
-            input.x = Input.GetAxis("Horizontal");
+            // Check if InputManager exists
+            if (InputManager.Instance == null)
+                return;
 
-            // Check if spotlight aiming - block movement if rotating spotlight
-            if (InputManager.Instance != null && InputManager.Instance.GetRotateButton())
+            // Block movement where appropriate
+            if (!InputContextProvider.Instance.CanMove)
             {
-                // Zero out input to prevent movement during spotlight aiming
-                input.x = 0f;
+                input = Vector2.zero;
+                Debug.Log("Movement blocked by InputContextProvider");
+                InputContextProvider.Instance.LogPermissions();
             }
+                
+            // Get horizontal movement from InputManager
+            input.x = InputManager.Instance.MoveInput.x;
 
             // Check if direction changes
             if ((input.x < 0f && !headingleft) || (input.x > 0f && headingleft))
@@ -53,6 +55,7 @@ namespace Cinemachine.Examples
                     targetrot = Quaternion.Euler(0, 90, 0);
                 headingleft = !headingleft;
             }
+            
             // Rotate player if direction changes
             transform.rotation = Quaternion.Lerp(
                 transform.rotation,
@@ -65,17 +68,8 @@ namespace Cinemachine.Examples
             speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
             anim.SetFloat("Speed", speed);
 
-            // set sprinting
-            if (
-                (Input.GetKeyDown(sprintJoystick) || Input.GetKeyDown(sprintKeyboard))
-                && input != Vector2.zero
-            )
-                isSprinting = true;
-            if (
-                (Input.GetKeyUp(sprintJoystick) || Input.GetKeyUp(sprintKeyboard))
-                || input == Vector2.zero
-            )
-                isSprinting = false;
+            // set sprinting using InputManager's IsRunning property
+            isSprinting = InputManager.Instance.IsRunning && input.x != 0f;
             anim.SetBool("isSprinting", isSprinting);
         }
 #endif
@@ -83,8 +77,9 @@ namespace Cinemachine.Examples
         private void Update()
         {
 #if ENABLE_LEGACY_INPUT_MANAGER
-            // Jump
-            if ((Input.GetKeyDown(jumpJoystick) || Input.GetKeyDown(jumpKeyboard)))
+            // Jump - this could be expanded to use a dedicated Jump property in InputManager
+            // if that's added in the future
+            if (isGrounded() && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0)))
             {
                 rigbody.AddForce(new Vector3(0, jumpVelocity, 0), ForceMode.Impulse);
             }
