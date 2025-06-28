@@ -1,4 +1,4 @@
-﻿using TruthAndShadows.InputSystem;
+using TruthAndShadows.InputSystem;
 using UnityEngine;
 
 namespace TruthAndShadows.Player
@@ -8,7 +8,7 @@ namespace TruthAndShadows.Player
     /// Integrates state management and input permission logic from PlayerController.
     /// </summary>
     [AddComponentMenu("")] // Don't display in add component menu
-    public class CharacterMovement : MonoBehaviour
+    public class PlayerMovement : MonoBehaviour
     {
         // --- Movement Settings ---
         public bool useCharacterForward = false;
@@ -16,7 +16,10 @@ namespace TruthAndShadows.Player
         public float turnSpeed = 10f;
 
         [SerializeField]
-        private float sprintSpeed = 4f;
+        private float walkSpeed = 5f;
+
+        [SerializeField]
+        private float sprintSpeed = 10f;
 
         [SerializeField]
         private float rotationSpeed = 10f;
@@ -27,6 +30,12 @@ namespace TruthAndShadows.Player
         private float _movementSmoothTime = 0.1f;
         private Vector2 _moveVelocity;
         private float _speedVelocity;
+
+        // --- Animation & Audio ---
+        //private Animator anim;
+
+        [SerializeField]
+        private AudioSource walkAudioSource;
 
         // --- Camera ---
         private Camera mainCamera;
@@ -41,9 +50,8 @@ namespace TruthAndShadows.Player
         private Vector3 targetDirection;
         private Vector2 input;
         private Quaternion freeRotation;
+        private float velocity;
         public bool canMove = true;
-
-        private Rigidbody rb;
 
         // --- Debug ---
         [SerializeField]
@@ -79,18 +87,14 @@ namespace TruthAndShadows.Player
         }
 
         // --- Unity Lifecycle ---
-
-        private CharacterAnimation characterAnimation;
         void Start()
         {
+            //anim = GetComponent<Animator>();
             if (cameraTransform == null)
                 cameraTransform = Camera.main?.transform;
             mainCamera = Camera.main;
             _currentPermissions = InputPermissions.GetPermissionsForState(_currentState);
             OnStateChanged(_currentState, _currentState);
-
-            rb = GetComponent<Rigidbody>();
-            characterAnimation = rb.GetComponent<CharacterAnimation>();
         }
 
         void Update()
@@ -131,17 +135,45 @@ namespace TruthAndShadows.Player
                 ref _moveVelocity,
                 _movementSmoothTime
             );
+            float targetSpeed =
+                InputManager.Instance != null && InputManager.Instance.IsRunning
+                    ? sprintSpeed
+                    : walkSpeed;
+            float _currentSpeed = Mathf.SmoothDamp(
+                speed,
+                targetSpeed * _smoothedMovement.magnitude,
+                ref _speedVelocity,
+                _movementSmoothTime
+            );
             // set speed to both vertical and horizontal inputs
             if (useCharacterForward)
                 speed = Mathf.Abs(input.x) + input.y;
             else
                 speed = Mathf.Abs(input.x) + Mathf.Abs(input.y);
             speed = Mathf.Clamp(speed, 0f, 1f);
+            //speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
+            //anim.SetFloat("Speed", speed);
+            // Play walking sound if moving, stop if not
+            if (walkAudioSource != null)
+            {
+                if (_currentSpeed > 0.05f && !walkAudioSource.isPlaying)
+                {
+                    walkAudioSource.loop = true;
+                    walkAudioSource.Play();
+                }
+                else if (_currentSpeed <= 0.05f && walkAudioSource.isPlaying)
+                {
+                    walkAudioSource.Stop();
+                }
+            }
             if (input.y < 0f && useCharacterForward)
                 direction = input.y;
             else
                 direction = 0f;
+            //anim.SetFloat("Direction", direction);
             UpdateTargetDirection();
+            if (!canMove)
+                return;
             if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
             {
                 Vector3 lookDirection = targetDirection.normalized;
@@ -157,12 +189,7 @@ namespace TruthAndShadows.Player
                     turnSpeed * turnSpeedMultiplier * Time.deltaTime
                 );
             }
-
-            //simple movement by Ian 
-            Vector3 forward = transform.forward * speed * sprintSpeed * Time.fixedDeltaTime;
-            rb.MovePosition(rb.position + forward);
-
-            characterAnimation.updateMovement(forward);
+            // Optionally, apply Rigidbody-based movement here if needed
 #else
             InputSystemHelper.EnableBackendsWarningMessage();
 #endif
