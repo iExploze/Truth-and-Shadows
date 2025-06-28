@@ -27,6 +27,7 @@ namespace TruthAndShadows.InputSystem
         private bool _canCameraLook = true;
         private bool _canReset = true;
         private bool _canHint = true;
+        private bool _canMenu = true;
 
         private void Awake()
         {
@@ -81,6 +82,11 @@ namespace TruthAndShadows.InputSystem
         /// Whether hint action is currently allowed
         /// </summary>
         public bool CanHint => _canHint;
+        
+        /// <summary>
+        /// Whether menu action is currently allowed
+        /// </summary>
+        public bool CanMenu => _canMenu;
 
         /// <summary>
         /// Current player state
