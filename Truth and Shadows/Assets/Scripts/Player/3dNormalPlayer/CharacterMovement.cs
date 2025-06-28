@@ -79,6 +79,8 @@ namespace TruthAndShadows.Player
         }
 
         // --- Unity Lifecycle ---
+
+        private CharacterAnimation characterAnimation;
         void Start()
         {
             if (cameraTransform == null)
@@ -88,6 +90,7 @@ namespace TruthAndShadows.Player
             OnStateChanged(_currentState, _currentState);
 
             rb = GetComponent<Rigidbody>();
+            characterAnimation = rb.GetComponent<CharacterAnimation>();
         }
 
         void Update()
@@ -158,6 +161,8 @@ namespace TruthAndShadows.Player
             //simple movement by Ian 
             Vector3 forward = transform.forward * speed * sprintSpeed * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + forward);
+
+            characterAnimation.updateMovement(forward);
 #else
             InputSystemHelper.EnableBackendsWarningMessage();
 #endif

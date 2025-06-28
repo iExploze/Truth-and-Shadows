@@ -2650,7 +2650,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6313425234732168925}
-  - component: {fileID: 6126757172136766174}
+  - component: {fileID: 164878953776737366}
   - component: {fileID: 6898282593515101708}
   - component: {fileID: 4302168620722703651}
   - component: {fileID: 1243363227694474846}
@@ -2683,27 +2683,20 @@ Transform:
   - {fileID: 8081555375410077764}
   m_Father: {fileID: 8358582961494803560}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!95 &6126757172136766174
-Animator:
-  serializedVersion: 5
+--- !u!114 &164878953776737366
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4625399318641512768}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 8837f192a88abd84da9f1907d0b6bdb4, type: 3}
-  m_Controller: {fileID: 9100000, guid: 7a9f599c49797434485c0e1d9e99f200, type: 2}
-  m_CullingMode: 1
-  m_UpdateMode: 1
-  m_ApplyRootMotion: 1
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1714667bd2ca1cf419cd10e60c70ad96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 0}
+  movementThreshold: 0.01
 --- !u!54 &6898282593515101708
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2758,8 +2751,11 @@ MonoBehaviour:
   useCharacterForward: 0
   lockToCameraForward: 0
   turnSpeed: 10
-  walkAudioSource: {fileID: 0}
+  sprintSpeed: 4
+  rotationSpeed: 10
+  cameraTransform: {fileID: 0}
   canMove: 0
+  showDebugInfo: 0
 --- !u!114 &59296836044293188
 MonoBehaviour:
   m_ObjectHideFlags: 0
