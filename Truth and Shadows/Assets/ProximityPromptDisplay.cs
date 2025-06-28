@@ -13,8 +13,11 @@ public class ProximityPromptDisplay : MonoBehaviour
     public float fadeSpeed = 5f;
 
     [Header("UI Elements")]
-    public Image circleImage;
-    public TextMeshProUGUI keyTMP;
+    //public Image circleImage;
+
+    public Image keyboardKey;
+    public Image controllerKey;
+    //public TextMeshProUGUI keyTMP;
     public TextMeshProUGUI promptTMP;
 
     void Start()
@@ -29,8 +32,8 @@ public class ProximityPromptDisplay : MonoBehaviour
         if (targetObject == null)
             targetObject = transform;
 
-        SetAlpha(circleImage, 0f);
-        SetAlpha(keyTMP, 0f);
+        SetAlpha(keyboardKey, 0f);
+        SetAlpha(controllerKey, 0f);
         SetAlpha(promptTMP, 0f);
     }
 
@@ -40,12 +43,12 @@ public class ProximityPromptDisplay : MonoBehaviour
 
         float distance = Vector3.Distance(player.position, targetObject.position);
 
-        float circleAlpha = distance <= outerRange ? 1f : 0f;
-        float keyAlpha = distance <= midRange ? 1f : 0f;
+        float keyboardAlpha = distance <= outerRange ? 1f : 0f;
+        float controllerAlpha = distance <= midRange ? 1f : 0f;
         float promptAlpha = distance <= closeRange ? 1f : 0f;
 
-        FadeGraphic(circleImage, circleAlpha);
-        FadeTMP(keyTMP, keyAlpha);
+        FadeGraphic(keyboardKey, keyboardAlpha);
+        FadeGraphic(controllerKey, controllerAlpha);
         FadeTMP(promptTMP, promptAlpha);
     }
 

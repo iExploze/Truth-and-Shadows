@@ -220,6 +220,7 @@ namespace TruthAndShadows.Interaction
             // Handle pickup functionality
             HandlePickupInput();
             Reset();
+			ReturnToMenu();
         }
 
         private void UpdateContinuousInteraction()
@@ -662,7 +663,46 @@ namespace TruthAndShadows.Interaction
                 DropPickedUpItem();
             }
         }
+		private void ReturnToMenu() {
+			// Check if InputManager is available
+            if (InputManager.Instance == null)
+            {
+                Debug.LogError("InputManager.Instance is null! Cannot process menu input.");
+                return;
+            } // Check if menu is allowed based on the current player state
+            bool canMenu = true; // Default to allowed
+            // Get permission from InputContextProvider if available
+            if (inputContextProvider != null)
+            {
+                // Use reflection to safely access the CanReset property
+                System.Reflection.PropertyInfo propertyInfo = inputContextProvider
+                    .GetType()
+                    .GetProperty("CanMenu");
+                if (propertyInfo != null)
+                {
+                    bool? value = propertyInfo.GetValue(inputContextProvider) as bool?;
+                    if (value.HasValue)
+                    {
+                        canMenu = value.Value;
+                    }
+                }
+            }
 
+            if (InputManager.Instance.MenuPressed && canMenu)
+            {
+                Debug.Log("Menu button pressed and allowed - returning to menu");
+                //CheckpointManager.Instance.RespawnAtCheckpoint();//
+				//Debug.Log(GameObject.Find("CheckpointManager"));
+				//GameObject.Find("CheckpointManager").SetActive(false);
+				//if (GameObject.Find("CheckpointManager") != null)
+        		//{
+				//	Debug.Log("AAAAAA");
+            	//	GetComponent<CheckpointManager>().enabled = false;
+        		//}
+                LevelManager.Instance.LoadScene("DavidBMenu", "CrossFade");
+                //LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
+            }
+		}
         private void Reset()
         {
             // Check if InputManager is available
@@ -691,8 +731,17 @@ namespace TruthAndShadows.Interaction
 
             if (InputManager.Instance.ResetPressed && canReset)
             {
-                Debug.Log("Reset button pressed and allowed - reloading scene");
+                Debug.Log("Reseppt button pressed and allowed - reloading scene");
+                //CheckpointManager.Instance.RespawnAtCheckpoint();//
                 LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
+				Debug.Log("BBBBBBB");
+        		//GameObject.Find("CheckpointManager").SetActive(false);
+        		if (GameObject.Find("CheckpointManager") != null)
+        		{
+            		Debug.Log("AAAAAA");
+            		GameObject.Find("CheckpointManager").SetActive(true);
+        	}
+                //LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
             }
         }
 

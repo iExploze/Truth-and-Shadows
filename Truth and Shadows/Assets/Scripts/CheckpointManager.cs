@@ -27,6 +27,7 @@ namespace TruthAndShadows.CheckpointSystem
 
         private List<GameObject> playerObjects = new List<GameObject>();
 
+
         private void Awake()
         {
             // Singleton pattern
