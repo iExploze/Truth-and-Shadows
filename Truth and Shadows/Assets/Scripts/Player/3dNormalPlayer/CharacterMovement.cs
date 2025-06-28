@@ -16,7 +16,7 @@ namespace TruthAndShadows.Player
         public float turnSpeed = 10f;
 
         [SerializeField]
-        private float sprintSpeed = 10f;
+        private float sprintSpeed = 4f;
 
         [SerializeField]
         private float rotationSpeed = 10f;
