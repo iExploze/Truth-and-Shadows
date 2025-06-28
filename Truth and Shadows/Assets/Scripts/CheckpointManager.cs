@@ -1,14 +1,11 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CheckpointManager : MonoBehaviour
 {
     // Singleton instance
     public static CheckpointManager Instance { get; private set; }
-
-    [Tooltip("Distance at which a checkpoint is considered reached")]
-    [SerializeField]
-    private float checkpointReachDistance = 3f;
 
     [Tooltip("All checkpoint transforms in the level")]
     [SerializeField]
@@ -44,68 +41,44 @@ public class CheckpointManager : MonoBehaviour
     private void Start()
     {
         playerObjects = new List<GameObject>(GameObject.FindGameObjectsWithTag("Player"));
+        // Sort checkpoints alphabetically by name after all are registered
+        SortCheckpointsAlphabetically();
         // Set the initial checkpoint to the first one in the list if any exist
         if (checkpoints.Count > 0)
         {
             currentCheckpoint = checkpoints[0];
             Debug.Log("Initial spawn point set to: " + currentCheckpoint.name);
-
             // Move all players to the initial spawn point
-            MoveAllPlayersToCheckpoint(currentCheckpoint);
+            MoveAllPlayersToCheckpoint(currentCheckpoint, true);
         }
     }
 
-    private void Update()
-    {
-        CheckForCheckpointReached();
-    }
-
-    private void CheckForCheckpointReached()
-    {
-        if (playerObjects.Count == 0)
-            return;
-
-        int currentIndex = checkpoints.IndexOf(currentCheckpoint);
-
-        // Check distance from any player object to checkpoints
-        foreach (GameObject playerObj in playerObjects)
-        {
-            foreach (Transform checkpoint in checkpoints)
-            {
-                int newIndex = checkpoints.IndexOf(checkpoint);
-                if (newIndex > currentIndex || currentCheckpoint == null)
-                {
-                    currentCheckpoint = checkpoint;
-                    Debug.Log("New checkpoint reached: " + checkpoint.name);
-                    Checkpoint checkpointComponent = checkpoint.GetComponent<Checkpoint>();
-                    if (checkpointComponent != null)
-                    {
-                        checkpointComponent.Activate();
-                    }
-                    OnCheckpointReached?.Invoke(checkpoint);
-                }
-            }
-        }
-    }
-
-    // Move all players to a checkpoint
-    private void MoveAllPlayersToCheckpoint(Transform checkpoint)
+    // Move all players to a checkpoint, with optional spawn logic
+    private void MoveAllPlayersToCheckpoint(Transform checkpoint, bool isSpawn = false)
     {
         if (checkpoint == null)
             return;
         foreach (var playerObj in playerObjects)
         {
             var playerTransform = playerObj.transform;
+            Vector3 respawnPosition = checkpoint.position + Vector3.up; // 1 unit above
             if (playerTransform.parent != null)
             {
-                playerTransform.localPosition =
-                    checkpoint.position - playerTransform.parent.position;
-                playerTransform.localRotation = checkpoint.rotation;
+                playerTransform.localPosition = respawnPosition - playerTransform.parent.position;
+                playerTransform.localRotation = Quaternion.Euler(
+                    0,
+                    checkpoint.rotation.eulerAngles.y,
+                    0
+                );
             }
             else
             {
-                playerTransform.position = checkpoint.position;
-                playerTransform.rotation = checkpoint.rotation;
+                playerTransform.position = respawnPosition;
+                playerTransform.rotation = Quaternion.Euler(
+                    0,
+                    checkpoint.rotation.eulerAngles.y,
+                    0
+                );
             }
             Rigidbody rb = playerTransform.GetComponent<Rigidbody>();
             if (rb != null)
@@ -115,7 +88,12 @@ public class CheckpointManager : MonoBehaviour
                 rb.position = playerTransform.position;
                 rb.rotation = playerTransform.rotation;
             }
-            Debug.Log($"Player moved to checkpoint: {checkpoint.position}");
+            Debug.Log($"Player moved to checkpoint: {respawnPosition}");
+        }
+        // If this is the spawn, tell the checkpoint to disable effects
+        if (isSpawn && checkpoint.TryGetComponent<Checkpoint>(out var cp))
+        {
+            cp.DisableEffectsForSpawn();
         }
     }
 
@@ -153,5 +131,36 @@ public class CheckpointManager : MonoBehaviour
     {
         OnShadowFormTimeExceeded?.Invoke();
         RespawnAtCheckpoint();
+    }
+
+    // Add a public method to set the current checkpoint from Checkpoint
+    public void SetCheckpoint(Transform checkpoint)
+    {
+        if (currentCheckpoint == checkpoint)
+            return;
+        currentCheckpoint = checkpoint;
+        Debug.Log("Checkpoint set: " + checkpoint.name);
+        Checkpoint checkpointComponent = checkpoint.GetComponent<Checkpoint>();
+        if (checkpointComponent != null)
+        {
+            checkpointComponent.Activate();
+        }
+        OnCheckpointReached?.Invoke(checkpoint);
+    }
+
+    // Add a public getter for the current checkpoint
+    public Transform GetCurrentCheckpoint()
+    {
+        return currentCheckpoint;
+    }
+
+    // Sorts the checkpoints list alphabetically by Transform name
+    private void SortCheckpointsAlphabetically()
+    {
+        checkpoints = checkpoints.OrderBy(cp => cp.name).ToList();
+        Debug.Log(
+            "[CheckpointManager] Checkpoints sorted alphabetically: "
+                + string.Join(", ", checkpoints.Select(cp => cp.name))
+        );
     }
 }
