@@ -34,37 +34,37 @@ public class CharacterMovementNoCamera : MonoBehaviour
             return;
             
         // Get movement input from the InputManager's property
-        Vector2 input = InputManager.Instance.MoveInput;
+        Vector2 input = InputManager.Instance.CharacterMoveInput;
 
         InputContextProvider.Instance.LogPermissions();
 
-        // Block movement where appropriate
-        if (!InputContextProvider.Instance.CanMove)
+        // Only block player movement, not input
+        if (InputContextProvider.Instance.CanMove)
         {
-            input = Vector2.zero;
-            Debug.Log("Movement blocked by InputContextProvider");
-            InputContextProvider.Instance.LogPermissions();
+            // Handle forward/backward movement
+            var speed = input.y;
+            speed = Mathf.Clamp(speed, -1f, 1f);
+            speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref currentVelocity.y, Damping);
+            anim.SetFloat("Speed", speed);
+            anim.SetFloat("Direction", speed);
+
+            // Set sprinting state using InputManager's IsRunning property
+            isSprinting = InputManager.Instance.IsRunning && speed > 0;
+            anim.SetBool("isSprinting", isSprinting);
+
+            // Handle strafing (left/right movement)
+            currentStrafeSpeed = Mathf.SmoothDamp(
+                currentStrafeSpeed,
+                input.x * StrafeSpeed,
+                ref currentVelocity.x,
+                Damping
+            );
+            transform.position += transform.TransformDirection(Vector3.right) * currentStrafeSpeed;
+        } else {
+            // Block only player movement, not input
+            anim.SetFloat("Speed", 0f);
+            anim.SetBool("isSprinting", false);
         }
-
-        // Handle forward/backward movement
-        var speed = input.y;
-        speed = Mathf.Clamp(speed, -1f, 1f);
-        speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref currentVelocity.y, Damping);
-        anim.SetFloat("Speed", speed);
-        anim.SetFloat("Direction", speed);
-
-        // Set sprinting state using InputManager's IsRunning property
-        isSprinting = InputManager.Instance.IsRunning && speed > 0;
-        anim.SetBool("isSprinting", isSprinting);
-
-        // Handle strafing (left/right movement)
-        currentStrafeSpeed = Mathf.SmoothDamp(
-            currentStrafeSpeed,
-            input.x * StrafeSpeed,
-            ref currentVelocity.x,
-            Damping
-        );
-        transform.position += transform.TransformDirection(Vector3.right) * currentStrafeSpeed;
 
         // Get camera look input from InputManager's property
         Vector2 rotInput = InputManager.Instance.LookInput;

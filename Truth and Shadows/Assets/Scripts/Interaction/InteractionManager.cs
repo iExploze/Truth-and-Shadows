@@ -52,6 +52,9 @@ namespace TruthAndShadows.Interaction
         void Start()
         {
             InitializeSource();
+
+            // --- Ensure PersistentLaserManager exists ---
+            Interaction.PersistentLaserManager.Instance.Initialize();
             Cursor.visible = false;
 
             // Try to find the InputContextProvider
@@ -70,8 +73,7 @@ namespace TruthAndShadows.Interaction
             if (playerController == null)
             {
                 // Try to find it by type name to avoid direct reference issues
-                playerController =
-                    FindObjectOfType<TruthAndShadows.Player.CharacterMovement>();
+                playerController = FindObjectOfType<TruthAndShadows.Player.CharacterMovement>();
                 if (playerController == null)
                 {
                     Debug.LogWarning(
@@ -172,13 +174,22 @@ namespace TruthAndShadows.Interaction
             // Check if InputManager is available
             if (InputManager.Instance == null)
             {
-                Debug.LogError(
-                    "InputManager.Instance is null! This will prevent interaction input from working correctly."
-                );
-                return;
-            } // Use InputManager's properties for consistent input handling across devices            // Check if interaction is allowed based on the current player state
+                InputManagerBootstrap inputManagerBootstrap =
+                    FindObjectOfType<InputManagerBootstrap>();
+                if (inputManagerBootstrap == null)
+                {
+                    inputManagerBootstrap = new GameObject(
+                        "InputManagerBootstrap"
+                    ).AddComponent<InputManagerBootstrap>();
+                }
+                inputManagerBootstrap.EnsureInputManagerExists();
+            }
+
+            // Use InputManager's properties for consistent input handling across devices
+            // Check if interaction is allowed based on the current player state
             // Using the centralized InputContextProvider to check permissions
-            bool canInteract = true; // Default to allowed            // Get permission from InputContextProvider if available
+            bool canInteract = true; // Default to allowed
+            // Get permission from InputContextProvider if available
             if (inputContextProvider != null)
             {
                 // Use reflection to safely access the CanInteract property
@@ -210,7 +221,11 @@ namespace TruthAndShadows.Interaction
             else if (InputManager.Instance.InteractReleased)
             {
                 // Only end interaction on release if not a continuous interaction
-                if (isInteracting && currentInteractable != null && !currentInteractable.RequiresContinuousInteraction)
+                if (
+                    isInteracting
+                    && currentInteractable != null
+                    && !currentInteractable.RequiresContinuousInteraction
+                )
                 {
                     Debug.Log("Interact button released - ending interaction (non-continuous)");
                     EndCurrentInteraction();
@@ -220,7 +235,7 @@ namespace TruthAndShadows.Interaction
             // Handle pickup functionality
             HandlePickupInput();
             Reset();
-			ReturnToMenu();
+            ReturnToMenu();
         }
 
         private void UpdateContinuousInteraction()
@@ -663,8 +678,10 @@ namespace TruthAndShadows.Interaction
                 DropPickedUpItem();
             }
         }
-		private void ReturnToMenu() {
-			// Check if InputManager is available
+
+        private void ReturnToMenu()
+        {
+            // Check if InputManager is available
             if (InputManager.Instance == null)
             {
                 Debug.LogError("InputManager.Instance is null! Cannot process menu input.");
@@ -692,17 +709,18 @@ namespace TruthAndShadows.Interaction
             {
                 Debug.Log("Menu button pressed and allowed - returning to menu");
                 //CheckpointManager.Instance.RespawnAtCheckpoint();//
-				//Debug.Log(GameObject.Find("CheckpointManager"));
-				//GameObject.Find("CheckpointManager").SetActive(false);
-				//if (GameObject.Find("CheckpointManager") != null)
-        		//{
-				//	Debug.Log("AAAAAA");
-            	//	GetComponent<CheckpointManager>().enabled = false;
-        		//}
+                //Debug.Log(GameObject.Find("CheckpointManager"));
+                //GameObject.Find("CheckpointManager").SetActive(false);
+                //if (GameObject.Find("CheckpointManager") != null)
+                //{
+                //	Debug.Log("AAAAAA");
+                //	GetComponent<CheckpointManager>().enabled = false;
+                //}
                 LevelManager.Instance.LoadScene("DavidBMenu", "CrossFade");
                 //LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
             }
-		}
+        }
+
         private void Reset()
         {
             // Check if InputManager is available
@@ -734,13 +752,13 @@ namespace TruthAndShadows.Interaction
                 Debug.Log("Reseppt button pressed and allowed - reloading scene");
                 //CheckpointManager.Instance.RespawnAtCheckpoint();//
                 LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
-				Debug.Log("BBBBBBB");
-        		//GameObject.Find("CheckpointManager").SetActive(false);
-        		if (GameObject.Find("CheckpointManager") != null)
-        		{
-            		Debug.Log("AAAAAA");
-            		GameObject.Find("CheckpointManager").SetActive(true);
-        	}
+                Debug.Log("BBBBBBB");
+                //GameObject.Find("CheckpointManager").SetActive(false);
+                if (GameObject.Find("CheckpointManager") != null)
+                {
+                    Debug.Log("AAAAAA");
+                    GameObject.Find("CheckpointManager").SetActive(true);
+                }
                 //LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
             }
         }
@@ -764,9 +782,7 @@ namespace TruthAndShadows.Interaction
             {
                 if (isInteracting && currentInteractable == interactable)
                 {
-                    Debug.Log(
-                        "Ending current interaction before picking up a new item"
-                    );
+                    Debug.Log("Ending current interaction before picking up a new item");
                     EndCurrentInteraction();
                 }
                 pickedUpInteractable = interactable;

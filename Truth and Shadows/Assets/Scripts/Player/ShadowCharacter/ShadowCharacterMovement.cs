@@ -36,7 +36,7 @@ namespace TruthAndShadows.Player
 
             if (InputManager.Instance != null)
             {
-                input = InputManager.Instance.MoveInput;
+                input = InputManager.Instance.CharacterMoveInput;
             }
 
             // Check if spotlight aiming - block movement if rotating spotlight
@@ -65,7 +65,7 @@ namespace TruthAndShadows.Player
             // Update target direction relative to the camera view (or not if the Keep Direction option is checked)
             UpdateTargetDirection();
 
-            if (!canMove)
+            if (!canMove || !InputContextProvider.Instance.CanMove)
                 return;
 
             if (input != Vector2.zero && targetDirection.magnitude > 0.1f)

@@ -20,7 +20,8 @@ namespace TruthAndShadows.InputSystem
         // Other systems should use these rather than querying Input directly
 
         // Movement
-        public Vector2 MoveInput { get; private set; }
+        public Vector2 CharacterMoveInput { get; private set; }
+        public Vector2 InteractableMoveInput { get; private set; }
         public Vector2 MoveInputRaw { get; private set; }
         public bool IsRunning { get; private set; }
 
@@ -164,7 +165,8 @@ namespace TruthAndShadows.InputSystem
             bool rawSprintHeld = IsSprintHeldInternal();
 
             // Then apply permissions to determine the final input state            // Update all movement inputs (respect movement permission)
-            MoveInput = allowMovement ? GetMovementInputInternal() : Vector2.zero;
+            CharacterMoveInput = allowMovement ? GetMovementInputInternal() : Vector2.zero;
+            InteractableMoveInput = allowInteract ? GetMovementInputInternal() : Vector2.zero;
             MoveInputRaw = allowMovement ? GetMovementInputRawInternal() : Vector2.zero;
             IsRunning = allowRun && rawSprintHeld;
 

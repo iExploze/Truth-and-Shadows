@@ -1,15 +1,12 @@
 using System;
+using System.Collections;
 using Cinemachine;
+using TruthAndShadows.InputSystem;
+using TruthAndShadows.Interaction;
 using UnityEngine;
 
 namespace TruthAndShadows.Interaction
 {
-    public enum PickupMovementStyle
-    {
-        Held,
-        HorizontalPushPull,
-    }
-
     /// <summary>
     /// Base class for objects that can be interacted with. Provides common functionality
     /// and optional camera support.
@@ -31,9 +28,6 @@ namespace TruthAndShadows.Interaction
         protected bool canBePickedUp = true;
 
         [SerializeField]
-        protected PickupMovementStyle movementStyle = PickupMovementStyle.Held;
-
-        [SerializeField]
         protected float pickupRaiseAmount = 0.2f;
 
         [SerializeField]
@@ -41,6 +35,18 @@ namespace TruthAndShadows.Interaction
 
         [SerializeField]
         protected float pickupMovementSmoothing = 15f;
+
+        [Header("Pickup Movement")]
+        [SerializeField]
+        protected float pickupMoveSpeed = 2.5f; // New: max move speed for held objects
+
+        [SerializeField]
+        protected float minPlayerBlockDistance = 1.0f; // New: minimum allowed distance from player
+
+        [Header("Player Facing Settings")]
+        [Tooltip("How fast the player rotates to face the picked up object (degrees per second)")]
+        [SerializeField]
+        protected float playerRotationSpeed = 360f; // Degrees per second, can be set in Inspector
 
         //For Object interactable Sound
         //Rashai was here
@@ -86,6 +92,25 @@ namespace TruthAndShadows.Interaction
         public virtual bool IsPickedUp { get; protected set; }
         protected virtual bool PickupIsKinematic => true;
 
+        // --- Laser Visual Aid fields ---
+        [Header("Pickup Laser Visual Aid")]
+        [SerializeField]
+        protected Hovl_LaserBetweenPoints laserPrefab;
+
+        // Remove per-instance laserInstance and laserEndPointDummy
+        //protected Hovl_LaserBetweenPoints laserInstance;
+        //protected Transform laserEndPointDummy; // Used as a movable end point
+        protected Collider interactableCollider;
+        public Collider InteractableCollider => interactableCollider; // Public getter
+        protected Animator playerAnimator;
+        protected Camera mainCamera;
+        protected CharacterAnimation playerCharacterAnimation;
+
+        // --- Static reference to the currently held interactable ---
+        public static InteractableBase CurrentlyHeldInteractable { get; private set; }
+
+        private static GameObject freelookMainCharacter;
+
         /// <summary>
         /// Event triggered when interaction begins
         /// </summary>
@@ -128,6 +153,7 @@ namespace TruthAndShadows.Interaction
         protected virtual void Start()
         {
             rigidBody = GetComponent<Rigidbody>();
+            interactableCollider = GetComponent<Collider>();
 
             // Add Outline to all renderers in children
             var renderers = GetComponentsInChildren<Renderer>();
@@ -177,6 +203,9 @@ namespace TruthAndShadows.Interaction
                     ParticleSystemStopBehavior.StopEmittingAndClear
                 );
             }
+
+            // Find the main camera
+            freelookMainCharacter = GameObject.Find("FreeLookMainCharacter");
         }
 
         public abstract void StartInteraction();
@@ -192,12 +221,31 @@ namespace TruthAndShadows.Interaction
 
             this.playerTransform = playerTransform;
             IsPickedUp = true;
+            CurrentlyHeldInteractable = this; // Set static reference
             hasCalculatedRelativePosition = false;
             lastPlayerPosition = playerTransform.position;
+
+            // --- Disable player movement when picked up ---
+            var movement = playerTransform.GetComponent<TruthAndShadows.Player.PlayerMovement>();
+            if (movement != null)
+            {
+                movement.canMove = false;
+            }
+            // --- Optionally, update InputContextProvider permissions ---
+            var contextProvider = TruthAndShadows.InputSystem.InputContextProvider.Instance;
+            if (contextProvider != null)
+            {
+                contextProvider.ForcePermission("move", false);
+            }
 
             originalPosition = transform.position;
             originalRotation = transform.rotation;
             originalParent = transform.parent;
+
+            // --- Get CharacterAnimation and set pushing ---
+            playerCharacterAnimation = playerTransform.GetComponent<CharacterAnimation>();
+            if (playerCharacterAnimation != null)
+                playerCharacterAnimation.SetPushing(true);
 
             if (source != null && pickUpClip != null)
             {
@@ -209,26 +257,11 @@ namespace TruthAndShadows.Interaction
                 rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
                 rigidBody.collisionDetectionMode = CollisionDetectionMode.Continuous;
                 rigidBody.constraints =
-                            RigidbodyConstraints.FreezePositionY
-                            | RigidbodyConstraints.FreezeRotation;
-
-                switch (movementStyle)
-                {
-                    case PickupMovementStyle.Held:
-                        rigidBody.isKinematic = PickupIsKinematic;
-                        rigidBody.useGravity = !PickupIsKinematic;
-                        break;
-                    case PickupMovementStyle.HorizontalPushPull:
-                        rigidBody.isKinematic = false;
-                        rigidBody.useGravity = true;
-                        rigidBody.drag = 0f;
-                        rigidBody.angularDrag = 0f;
-                        break;
-                }
+                    RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation;
             }
 
-            // Apply pickup raise if specified, only for "Held" style
-            if (pickupRaiseAmount > 0 && movementStyle == PickupMovementStyle.Held)
+            // Apply pickup raise if specified
+            if (pickupRaiseAmount > 0)
             {
                 Vector3 raisedPosition = transform.position + Vector3.up * pickupRaiseAmount;
                 transform.position = raisedPosition;
@@ -243,9 +276,34 @@ namespace TruthAndShadows.Interaction
                 return;
 
             IsPickedUp = false;
+            if (CurrentlyHeldInteractable == this)
+            {
+                CurrentlyHeldInteractable = null; // Clear static reference
+            }
             hasCalculatedRelativePosition = false;
 
+            // --- Re-enable player movement when dropped ---
+            if (playerTransform != null)
+            {
+                var movement =
+                    playerTransform.GetComponent<TruthAndShadows.Player.PlayerMovement>();
+                if (movement != null)
+                {
+                    movement.canMove = true;
+                }
+            }
+            // --- Optionally, update InputContextProvider permissions ---
+            var contextProvider = TruthAndShadows.InputSystem.InputContextProvider.Instance;
+            if (contextProvider != null)
+            {
+                contextProvider.ForcePermission("move", true);
+            }
+
             transform.SetParent(originalParent);
+
+            if (playerCharacterAnimation != null)
+                playerCharacterAnimation.SetPushing(false);
+            playerCharacterAnimation = null;
 
             if (source != null)
             {
@@ -277,22 +335,8 @@ namespace TruthAndShadows.Interaction
                 float distanceToPlayer;
                 float dropDistanceMultiplier;
 
-                if (movementStyle == PickupMovementStyle.HorizontalPushPull)
-                {
-                    distanceToPlayer = Vector3.Distance(
-                        new Vector3(transform.position.x, 0, transform.position.z),
-                        new Vector3(playerTransform.position.x, 0, playerTransform.position.z)
-                    );
-                    dropDistanceMultiplier = 1.5f;
-                }
-                else
-                {
-                    distanceToPlayer = Vector3.Distance(
-                        transform.position,
-                        playerTransform.position
-                    );
-                    dropDistanceMultiplier = 3f;
-                }
+                distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+                dropDistanceMultiplier = 3f;
 
                 if (distanceToPlayer > interactionDistance * dropDistanceMultiplier)
                 {
@@ -300,63 +344,68 @@ namespace TruthAndShadows.Interaction
                     return; // Stop further processing
                 }
                 UpdatePickupPosition();
+
+                if (playerTransform != null)
+                {
+                    Vector3 lookAtPosition = transform.position;
+                    lookAtPosition.y = playerTransform.position.y; // Keep y level
+                    Quaternion targetRotation = Quaternion.LookRotation(
+                        lookAtPosition - playerTransform.position
+                    );
+                    playerTransform.rotation = Quaternion.RotateTowards(
+                        playerTransform.rotation,
+                        targetRotation,
+                        playerRotationSpeed * Time.deltaTime
+                    );
+                }
             }
         }
 
         protected virtual void UpdatePickupPosition()
         {
-            if (rigidBody == null || playerTransform == null || !IsPickedUp)
-                return;
+            // Use camera-relative movement for telekinesis
+            Camera cam = Camera.main;
 
-            switch (movementStyle)
+            // Get input directly from InputManager (not blocked by player movement permission)
+            var inputManager = TruthAndShadows.InputSystem.InputManager.Instance;
+            Vector2 moveInput =
+                inputManager != null ? inputManager.InteractableMoveInput : Vector2.zero;
+
+            // Camera forward/right, flattened
+            Vector3 camForward = cam.transform.forward;
+            camForward.y = 0;
+            camForward.Normalize();
+            Vector3 camRight = cam.transform.right;
+            camRight.y = 0;
+            camRight.Normalize();
+
+            // Calculate movement direction
+            Vector3 moveDir = camRight * moveInput.x + camForward * moveInput.y;
+
+            // Optional: vertical movement (e.g., with jump/crouch or look input)
+            float vertical = 0f;
+            if (inputManager != null && inputManager.RotateHeld)
             {
-                case PickupMovementStyle.Held:
-                    if (!hasCalculatedRelativePosition)
-                    {
-                        // Calculate position relative to player's forward direction, accounting for the pickup raise amount
-                        relativePosition = playerTransform.forward * 1.3f + Vector3.up * pickupRaiseAmount;
-                        hasCalculatedRelativePosition = true;
-                    }
+                vertical = inputManager.LookInput.y * pickupMoveSpeed * Time.deltaTime;
+            }
 
-                    // Calculate position by adding relative position to player position
-                    Vector3 heldPosition = playerTransform.position + relativePosition;
+            // Target position
+            Vector3 targetPos =
+                transform.position + moveDir * pickupMoveSpeed * pickupMoveSpeed * Time.deltaTime;
+            targetPos.y += vertical;
 
-                    // Smooth movement using the base class's pickup smoothing value
-                    Vector3 smoothedPosition = Vector3.Lerp(
-                        transform.position,
-                        heldPosition,
-                        Time.deltaTime * pickupSmoothness
-                    );
+            // Smooth movement
+            Vector3 lerped = Vector3.Lerp(
+                transform.position,
+                targetPos,
+                Time.deltaTime * pickupSmoothness
+            );
+            transform.position = lerped;
 
-                    // Move to follow player with smoothing
-                    transform.position = smoothedPosition;
-
-                    // Update rigidbody as well
-                    if (rigidBody.isKinematic)
-                    {
-                        rigidBody.position = smoothedPosition;
-                    }
-                    break;
-                case PickupMovementStyle.HorizontalPushPull:
-                    // Calculate how much the player has moved since last frame
-                    Vector3 currentPlayerPos = playerTransform.position;
-                    Vector3 playerDelta = currentPlayerPos - lastPlayerPosition;
-                    playerDelta.y = 0;
-                    if (playerDelta.magnitude > 0.001f)
-                    {
-                        Vector3 targetVelocity = playerDelta / Time.fixedDeltaTime;
-                        rigidBody.velocity = new Vector3(
-                            targetVelocity.x,
-                            rigidBody.velocity.y,
-                            targetVelocity.z
-                        );
-                    }
-                    else
-                    {
-                        rigidBody.velocity = new Vector3(0, rigidBody.velocity.y, 0);
-                    }
-                    lastPlayerPosition = currentPlayerPos;
-                    break;
+            // Optionally, update rigidbody position if kinematic
+            if (rigidBody.isKinematic)
+            {
+                rigidBody.position = transform.position;
             }
         }
 
@@ -380,6 +429,7 @@ namespace TruthAndShadows.Interaction
                     outlineFadeCoroutine = StartCoroutine(FadeOutline(shouldShow));
                 }
             }
+            // --- Laser update logic is now handled by PersistentLaserManager ---
         }
 
         private void SetParticleEffectActive(bool active)

@@ -54,9 +54,6 @@ namespace TruthAndShadows.Interaction
         {
             base.Start();
 
-            // Set movement style for base class to handle push/pull physics
-            movementStyle = PickupMovementStyle.HorizontalPushPull;
-
             cubeRenderer = GetComponent<Renderer>();
             if (cubeRenderer == null)
             {
