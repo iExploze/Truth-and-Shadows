@@ -166,6 +166,14 @@ namespace TruthAndShadows.CheckpointSystem
             RespawnAtCheckpoint();
         }
 
+        /// <summary>
+        /// Call this method when killed by an enemy
+        /// </summary>
+        public void HandleEnemyKill()
+        {
+            RespawnAtCheckpoint();
+        }
+
         // Add a public method to set the current checkpoint from Checkpoint
         public void SetCheckpoint(Transform checkpoint)
         {
