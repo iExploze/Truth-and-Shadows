@@ -95,7 +95,7 @@ namespace TruthAndShadows.Interaction
         // --- Laser Visual Aid fields ---
         [Header("Pickup Laser Visual Aid")]
         [SerializeField]
-        protected Hovl_LaserBetweenPoints laserPrefab;
+        protected LaserBetweenPoints laserPrefab;
 
         // Remove per-instance laserInstance and laserEndPointDummy
         //protected Hovl_LaserBetweenPoints laserInstance;

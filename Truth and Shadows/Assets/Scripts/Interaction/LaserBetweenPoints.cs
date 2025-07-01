@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
-public class Hovl_LaserBetweenPoints : MonoBehaviour
+public class LaserBetweenPoints : MonoBehaviour
 {
     [Header("Laser Points")]
     public Transform startPoint;

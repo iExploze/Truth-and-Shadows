@@ -6,7 +6,7 @@ namespace TruthAndShadows.Interaction
     {
         private static PersistentLaserManager _instance;
 
-        private Hovl_LaserBetweenPoints persistentLaserInstance;
+        private LaserBetweenPoints persistentLaserInstance;
         private Transform persistentLaserEndPointDummy;
         private GameObject persistentLaserStartGO;
         private bool isInitialized = false;
@@ -41,11 +41,11 @@ namespace TruthAndShadows.Interaction
             if (isInitialized)
                 return;
 
-            Hovl_LaserBetweenPoints laserPrefab = null;
+            LaserBetweenPoints laserPrefab = null;
             GameObject ultraHandObj = GameObject.Find("UltraHand");
             if (ultraHandObj != null)
             {
-                laserPrefab = ultraHandObj.GetComponent<Hovl_LaserBetweenPoints>();
+                laserPrefab = ultraHandObj.GetComponent<LaserBetweenPoints>();
             }
 
             if (laserPrefab != null)
