@@ -95,4 +95,14 @@ public class MainMenuController : MonoBehaviour
     {
         Application.Quit();
     }
+
+    public void LoadLevel1()
+    {
+        LevelManager.Instance.LoadScene("Level Hallway", "CrossFade");
+    }
+
+    public void LoadLevel2()
+    {
+        LevelManager.Instance.LoadScene("LevelDesigntest", "CrossFade");
+    }
 }
