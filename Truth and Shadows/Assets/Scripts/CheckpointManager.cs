@@ -48,8 +48,11 @@ namespace TruthAndShadows.CheckpointSystem
             playerObjects = new List<GameObject>(
                 GameObject.FindObjectsOfType<GameObject>(true).Where(go => go.CompareTag("Player"))
             );
-            // Sort checkpoints alphabetically by name after all are registered
-            SortCheckpointsAlphabetically();
+            // Only sort checkpoints if any name is not in default Unity naming
+            if (ShouldSortCheckpointsByName())
+            {
+                SortCheckpointsAlphabetically();
+            }
             // Set the initial checkpoint to the first one in the list if any exist
             if (checkpoints.Count > 0)
             {
@@ -60,6 +63,20 @@ namespace TruthAndShadows.CheckpointSystem
             }
         }
 
+        // Returns true if any checkpoint name is not in the default Unity naming pattern
+        private bool ShouldSortCheckpointsByName()
+        {
+            foreach (var cp in checkpoints)
+            {
+                if (cp == null) continue;
+                string name = cp.name;
+                if (name == "Checkpoint") continue;
+                if (System.Text.RegularExpressions.Regex.IsMatch(name, @"^Checkpoint \(\d+\)$")) continue;
+                return false; // Found a non-default name - list was manually managed
+            }
+            return true; // All names are default
+        }
+
         // Move all players to a checkpoint, with optional spawn logic
         private void MoveAllPlayersToCheckpoint(Transform checkpoint, bool isSpawn = false)
         {
@@ -67,7 +84,7 @@ namespace TruthAndShadows.CheckpointSystem
                 return;
             foreach (var playerTransform in playerObjects.Select(playerObj => playerObj.transform))
             {
-                Vector3 respawnPosition = checkpoint.position; // 1 unit above
+                Vector3 respawnPosition = checkpoint.position + Vector3.up * 0.2f; // 1 unit above
                 if (playerTransform.parent != null)
                 {
                     playerTransform.localPosition =
