@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Input = UnityEngine.Input;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class MainMenuController : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class MainMenuController : MonoBehaviour
 
     public CanvasGroup SettingsPanel;
     public CanvasGroup LevelsPanel;
+    public GameObject firstLevelButton;
 
     void Start()
     {
@@ -39,6 +41,12 @@ public class MainMenuController : MonoBehaviour
         if (gamepad.buttonWest.wasPressedThisFrame && !IsAnyPanelOpen())
         {
             Settings();
+        }
+
+        // Gamepad: Triangle/Y to Open Levels (if none visible)
+        if (gamepad.buttonNorth.wasPressedThisFrame && !IsAnyPanelOpen())
+        {
+            Levels();
         }
 
         // Gamepad: Circle/B to Back or Quit
@@ -78,6 +86,8 @@ public class MainMenuController : MonoBehaviour
         LevelsPanel.alpha = 1;
         LevelsPanel.blocksRaycasts = true;
         LevelsPanel.interactable = true;
+
+        EventSystem.current.SetSelectedGameObject(firstLevelButton);
     }
 
     public void Back()
