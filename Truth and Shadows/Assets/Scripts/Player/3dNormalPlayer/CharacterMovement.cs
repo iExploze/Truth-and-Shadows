@@ -43,6 +43,9 @@ namespace TruthAndShadows.Player
         private Quaternion freeRotation;
         public bool canMove = true;
 
+        // --- Sound ---
+        public AudioSource walkSource;
+
         private Rigidbody rb;
 
         // --- Debug ---
@@ -98,6 +101,7 @@ namespace TruthAndShadows.Player
             if (InputManager.Instance == null)
                 return;
             UpdatePlayerState();
+
             // Movement and animation in FixedUpdate for physics consistency
         }
 
@@ -163,6 +167,18 @@ namespace TruthAndShadows.Player
             rb.MovePosition(rb.position + forward);
 
             characterAnimation.updateMovement(forward);
+
+            //Rashai Was Here
+            bool isMoving = input.magnitude > 0.01f;
+            if (isMoving && !walkSource.isPlaying) 
+            {
+               walkSource.Play();
+            }
+            else if (!isMoving && walkSource.isPlaying)
+            {
+               walkSource.Play();
+            }
+
 #else
             InputSystemHelper.EnableBackendsWarningMessage();
 #endif
