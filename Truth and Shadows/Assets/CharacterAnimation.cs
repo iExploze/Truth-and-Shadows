@@ -36,8 +36,8 @@ public class CharacterAnimation : MonoBehaviour
     }
 
     // Example: Call this when you want to start "Move box anim"
-    public void SetPushing(bool pushing)
+    public void SetPushing(bool isPushing)
     {
-        anim.SetBool("moveObject", pushing);
+        anim.SetBool("moveObject", isPushing);
     }
 }
