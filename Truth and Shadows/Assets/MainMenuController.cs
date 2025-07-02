@@ -4,47 +4,61 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Input = UnityEngine.Input;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
+
 public class MainMenuController : MonoBehaviour
 {
     private Gamepad gamepad;
     private bool _usingController = false;
     public bool UsingController => _usingController;
-    // Start is called before the first frame update
+
+    public CanvasGroup SettingsPanel;
+    public CanvasGroup LevelsPanel;
+    public GameObject firstLevelButton;
+    public GameObject firstMenuButton; // Added field for the first menu button
+
     void Start()
     {
         gamepad = Gamepad.current;
+        // Set initial selected button for joystick navigation
+        if (firstMenuButton != null && !IsAnyPanelOpen())
+        {
+            EventSystem.current.SetSelectedGameObject(firstMenuButton);
+        }
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (gamepad != null)
         {
             ProcessInputs();
-            // Debug.Log("AAAAAA");
         }
-
-        
     }
-    
+
     private void ProcessInputs()
     {
-        // PS X, XBOX A
-        if (gamepad.buttonSouth.wasPressedThisFrame)
-        {
-            PlayGame();
-        }
+        // // Gamepad: X/A to Play
+        // if (gamepad.buttonSouth.wasPressedThisFrame)
+        // {
+        //     PlayGame();
+        // }
 
-        // PS SQUARE, XBOX X
-        if (gamepad.buttonWest.wasPressedThisFrame && SettingsPanel.alpha == 0)
-        {
-            Settings();
-        }
+        // // Gamepad: Square/X to Open Settings (if none visible)
+        // if (gamepad.buttonWest.wasPressedThisFrame && !IsAnyPanelOpen())
+        // {
+        //     Settings();
+        // }
 
-        // PS CIRCLE, XBOX B
+        // // Gamepad: Triangle/Y to Open Levels (if none visible)
+        // if (gamepad.buttonNorth.wasPressedThisFrame && !IsAnyPanelOpen())
+        // {
+        //     Levels();
+        // }
+
+        // // Gamepad: Circle/B to Back or Quit
         if (gamepad.buttonEast.wasPressedThisFrame)
         {
-            if (SettingsPanel.alpha == 0)
+            if (!IsAnyPanelOpen())
             {
                 QuitGame();
             }
@@ -53,38 +67,65 @@ public class MainMenuController : MonoBehaviour
                 Back();
             }
         }
-
-
-
     }
-    
-    // private bool IsControllerConnected()
-    // {
-    //     return Gamepad.all.Count > 0;
-    // }
 
-    public CanvasGroup SettingsPanel;
+    // Helper to check if either panel is open
+    private bool IsAnyPanelOpen()
+    {
+        return SettingsPanel.alpha > 0 || LevelsPanel.alpha > 0;
+    }
 
     public void PlayGame()
     {
         LevelManager.Instance.LoadScene("Level Hallway", "CrossFade");
-        // SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
     public void Settings()
     {
         SettingsPanel.alpha = 1;
         SettingsPanel.blocksRaycasts = true;
+        SettingsPanel.interactable = true;
+    }
+
+    public void Levels()
+    {
+        LevelsPanel.alpha = 1;
+        LevelsPanel.blocksRaycasts = true;
+        LevelsPanel.interactable = true;
+
+        EventSystem.current.SetSelectedGameObject(firstLevelButton);
     }
 
     public void Back()
     {
         SettingsPanel.alpha = 0;
         SettingsPanel.blocksRaycasts = false;
+        SettingsPanel.interactable = false;
+
+        LevelsPanel.alpha = 0;
+        LevelsPanel.blocksRaycasts = false;
+        LevelsPanel.interactable = false;
+
+        // After closing panels, set main menu button as selected for controller
+        if (firstMenuButton != null)
+        {
+            EventSystem.current.SetSelectedGameObject(firstMenuButton);
+        }
     }
 
     public void QuitGame()
     {
         Application.Quit();
+    }
+
+    public void LoadLevel1()
+    {
+        LevelManager.Instance.LoadScene("Level Hallway", "CrossFade");
+    }
+
+    public void LoadLevel2()
+    {
+        LevelManager.Instance.LoadScene("T&S - Level #2 Backup", "CrossFade");
+        // Temporary scene, replace with level 2 later
     }
 }
