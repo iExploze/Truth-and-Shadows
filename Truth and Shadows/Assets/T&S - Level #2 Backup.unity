@@ -1947,10 +1947,12 @@ MonoBehaviour:
   interactionDistance: 2
   useColliderBounds: 1
   canBePickedUp: 0
-  movementStyle: 0
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
   pickupMovementSmoothing: 15
+  pickupMoveSpeed: 2.5
+  minPlayerBlockDistance: 1
+  playerRotationSpeed: 360
   source: {fileID: 0}
   pickUpClip: {fileID: 0}
   interactionCamera: {fileID: 0}
@@ -1958,6 +1960,7 @@ MonoBehaviour:
   outlineColor: {r: 0.2, g: 0.6, b: 1, a: 1}
   outlineWidth: 10
   outlineParticlePrefab: {fileID: 5397975728314071263, guid: 72f556a5681967b46a166b7ee4cef45a, type: 3}
+  laserPrefab: {fileID: 0}
   wallToSlide: {fileID: 2083786678}
   localMoveDirection: {x: 0, y: 0, z: 0}
   moveDistance: 10
@@ -2423,10 +2426,12 @@ MonoBehaviour:
   interactionDistance: 2
   useColliderBounds: 1
   canBePickedUp: 1
-  movementStyle: 0
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
   pickupMovementSmoothing: 15
+  pickupMoveSpeed: 2.5
+  minPlayerBlockDistance: 1
+  playerRotationSpeed: 360
   source: {fileID: 56266526}
   pickUpClip: {fileID: 8300000, guid: 2587e3e97bb2f2a4fbf8bd7cc6cf6931, type: 3}
   interactionCamera: {fileID: 0}
@@ -2434,6 +2439,7 @@ MonoBehaviour:
   outlineColor: {r: 0.2, g: 0.6, b: 1, a: 1}
   outlineWidth: 10
   outlineParticlePrefab: {fileID: 5397975728314071263, guid: 72f556a5681967b46a166b7ee4cef45a, type: 3}
+  laserPrefab: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
   collisionColor: {r: 1, g: 0, b: 0, a: 1}
@@ -11266,10 +11272,12 @@ MonoBehaviour:
   interactionDistance: 2
   useColliderBounds: 1
   canBePickedUp: 1
-  movementStyle: 0
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
   pickupMovementSmoothing: 15
+  pickupMoveSpeed: 2.5
+  minPlayerBlockDistance: 1
+  playerRotationSpeed: 360
   source: {fileID: 258656438}
   pickUpClip: {fileID: 8300000, guid: 2587e3e97bb2f2a4fbf8bd7cc6cf6931, type: 3}
   interactionCamera: {fileID: 0}
@@ -11277,6 +11285,7 @@ MonoBehaviour:
   outlineColor: {r: 0.2, g: 0.6, b: 1, a: 1}
   outlineWidth: 10
   outlineParticlePrefab: {fileID: 5397975728314071263, guid: 72f556a5681967b46a166b7ee4cef45a, type: 3}
+  laserPrefab: {fileID: 0}
   originalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedUpColor: {r: 0, g: 1, b: 0, a: 1}
   collisionColor: {r: 1, g: 0, b: 0, a: 1}
@@ -58896,7 +58905,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c3756450e978bf4ba5b51b49e2a12e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
+  player: {fileID: 980605430}
   targetObject: {fileID: 56266533}
   outerRange: 15
   midRange: 5
@@ -83781,7 +83790,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5917594643314929858}
   m_LocalRotation: {x: -0, y: -0.70662814, z: -0, w: 0.70758516}
-  m_LocalPosition: {x: 0, y: 0, z: -0.136}
+  m_LocalPosition: {x: 0, y: 0, z: -0.135}
   m_LocalScale: {x: 0.0049999994, y: 0.005, z: 0.009999999}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -83792,7 +83801,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.324, y: 1.64}
+  m_AnchoredPosition: {x: -0.043, y: 2.177}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &456221103102112443
@@ -92919,7 +92928,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5085754676561380138}
   m_LocalRotation: {x: -0, y: -0.7066281, z: 0.0000000025611369, w: 0.7075853}
-  m_LocalPosition: {x: 0, y: 0, z: -0.029}
+  m_LocalPosition: {x: 0, y: 0, z: -0.045}
   m_LocalScale: {x: 0.0049999994, y: 0.005, z: 0.009999999}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -92930,7 +92939,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.372, y: 1.611}
+  m_AnchoredPosition: {x: 0.101, y: 2.247}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &1370007276759751434
@@ -101101,7 +101110,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8378890179293845326}
   m_LocalRotation: {x: -0, y: -0.7066281, z: 0.0000000025611369, w: 0.7075853}
-  m_LocalPosition: {x: 0, y: 0, z: -0.029}
+  m_LocalPosition: {x: 0, y: 0, z: -0.045}
   m_LocalScale: {x: 0.0049999994, y: 0.005, z: 0.009999999}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -101112,7 +101121,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.372, y: 1.365}
+  m_AnchoredPosition: {x: 0.101, y: 2.001}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &2318477119739703945
@@ -105134,7 +105143,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8174507673798469125}
   m_LocalRotation: {x: -0, y: -0.70662814, z: -0, w: 0.70758516}
-  m_LocalPosition: {x: 0, y: 0, z: -0.136}
+  m_LocalPosition: {x: 0, y: 0, z: -0.135}
   m_LocalScale: {x: 0.0049999994, y: 0.005, z: 0.009999999}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -105145,7 +105154,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.324, y: 1.439}
+  m_AnchoredPosition: {x: -0.043, y: 1.9760001}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!4 &2682914489882755235
@@ -121653,10 +121662,12 @@ MonoBehaviour:
   interactionDistance: 2
   useColliderBounds: 1
   canBePickedUp: 1
-  movementStyle: 0
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
   pickupMovementSmoothing: 15
+  pickupMoveSpeed: 2.5
+  minPlayerBlockDistance: 1
+  playerRotationSpeed: 360
   source: {fileID: 0}
   pickUpClip: {fileID: 0}
   interactionCamera: {fileID: 3952058437423778378}
@@ -121664,6 +121675,7 @@ MonoBehaviour:
   outlineColor: {r: 0.2, g: 0.6, b: 1, a: 1}
   outlineWidth: 10
   outlineParticlePrefab: {fileID: 5397975728314071263, guid: 72f556a5681967b46a166b7ee4cef45a, type: 3}
+  laserPrefab: {fileID: 0}
   spotLight: {fileID: 568957461158313861}
   verticallyRotatable: {fileID: 3238848393021011194}
   horizontallyRotatable: {fileID: 5455151448502884619}
@@ -121697,10 +121709,12 @@ MonoBehaviour:
   interactionDistance: 2
   useColliderBounds: 1
   canBePickedUp: 1
-  movementStyle: 0
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
   pickupMovementSmoothing: 15
+  pickupMoveSpeed: 2.5
+  minPlayerBlockDistance: 1
+  playerRotationSpeed: 360
   source: {fileID: 0}
   pickUpClip: {fileID: 0}
   interactionCamera: {fileID: 3952058436488186841}
@@ -121708,6 +121722,7 @@ MonoBehaviour:
   outlineColor: {r: 0.2, g: 0.6, b: 1, a: 1}
   outlineWidth: 10
   outlineParticlePrefab: {fileID: 5397975728314071263, guid: 72f556a5681967b46a166b7ee4cef45a, type: 3}
+  laserPrefab: {fileID: 0}
   spotLight: {fileID: 568957461028552214}
   verticallyRotatable: {fileID: 3238848393687119209}
   horizontallyRotatable: {fileID: 5455151447558903960}
@@ -121741,10 +121756,12 @@ MonoBehaviour:
   interactionDistance: 2
   useColliderBounds: 1
   canBePickedUp: 1
-  movementStyle: 0
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
   pickupMovementSmoothing: 15
+  pickupMoveSpeed: 2.5
+  minPlayerBlockDistance: 1
+  playerRotationSpeed: 360
   source: {fileID: 0}
   pickUpClip: {fileID: 0}
   interactionCamera: {fileID: 3952058437555715050}
@@ -121752,6 +121769,7 @@ MonoBehaviour:
   outlineColor: {r: 0.2, g: 0.6, b: 1, a: 1}
   outlineWidth: 10
   outlineParticlePrefab: {fileID: 5397975728314071263, guid: 72f556a5681967b46a166b7ee4cef45a, type: 3}
+  laserPrefab: {fileID: 0}
   spotLight: {fileID: 568957459948572197}
   verticallyRotatable: {fileID: 3238848394767205722}
   horizontallyRotatable: {fileID: 5455151446487328939}
@@ -123088,7 +123106,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7746859091022159224}
   m_LocalRotation: {x: -0, y: -0.25437248, z: -0, w: 0.96710634}
-  m_LocalPosition: {x: 0, y: 0, z: 0.047237784}
+  m_LocalPosition: {x: 0, y: 0, z: -0.013}
   m_LocalScale: {x: 0.0049999994, y: 0.005, z: 0.009999999}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -123099,7 +123117,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -1.1554608, y: 1.255}
+  m_AnchoredPosition: {x: -0.24, y: 2.044}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &4623747506665718166
@@ -128635,7 +128653,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2058636552472923225}
   m_LocalRotation: {x: -0, y: -0.25437248, z: -0, w: 0.96710634}
-  m_LocalPosition: {x: 0, y: 0, z: 0.047237784}
+  m_LocalPosition: {x: 0, y: 0, z: -0.013}
   m_LocalScale: {x: 0.0049999994, y: 0.005, z: 0.009999999}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -128646,7 +128664,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -1.1554608, y: 1.505}
+  m_AnchoredPosition: {x: -0.24, y: 2.294}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &5245405301262728642
