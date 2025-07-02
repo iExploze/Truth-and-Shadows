@@ -16,8 +16,8 @@ public class ProximityPromptDisplay : MonoBehaviour
     //public Image circleImage;
 
     public Image keyboardKey;
-    public Image controllerKey;
-    //public TextMeshProUGUI keyTMP;
+    //public Image controllerKey;
+    public TextMeshProUGUI keyTMP;
     public TextMeshProUGUI promptTMP;
 
     void Start()
@@ -33,7 +33,7 @@ public class ProximityPromptDisplay : MonoBehaviour
             targetObject = transform;
 
         SetAlpha(keyboardKey, 0f);
-        SetAlpha(controllerKey, 0f);
+        SetAlpha(keyTMP, 0f);
         SetAlpha(promptTMP, 0f);
     }
 
@@ -48,7 +48,7 @@ public class ProximityPromptDisplay : MonoBehaviour
         float promptAlpha = distance <= closeRange ? 1f : 0f;
 
         FadeGraphic(keyboardKey, keyboardAlpha);
-        FadeGraphic(controllerKey, controllerAlpha);
+        FadeGraphic(keyTMP, controllerAlpha);
         FadeTMP(promptTMP, promptAlpha);
     }
 
