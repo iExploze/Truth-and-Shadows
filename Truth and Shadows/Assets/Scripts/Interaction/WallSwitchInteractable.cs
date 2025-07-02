@@ -25,7 +25,7 @@ namespace TruthAndShadows.Bridge
 
         [Header("Audio Settings")]
         [SerializeField]
-        private AudioSource switchSoundSource;
+        public AudioSource switchSoundSource;
         public AudioSource wallSoundSource;
         
         [SerializeField]
