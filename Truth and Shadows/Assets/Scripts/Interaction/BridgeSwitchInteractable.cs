@@ -15,7 +15,7 @@ namespace TruthAndShadows.Bridge
         private Transform bridge; // The bridge to move
         
         [SerializeField]
-        private float raiseAmount = 3f; // How high the bridge moves
+        public float raiseAmount = 3f; // How high the bridge moves
         
         [SerializeField]
         private float moveSpeed = 2f;
@@ -46,7 +46,7 @@ namespace TruthAndShadows.Bridge
             if (bridge != null)
             {
                 startBridgePos = bridge.position;
-                targetBridgePos = startBridgePos + Vector3.up * raiseAmount;
+                targetBridgePos = startBridgePos + Vector3.right * raiseAmount;
             }
             else
             {
