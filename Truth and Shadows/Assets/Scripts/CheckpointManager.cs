@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TruthAndShadows.CheckpointSystem;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TruthAndShadows.CheckpointSystem
 {
@@ -34,7 +35,7 @@ namespace TruthAndShadows.CheckpointSystem
             if (Instance == null)
             {
                 Instance = this;
-                DontDestroyOnLoad(gameObject);
+                // Removed DontDestroyOnLoad(gameObject);
             }
             else
             {
@@ -59,6 +60,32 @@ namespace TruthAndShadows.CheckpointSystem
                 currentCheckpoint = checkpoints[0];
                 Debug.Log("Initial spawn point set to: " + currentCheckpoint.name);
                 // Move all players to the initial spawn point
+                MoveAllPlayersToCheckpoint(currentCheckpoint, true);
+            }
+        }
+
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            // Re-run Start logic to re-link scene objects and players
+            playerObjects = new List<GameObject>(
+                GameObject.FindObjectsOfType<GameObject>(true).Where(go => go.CompareTag("Player"))
+            );
+            if (ShouldSortCheckpointsByName())
+            {
+                SortCheckpointsAlphabetically();
+            }
+            if (checkpoints.Count > 0)
+            {
+                currentCheckpoint = checkpoints[0];
+                Debug.Log("Initial spawn point set to: " + currentCheckpoint.name);
                 MoveAllPlayersToCheckpoint(currentCheckpoint, true);
             }
         }

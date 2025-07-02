@@ -18,7 +18,7 @@ namespace TruthAndShadows.Interaction
         protected bool requireContinuousHold = false;
 
         [SerializeField]
-        protected float interactionDistance = 3f;
+        protected float interactionDistance = 5f;
 
         [SerializeField]
         protected bool useColliderBounds = true;
@@ -340,7 +340,7 @@ namespace TruthAndShadows.Interaction
 
                 if (distanceToPlayer > interactionDistance * dropDistanceMultiplier)
                 {
-                    EndPickup();
+                    // EndPickup();
                     return; // Stop further processing
                 }
                 UpdatePickupPosition();
@@ -390,9 +390,40 @@ namespace TruthAndShadows.Interaction
             }
 
             // Target position
-            Vector3 targetPos =
-                transform.position + moveDir * pickupMoveSpeed * pickupMoveSpeed * Time.deltaTime;
+            Vector3 updateDistance = moveDir * pickupMoveSpeed * pickupMoveSpeed * Time.deltaTime;
+            Vector3 targetPos = transform.position + updateDistance;
             targetPos.y += vertical;
+
+            // prevent movement if too close to interaction max distance
+            // or if too close to the player
+            if (playerTransform != null)
+            {
+                float distanceToPlayer = Vector3.Distance(playerTransform.position, targetPos);
+                if (distanceToPlayer >= (interactionDistance * 0.99f))
+                {
+                    // If too far from player, don't move
+                    return;
+                }
+
+                // Prevent moving closer if colliding with player
+                Collider playerCollider = playerTransform.GetComponent<Collider>();
+                if (
+                    Physics.ComputePenetration(
+                        interactableCollider,
+                        targetPos + updateDistance * 0.01f,
+                        transform.rotation,
+                        playerCollider,
+                        playerTransform.position,
+                        playerTransform.rotation,
+                        out Vector3 direction,
+                        out float distance
+                    )
+                )
+                {
+                    // This move would penetrate the player, cancel it
+                    return;
+                }
+            }
 
             // Smooth movement
             Vector3 lerped = Vector3.Lerp(
@@ -429,7 +460,6 @@ namespace TruthAndShadows.Interaction
                     outlineFadeCoroutine = StartCoroutine(FadeOutline(shouldShow));
                 }
             }
-            // --- Laser update logic is now handled by PersistentLaserManager ---
         }
 
         private void SetParticleEffectActive(bool active)

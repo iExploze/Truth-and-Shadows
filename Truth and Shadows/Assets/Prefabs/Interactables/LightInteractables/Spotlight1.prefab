@@ -4014,6 +4014,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -15140,10 +15147,12 @@ MonoBehaviour:
   interactionDistance: 2
   useColliderBounds: 1
   canBePickedUp: 1
-  movementStyle: 0
   pickupRaiseAmount: 0.2
   pickupSmoothness: 10
   pickupMovementSmoothing: 15
+  pickupMoveSpeed: 2.5
+  minPlayerBlockDistance: 1
+  playerRotationSpeed: 360
   source: {fileID: 0}
   pickUpClip: {fileID: 0}
   interactionCamera: {fileID: 3952058437849419858}
@@ -15151,6 +15160,7 @@ MonoBehaviour:
   outlineColor: {r: 0.2, g: 0.6, b: 1, a: 1}
   outlineWidth: 10
   outlineParticlePrefab: {fileID: 5397975728314071263, guid: 72f556a5681967b46a166b7ee4cef45a, type: 3}
+  laserPrefab: {fileID: 0}
   spotLight: {fileID: 568957459688154525}
   verticallyRotatable: {fileID: 3238848394491326178}
   horizontallyRotatable: {fileID: 5455151446730965779}
@@ -20504,6 +20514,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -21746,6 +21763,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -24179,6 +24203,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0

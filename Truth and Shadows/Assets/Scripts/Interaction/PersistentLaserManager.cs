@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TruthAndShadows.Interaction
 {
@@ -12,16 +13,7 @@ namespace TruthAndShadows.Interaction
         private bool isInitialized = false;
         public static PersistentLaserManager Instance
         {
-            get
-            {
-                if (_instance == null)
-                {
-                    var go = new GameObject("PersistentLaserManager");
-                    _instance = go.AddComponent<PersistentLaserManager>();
-                    DontDestroyOnLoad(go);
-                }
-                return _instance;
-            }
+            get { return _instance; }
         }
 
         private void Awake()
@@ -32,7 +24,20 @@ namespace TruthAndShadows.Interaction
                 return;
             }
             _instance = this;
-            DontDestroyOnLoad(gameObject);
+            Initialize();
+        }
+
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            isInitialized = false;
             Initialize();
         }
 

@@ -12,10 +12,10 @@ namespace TruthAndShadows.Interaction
     {
         [Header("Interaction Settings")]
         [SerializeField]
-        private float interactionRange = 0.1f;
+        private float interactionRange = 5.5f;
 
         [SerializeField]
-        private float interactionRadius = 0.1f;
+        private float interactionRadius = 5.5f;
 
         [SerializeField]
         private Transform interactionSource;
@@ -52,9 +52,6 @@ namespace TruthAndShadows.Interaction
         void Start()
         {
             InitializeSource();
-
-            // --- Ensure PersistentLaserManager exists ---
-            Interaction.PersistentLaserManager.Instance.Initialize();
             Cursor.visible = false;
 
             // Try to find the InputContextProvider
@@ -266,7 +263,7 @@ namespace TruthAndShadows.Interaction
             }
 
             Vector3 origin = GetInteractionOrigin();
-            Vector3 direction = interactionSource.forward;
+            Vector3 direction = -interactionSource.forward;
 
             //Debug.Log(
             //    $"Interaction ray: Origin={origin}, Direction={direction}, Range={interactionRange}"
@@ -482,10 +479,9 @@ namespace TruthAndShadows.Interaction
 
         private Vector3 GetInteractionOrigin()
         {
-            // Offset the origin slightly backward to ensure detection when close to objects
-            Vector3 offset =
-                interactionSource.position - (interactionSource.forward * interactionRadius);
-            return offset + Vector3.up;
+            // Offset the origin slightly to ensure detection
+            Vector3 offset = interactionSource.position + Vector3.up;
+            return offset;
         }
 
         private bool TryFindInteractable(
@@ -772,7 +768,7 @@ namespace TruthAndShadows.Interaction
             }
 
             Vector3 origin = GetInteractionOrigin();
-            Vector3 direction = interactionSource.forward;
+            Vector3 direction = -interactionSource.forward;
 
             if (
                 TryFindInteractable(origin, direction, out IInteractable interactable)
@@ -919,7 +915,7 @@ namespace TruthAndShadows.Interaction
 
                 // Draw the interaction range as a red line
                 Vector3 start = interactionSource.position;
-                Vector3 end = start + interactionSource.forward * interactionRange;
+                Vector3 end = start - interactionSource.forward * interactionRange;
                 Gizmos.color = Color.red;
                 Gizmos.DrawLine(start, end);
             }

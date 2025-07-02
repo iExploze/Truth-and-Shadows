@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Input = UnityEngine.Input;
 
 namespace TruthAndShadows.InputSystem
@@ -111,7 +112,21 @@ namespace TruthAndShadows.InputSystem
                 return;
             }
             _instance = this;
-            DontDestroyOnLoad(gameObject);
+            // Removed DontDestroyOnLoad(gameObject);
+        }
+
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            // Optionally reset input state or re-initialize if needed
+            // (No scene-dependent references in current code)
         }
 
         private void Update()

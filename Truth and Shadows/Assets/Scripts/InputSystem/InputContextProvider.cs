@@ -1,5 +1,6 @@
 using TruthAndShadows.Player;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TruthAndShadows.InputSystem
 {
@@ -38,7 +39,23 @@ namespace TruthAndShadows.InputSystem
             }
 
             _instance = this;
-            DontDestroyOnLoad(gameObject);
+            // Removed DontDestroyOnLoad(gameObject);
+        }
+
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            // Optionally reset context or re-initialize if needed
+            // (No scene-dependent references in current code)
         }
 
         #region Public API - Permissions
