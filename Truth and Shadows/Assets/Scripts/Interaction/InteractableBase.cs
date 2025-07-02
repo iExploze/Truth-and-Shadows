@@ -18,7 +18,7 @@ namespace TruthAndShadows.Interaction
         protected bool requireContinuousHold = false;
 
         [SerializeField]
-        protected float interactionDistance = 2f;
+        protected float interactionDistance = 3f;
 
         [SerializeField]
         protected bool useColliderBounds = true;
@@ -336,7 +336,7 @@ namespace TruthAndShadows.Interaction
                 float dropDistanceMultiplier;
 
                 distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
-                dropDistanceMultiplier = 3f;
+                dropDistanceMultiplier = 1f;
 
                 if (distanceToPlayer > interactionDistance * dropDistanceMultiplier)
                 {
