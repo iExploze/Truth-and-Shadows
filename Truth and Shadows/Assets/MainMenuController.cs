@@ -15,10 +15,16 @@ public class MainMenuController : MonoBehaviour
     public CanvasGroup SettingsPanel;
     public CanvasGroup LevelsPanel;
     public GameObject firstLevelButton;
+    public GameObject firstMenuButton; // Added field for the first menu button
 
     void Start()
     {
         gamepad = Gamepad.current;
+        // Set initial selected button for joystick navigation
+        if (firstMenuButton != null && !IsAnyPanelOpen())
+        {
+            EventSystem.current.SetSelectedGameObject(firstMenuButton);
+        }
     }
 
     void Update()
@@ -31,25 +37,25 @@ public class MainMenuController : MonoBehaviour
 
     private void ProcessInputs()
     {
-        // Gamepad: X/A to Play
-        if (gamepad.buttonSouth.wasPressedThisFrame)
-        {
-            PlayGame();
-        }
+        // // Gamepad: X/A to Play
+        // if (gamepad.buttonSouth.wasPressedThisFrame)
+        // {
+        //     PlayGame();
+        // }
 
-        // Gamepad: Square/X to Open Settings (if none visible)
-        if (gamepad.buttonWest.wasPressedThisFrame && !IsAnyPanelOpen())
-        {
-            Settings();
-        }
+        // // Gamepad: Square/X to Open Settings (if none visible)
+        // if (gamepad.buttonWest.wasPressedThisFrame && !IsAnyPanelOpen())
+        // {
+        //     Settings();
+        // }
 
-        // Gamepad: Triangle/Y to Open Levels (if none visible)
-        if (gamepad.buttonNorth.wasPressedThisFrame && !IsAnyPanelOpen())
-        {
-            Levels();
-        }
+        // // Gamepad: Triangle/Y to Open Levels (if none visible)
+        // if (gamepad.buttonNorth.wasPressedThisFrame && !IsAnyPanelOpen())
+        // {
+        //     Levels();
+        // }
 
-        // Gamepad: Circle/B to Back or Quit
+        // // Gamepad: Circle/B to Back or Quit
         if (gamepad.buttonEast.wasPressedThisFrame)
         {
             if (!IsAnyPanelOpen())
@@ -99,6 +105,12 @@ public class MainMenuController : MonoBehaviour
         LevelsPanel.alpha = 0;
         LevelsPanel.blocksRaycasts = false;
         LevelsPanel.interactable = false;
+
+        // After closing panels, set main menu button as selected for controller
+        if (firstMenuButton != null)
+        {
+            EventSystem.current.SetSelectedGameObject(firstMenuButton);
+        }
     }
 
     public void QuitGame()
