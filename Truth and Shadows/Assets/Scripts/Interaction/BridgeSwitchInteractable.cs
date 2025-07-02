@@ -22,7 +22,8 @@ namespace TruthAndShadows.Bridge
 
         [Header("Audio Settings")]
         [SerializeField]
-        private AudioSource bridgeAudioSource;
+        private AudioSource switchAudioSource;
+        public AudioSource bridgeAudioSource;
         
         [SerializeField]
         private float audioFadeTime = 3f;
@@ -80,12 +81,18 @@ namespace TruthAndShadows.Bridge
         {
             isRaising = true;
             
+            // Start switch movement sound
+            if (switchAudioSource != null)
+            {
+                switchAudioSource.Play();
+            }
+
             // Start bridge movement sound
             if (bridgeAudioSource != null)
             {
-                bridgeAudioSource.Play();
+                switchAudioSource.Play();
             }
-            
+
             // Move bridge until reaching target position
             while (bridge != null && Vector3.Distance(bridge.position, targetBridgePos) > 0.01f)
             {
