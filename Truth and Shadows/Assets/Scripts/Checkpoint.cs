@@ -8,7 +8,7 @@ namespace TruthAndShadows.CheckpointSystem
             "Set this to true for this checkpoint to be auto-registered with the CheckpointManager on start"
         )]
         [SerializeField]
-        private bool autoRegister = true;
+        private bool autoRegister = false;
 
         [Tooltip("Distance at which a checkpoint is considered reached")]
         [SerializeField]
@@ -60,7 +60,7 @@ namespace TruthAndShadows.CheckpointSystem
             RaycastHit hit;
             if (
                 Physics.Raycast(
-                    transform.position + Vector3.up * 10f,
+                    transform.position + Vector3.up * 2f,
                     Vector3.down,
                     out hit,
                     100f,

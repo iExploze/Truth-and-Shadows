@@ -43,6 +43,9 @@ namespace TruthAndShadows.Player
         private Quaternion freeRotation;
         public bool canMove = true;
 
+        // --- Sound ---
+        public AudioSource walkSource;
+
         private Rigidbody rb;
 
         // --- Debug ---
@@ -81,6 +84,7 @@ namespace TruthAndShadows.Player
         // --- Unity Lifecycle ---
 
         private CharacterAnimation characterAnimation;
+
         void Start()
         {
             if (cameraTransform == null)
@@ -98,6 +102,7 @@ namespace TruthAndShadows.Player
             if (InputManager.Instance == null)
                 return;
             UpdatePlayerState();
+
             // Movement and animation in FixedUpdate for physics consistency
         }
 
@@ -129,7 +134,12 @@ namespace TruthAndShadows.Player
                 direction = 0f;
             UpdateTargetDirection();
             // Only allow movement/rotation if allowed
-            if (canMove && InputContextProvider.Instance.CanMove && _currentPermissions.AllowMovement) {
+            if (
+                canMove
+                && InputContextProvider.Instance.CanMove
+                && _currentPermissions.AllowMovement
+            )
+            {
                 if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
                 {
                     Vector3 lookDirection = targetDirection.normalized;
@@ -145,11 +155,24 @@ namespace TruthAndShadows.Player
                         turnSpeed * turnSpeedMultiplier * Time.deltaTime
                     );
                 }
-                //simple movement by Ian 
+                //simple movement by Ian
                 Vector3 forward = transform.forward * speed * sprintSpeed * Time.fixedDeltaTime;
                 rb.MovePosition(rb.position + forward);
                 characterAnimation.updateMovement(forward);
-            } else {
+
+                //Rashai Was Here
+                bool isMoving = input.magnitude > 0.01f;
+                if (isMoving && !walkSource.isPlaying)
+                {
+                    walkSource.Play();
+                }
+                else if (!isMoving && walkSource.isPlaying)
+                {
+                    walkSource.Play();
+                }
+            }
+            else
+            {
                 // Block only player movement, not input
                 characterAnimation.updateMovement(Vector3.zero);
             }
