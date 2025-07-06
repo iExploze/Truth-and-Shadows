@@ -101,6 +101,9 @@ namespace TruthAndShadows.Interaction
         // Camera priority cache for proper restoration
         private int originalCameraPriority = 10;
 
+        // Shared parent for all spotlight camera targets to keep the hierarchy clean
+        private static Transform spotlightTargetsParent;
+
         public override bool RequiresContinuousInteraction => true;
 
         protected override void Start()
@@ -111,7 +114,6 @@ namespace TruthAndShadows.Interaction
             // Validate and setup components
             ValidateComponents();
             InitializeRotationValues();
-            InitializePickupBehavior();
         }
 
         private void ValidateComponents()
@@ -130,23 +132,6 @@ namespace TruthAndShadows.Interaction
 
             // CRITICAL: Make sure pickup is enabled
             canBePickedUp = true;
-
-            // Ensure the spotlight has a rigidbody for proper pickup handling
-            rigidBody = GetComponent<Rigidbody>();
-            if (rigidBody == null)
-            {
-                // Add and configure a new rigidbody
-                rigidBody = gameObject.AddComponent<Rigidbody>();
-                ConfigureRigidbody();
-                Debug.Log(
-                    $"Added Rigidbody component to {gameObject.name} for pickup functionality"
-                );
-            }
-            else
-            {
-                // Configure the existing rigidbody
-                ConfigureRigidbody();
-            }
 
             // Validate rotation components
             if (verticallyRotatable == null)
@@ -190,24 +175,6 @@ namespace TruthAndShadows.Interaction
             );
         }
 
-        private void ConfigureRigidbody()
-        {
-            if (rigidBody == null)
-                return;
-
-            // Configure for pickup
-            rigidBody.isKinematic = true;
-            rigidBody.useGravity = false;
-            rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
-            rigidBody.collisionDetectionMode = CollisionDetectionMode.Continuous;
-
-            // No rotation constraints - we want manual control
-            rigidBody.constraints = RigidbodyConstraints.None;
-            // Minimal drag
-            rigidBody.drag = 0;
-            rigidBody.angularDrag = 0.05f;
-        }
-
         private void InitializeRotationValues()
         {
             if (verticallyRotatable != null)
@@ -222,26 +189,6 @@ namespace TruthAndShadows.Interaction
                     accumulatedVerticalInput -= 360f;
                 }
             }
-
-            if (horizontallyRotatable != null)
-            {
-                accumulatedHorizontalInput = horizontallyRotatable.localEulerAngles.y;
-            }
-        }
-
-        private void InitializePickupBehavior()
-        {
-            // Set a higher pickup smoothness for more responsive movement
-            pickupSmoothness = 15f;
-
-            // Ensure outline is enabled
-            enableOutline = true;
-
-            // Set bright blue outline color
-            outlineColor = new Color(0.2f, 0.6f, 1f, 1f);
-
-            // Make sure it can be picked up
-            canBePickedUp = true;
         }
 
         public override void StartInteraction()
@@ -278,8 +225,17 @@ namespace TruthAndShadows.Interaction
                     )
                 )
                 {
+                    // First, disable all other spotlight cameras to prevent interference
+                    DisableAllOtherSpotlightCameras();
+
                     originalCameraPriority = virtualCamera.Priority;
                     virtualCamera.Priority = 100; // High priority to take control
+
+                    // Ensure this camera is fully enabled
+                    spotlightCamera.gameObject.SetActive(true);
+                    spotlightCamera.enabled = true;
+
+                    Debug.Log("Spotlight camera activated with priority 100, all others disabled");
                 }
             }
 
@@ -374,11 +330,22 @@ namespace TruthAndShadows.Interaction
             // Calculate positions along the same line
             float targetDistance = Mathf.Min(spotLight.range / 3f, 2f);
 
+            // Ensure we have a parent object for all spotlight targets
+            if (spotlightTargetsParent == null)
+            {
+                GameObject parentObj = GameObject.Find("SpotlightTargetsParent");
+                if (parentObj == null)
+                {
+                    parentObj = new GameObject("SpotlightTargetsParent");
+                }
+                spotlightTargetsParent = parentObj.transform;
+            }
+
             // Position the look-at target in front of the spotlight along its forward direction
             Vector3 targetPosition =
                 spotLight.transform.position + spotlightForward * targetDistance;
             cameraLookAtTarget.position = targetPosition;
-            cameraLookAtTarget.SetParent(null); // Keep in world space
+            cameraLookAtTarget.SetParent(spotlightTargetsParent); // Parent to our organized container
 
             // Position the follow target behind the spotlight along the same line
             // This ensures the camera, follow target, and look-at target are all along the same line
@@ -388,7 +355,7 @@ namespace TruthAndShadows.Interaction
                 - spotlightForward * followDistance
                 + Vector3.up * 0.5f;
             cameraFollowTarget.position = followPosition;
-            cameraFollowTarget.SetParent(null); // Keep in world space
+            cameraFollowTarget.SetParent(spotlightTargetsParent); // Parent to our organized container
 
             // Set camera targets
             spotlightCamera.Follow = cameraFollowTarget;
@@ -502,9 +469,7 @@ namespace TruthAndShadows.Interaction
                     + Vector3.up * 0.5f;
                 cameraFollowTarget.position = followPosition;
 
-                // Debug visualization to verify alignment (uncomment if needed for testing)
-                // Debug.DrawLine(cameraFollowTarget.position, spotLight.transform.position, Color.blue);
-                // Debug.DrawLine(spotLight.transform.position, cameraLookAtTarget.position, Color.red);
+                // Debug visualization can be added here if needed for testing alignment issues
             }
         }
 
@@ -680,7 +645,7 @@ namespace TruthAndShadows.Interaction
         /// <summary>
         /// Applies rotation around a specific pivot point
         /// </summary>
-        private void ApplyRotationAroundPivot(
+        private static void ApplyRotationAroundPivot(
             Transform objectToRotate,
             Quaternion targetLocalRotation,
             Vector3 pivotPoint,
@@ -724,6 +689,25 @@ namespace TruthAndShadows.Interaction
             // Fully reset the camera state
             ResetSpotlightCamera(true);
 
+            // Ensure the spotlight's GameObject is completely inactive to prevent any unintended camera activation
+            if (spotlightCamera != null)
+            {
+                // Set lowest priority
+                if (
+                    spotlightCamera.TryGetComponent<CinemachineVirtualCameraBase>(
+                        out var virtualCamera
+                    )
+                )
+                {
+                    virtualCamera.Priority = 0;
+                }
+
+                // Fully disable the camera object
+                spotlightCamera.gameObject.SetActive(false);
+
+                Debug.Log("Spotlight camera completely deactivated on EndInteraction");
+            }
+
             // Restore cursor state
             Cursor.visible = wasMouseVisible;
             Cursor.lockState = previousCursorLockState;
@@ -747,23 +731,35 @@ namespace TruthAndShadows.Interaction
                     )
                 )
                 {
-                    // Set to a very low priority (lower than original) to guarantee it won't activate
-                    virtualCamera.Priority = 1; // Use lowest possible priority
-                    Debug.Log($"Force-reset camera priority to 1 (lowest possible)");
+                    // Completely disable the virtual camera to prevent it from interfering
+                    virtualCamera.Priority = 0; // Set to zero (lowest possible)
+                    Debug.Log($"Force-reset camera priority to 0 (disabled)");
+
+                    // Explicitly disable the game object to ensure it can't be activated
+                    if (fullCleanup)
+                    {
+                        spotlightCamera.gameObject.SetActive(false);
+                        Debug.Log("Completely disabled spotlight camera GameObject");
+                    }
                 }
 
-                // Set the Follow and LookAt targets to null first to prevent any camera tracking
-                spotlightCamera.Follow = null;
-                spotlightCamera.LookAt = null;
+                // // Set the Follow and LookAt targets to null first to prevent any camera tracking
+                // spotlightCamera.Follow = null;
+                // spotlightCamera.LookAt = null;
 
                 // Force the spotlight camera to be inactive when picking up
                 if (fullCleanup && spotlightCamera.gameObject != null)
                 {
                     // This is a more aggressive approach to make sure the camera doesn't interfere
                     spotlightCamera.enabled = false;
+                    spotlightCamera.gameObject.SetActive(false);
 
-                    // Schedule re-enabling after a short delay to allow other cameras to take control
-                    StartCoroutine(ReEnableCameraAfterDelay());
+                    // Don't re-enable automatically - leave it fully disabled
+                    // StartCoroutine(ReEnableCameraAfterDelay()); // DISABLED
+
+                    Debug.Log(
+                        "Spotlight camera completely disabled - will not be re-enabled automatically"
+                    );
                 }
             }
 
@@ -776,20 +772,33 @@ namespace TruthAndShadows.Interaction
 
         /// <summary>
         /// Re-enable the camera after a short delay to prevent any transition issues
+        /// This is only used in specific circumstances when we want the camera available but inactive
         /// </summary>
         private System.Collections.IEnumerator ReEnableCameraAfterDelay()
         {
             // Wait for a frame to let other things process
             yield return null;
 
-            // Wait another short time to be safe
-            yield return new WaitForSeconds(0.1f);
+            // Wait longer to ensure default camera has fully taken control
+            yield return new WaitForSeconds(0.5f);
 
-            // Re-enable the camera but keep priority low
+            // Re-enable the camera component but keep priority at zero and GameObject disabled
             if (spotlightCamera != null)
             {
                 spotlightCamera.enabled = true;
-                Debug.Log("Re-enabled spotlight camera with low priority");
+
+                // Ensure priority stays at zero
+                if (
+                    spotlightCamera.TryGetComponent<CinemachineVirtualCameraBase>(
+                        out var virtualCamera
+                    )
+                )
+                {
+                    virtualCamera.Priority = 0;
+                }
+
+                // DO NOT enable the GameObject - this is crucial to prevent it from taking over
+                Debug.Log("Re-enabled spotlight camera component but keeping GameObject disabled");
             }
         }
 
@@ -798,71 +807,71 @@ namespace TruthAndShadows.Interaction
             // Make sure to clean up completely
             try
             {
-                // Set a flag to check if we cleaned anything
-                bool cleanedSomething = false;
+                // // Set a flag to check if we cleaned anything
+                // bool cleanedSomething = false;
 
-                // Clear references from the camera first
-                if (spotlightCamera != null)
-                {
-                    if (spotlightCamera.Follow != null || spotlightCamera.LookAt != null)
-                    {
-                        cleanedSomething = true;
-                    }
-                    spotlightCamera.Follow = null;
-                    spotlightCamera.LookAt = null;
-                }
+                // // Clear references from the camera first
+                // if (spotlightCamera != null)
+                // {
+                //     if (spotlightCamera.Follow != null || spotlightCamera.LookAt != null)
+                //     {
+                //         cleanedSomething = true;
+                //     }
+                //     spotlightCamera.Follow = null;
+                //     spotlightCamera.LookAt = null;
+                // }
 
-                // Destroy follow target
-                if (cameraFollowTarget != null)
-                {
-                    // Detach from parent before destroying
-                    cameraFollowTarget.SetParent(null);
-                    Destroy(cameraFollowTarget.gameObject);
-                    cameraFollowTarget = null;
-                    cleanedSomething = true;
-                }
+                // // Destroy follow target
+                // if (cameraFollowTarget != null)
+                // {
+                //     // Detach from parent before destroying
+                //     cameraFollowTarget.SetParent(null);
+                //     Destroy(cameraFollowTarget.gameObject);
+                //     cameraFollowTarget = null;
+                //     cleanedSomething = true;
+                // }
 
-                // Destroy look-at target
-                if (cameraLookAtTarget != null)
-                {
-                    // Detach from parent before destroying
-                    cameraLookAtTarget.SetParent(null);
-                    Destroy(cameraLookAtTarget.gameObject);
-                    cameraLookAtTarget = null;
-                    cleanedSomething = true;
-                }
+                // // Destroy look-at target
+                // if (cameraLookAtTarget != null)
+                // {
+                //     // Detach from parent before destroying
+                //     cameraLookAtTarget.SetParent(null);
+                //     Destroy(cameraLookAtTarget.gameObject);
+                //     cameraLookAtTarget = null;
+                //     cleanedSomething = true;
+                // }
 
-                // Find and destroy any orphaned targets that might have been created
-                var orphanedTargets = GameObject.FindObjectsOfType<Transform>(true); // Include inactive objects
-                int orphansDestroyed = 0;
+                // // Find and destroy any orphaned targets that might have been created
+                // var orphanedTargets = GameObject.FindObjectsOfType<Transform>(true); // Include inactive objects
+                // int orphansDestroyed = 0;
 
-                foreach (var target in orphanedTargets)
-                {
-                    // Look for any objects that could be camera targets from this spotlight
-                    if (
-                        target != null
-                        && (
-                            (
-                                target.name.Contains("LookAtTarget")
-                                && target.name.Contains(gameObject.name)
-                            )
-                            || (
-                                target.name.Contains("FollowTarget")
-                                && target.name.Contains(gameObject.name)
-                            )
-                        )
-                    )
-                    {
-                        Destroy(target.gameObject);
-                        orphansDestroyed++;
-                        cleanedSomething = true;
-                    }
-                }
+                // foreach (var target in orphanedTargets)
+                // {
+                //     // Look for any objects that could be camera targets from this spotlight
+                //     if (
+                //         target != null
+                //         && (
+                //             (
+                //                 target.name.Contains("LookAtTarget")
+                //                 && target.name.Contains(gameObject.name)
+                //             )
+                //             || (
+                //                 target.name.Contains("FollowTarget")
+                //                 && target.name.Contains(gameObject.name)
+                //             )
+                //         )
+                //     )
+                //     {
+                //         Destroy(target.gameObject);
+                //         orphansDestroyed++;
+                //         cleanedSomething = true;
+                //     }
+                // }
 
-                if (cleanedSomething)
-                {
-                    Debug.Log($"CleanupCameraTargets: Cleaned {orphansDestroyed} orphaned targets");
-                }
+                // if (cleanedSomething)
+                // {
+                //     Debug.Log($"CleanupCameraTargets: Cleaned {orphansDestroyed} orphaned targets");
+                // }
             }
             catch (System.Exception ex)
             {
@@ -988,6 +997,61 @@ namespace TruthAndShadows.Interaction
 
             // Update camera settings
             ConfigureCameraSettings();
+        }
+
+        /// <summary>
+        /// Find and disable all spotlight cameras in the scene except the active one
+        /// This prevents other spotlight cameras from interfering with the camera system
+        /// </summary>
+        /// <param name="activeCamera">The spotlight camera to keep active (can be null to disable all)</param>
+        private void DisableAllOtherSpotlightCameras()
+        {
+            // Find all SpotlightController instances in the scene
+            SpotlightController[] allSpotlights = FindObjectsOfType<SpotlightController>();
+
+            Debug.Log($"Found {allSpotlights.Length} spotlight controllers in the scene");
+
+            foreach (SpotlightController spotlight in allSpotlights)
+            {
+                // Skip the current spotlight with the active camera (this is the one we want active)
+                if (spotlight == this)
+                {
+                    // Make sure THIS spotlight camera is fully enabled
+                    if (spotlight.spotlightCamera != null)
+                    {
+                        spotlight.spotlightCamera.gameObject.SetActive(true);
+                        spotlight.spotlightCamera.enabled = true;
+                        Debug.Log(
+                            $"Ensuring THIS spotlight camera is active: {spotlight.gameObject.name}"
+                        );
+                    }
+                    continue;
+                }
+
+                // For all other spotlights, ensure their cameras are fully disabled
+                if (spotlight.spotlightCamera != null)
+                {
+                    if (
+                        spotlight.spotlightCamera.TryGetComponent<CinemachineVirtualCameraBase>(
+                            out var virtualCamera
+                        )
+                    )
+                    {
+                        virtualCamera.Priority = 0;
+                    }
+
+                    // Disable the camera component
+                    spotlight.spotlightCamera.enabled = false;
+
+                    // Disable the camera GameObject
+                    if (spotlight.spotlightCamera.gameObject != null)
+                    {
+                        spotlight.spotlightCamera.gameObject.SetActive(false);
+                    }
+
+                    Debug.Log($"Disabled camera for other spotlight: {spotlight.gameObject.name}");
+                }
+            }
         }
     }
 }
