@@ -82,6 +82,8 @@ namespace TruthAndShadows.Interaction
 
         void Update()
         {
+            if (PauseMenu.isPaused) return;
+
             HandleInteractionInput();
             UpdateContinuousInteraction();
         }
@@ -168,6 +170,8 @@ namespace TruthAndShadows.Interaction
 
         private void HandleInteractionInput()
         {
+            if (PauseMenu.isPaused) return;
+
             // Check if InputManager is available
             if (InputManager.Instance == null)
             {
@@ -237,6 +241,8 @@ namespace TruthAndShadows.Interaction
 
         private void UpdateContinuousInteraction()
         {
+            if (PauseMenu.isPaused) return;
+
             if (isInteracting && currentInteractable?.RequiresContinuousInteraction == true)
             {
                 // If the interact button is no longer held, end the interaction
@@ -254,6 +260,8 @@ namespace TruthAndShadows.Interaction
 
         private void TryStartInteraction()
         {
+            if (PauseMenu.isPaused) return;
+
             //Debug.Log("TryStartInteraction called");
 
             if (!IsValidSource())
@@ -766,6 +774,8 @@ namespace TruthAndShadows.Interaction
 
         private void ReturnToMenu()
         {
+            if (PauseMenu.isPaused) return;
+
             // Check if InputManager is available
             if (InputManager.Instance == null)
             {
@@ -808,6 +818,8 @@ namespace TruthAndShadows.Interaction
 
         private void Reset()
         {
+            if (PauseMenu.isPaused) return;
+
             // Check if InputManager is available
             if (InputManager.Instance == null)
             {
