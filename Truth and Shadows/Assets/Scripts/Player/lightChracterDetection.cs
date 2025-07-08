@@ -11,6 +11,9 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
     private HashSet<Light> currentLights = new HashSet<Light>();
     private bool isSquid = false;
 
+    //Audio
+    public AudioSource intoLightSound;
+
     void Start()
     {
         characterMovement = GetComponent<CharacterMovement>();
@@ -24,12 +27,17 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
         bool wasInLight = currentLights.Count > 0;
         currentLights.Add(lightSource);
 
-        if (!wasInLight && currentLights.Count > 0)
+        if (!wasInLight && !intoLightSound.isPlaying && currentLights.Count > 0)
         {
             // Just entered *any* light
             isSquid = false;
             characterMovement.canMove = true;
+            intoLightSound.Play();
             //Debug.Log("Entered light");
+        }
+        else if (intoLightSound.isPlaying )
+        {
+            intoLightSound.Stop();
         }
     }
 

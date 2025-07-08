@@ -54,9 +54,6 @@ namespace TruthAndShadows.Interaction
         {
             base.Start();
 
-            // Set movement style for base class to handle push/pull physics
-            movementStyle = PickupMovementStyle.HorizontalPushPull;
-
             cubeRenderer = GetComponent<Renderer>();
             if (cubeRenderer == null)
             {
@@ -69,7 +66,6 @@ namespace TruthAndShadows.Interaction
                 return;
             }
 
-            // Configure the rigidbody from the base class
             if (rigidBody != null)
             {
                 rigidBody.mass = cubeMass;
@@ -83,71 +79,13 @@ namespace TruthAndShadows.Interaction
             interactionDistance = pickupDetectionRadius;
         }
 
-        public override bool CanInteract(Vector3 playerPosition)
-        {
-            float centerDistance = Vector3.Distance(transform.position, playerPosition);
-
-            if (cubeRenderer != null)
-            {
-                Bounds bounds = cubeRenderer.bounds;
-                Vector3 closestPoint = bounds.ClosestPoint(playerPosition);
-                float boundsDistance = Vector3.Distance(playerPosition, closestPoint);
-
-                float finalDistance = Mathf.Min(centerDistance, boundsDistance);
-                return finalDistance <= pickupDetectionRadius;
-            }
-
-            return centerDistance <= pickupDetectionRadius;
-        }
-
-        public override bool CanPickup(Vector3 playerPosition)
-        {
-            return CanInteract(playerPosition);
-        }
-
         public override void StartInteraction()
         {
-            // Check permissions from the centralized provider
-            bool canInteract = true;
-
-            // Check for interact permission from InputContextProvider if available
-            if (InputContextProvider.Instance != null)
-            {
-                canInteract = InputContextProvider.Instance.CanInteract;
-
-                if (!canInteract)
-                {
-                    Debug.LogWarning(
-                        "Block interaction attempted but permission denied by InputContextProvider"
-                    );
-                    return; // Don't proceed with interaction if not allowed
-                }
-            }
-
-            Debug.Log(
-                $"Giant cube {gameObject.name} doesn't support R-key interaction. Use F to pick up."
-            );
+            Debug.Log($"Block interactables can only be picked up, not interacted with directly.");
         }
 
         public override void StartPickup(Transform playerTransform)
         {
-            // Check permissions from the centralized provider
-            bool canPickupBlock = true;
-
-            // Get permission from InputContextProvider if available
-            if (InputContextProvider.Instance != null)
-            {
-                canPickupBlock = InputContextProvider.Instance.CanPickup;
-
-                if (!canPickupBlock)
-                {
-                    Debug.LogWarning(
-                        "Block pickup attempted but permission denied by InputContextProvider"
-                    );
-                    return; // Don't proceed with pickup if not allowed
-                }
-            }
-
             // Call base class to handle physics setup and state changes
             base.StartPickup(playerTransform);
 
@@ -155,28 +93,12 @@ namespace TruthAndShadows.Interaction
             if (!IsPickedUp)
                 return;
 
-            // Reset collision flags
             isCollidingWithWall = false;
-
-            if (source != null && pickUpClip != null)
-            {
-                source.PlayOneShot(pickUpClip);
-            }
-
-            // Reset velocity when picked up
-            if (rigidBody != null)
-            {
-                rigidBody.velocity = Vector3.zero;
-                rigidBody.angularVelocity = Vector3.zero;
-            }
-
             if (enablePickupColor)
             {
                 targetColor = pickedUpColor;
                 isColorChanging = true;
             }
-
-            // Check for initial wall collisions
             CheckWallCollisions();
 
             Debug.Log(

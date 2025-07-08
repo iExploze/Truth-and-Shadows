@@ -49,7 +49,7 @@ namespace TruthAndShadows.InputSystem
                 case PlayerState.Aiming:
                     return new Permissions
                     {
-                        CanMove = true,
+                        CanMove = false,
                         CanCameraLook = true,
                         CanInteract = true,
                         CanPickup = true,
@@ -62,7 +62,7 @@ namespace TruthAndShadows.InputSystem
                 case PlayerState.Pickup:
                     return new Permissions
                     {
-                        CanMove = true,
+                        CanMove = false,
                         CanCameraLook = true,
                         CanInteract = true,
                         CanPickup = true,
@@ -75,7 +75,7 @@ namespace TruthAndShadows.InputSystem
                 case PlayerState.Interacting:
                     return new Permissions
                     {
-                        CanMove = true,
+                        CanMove = false,
                         CanCameraLook = true,
                         CanInteract = true,
                         CanPickup = true,

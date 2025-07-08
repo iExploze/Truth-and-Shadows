@@ -43,6 +43,9 @@ namespace TruthAndShadows.Player
         private Quaternion freeRotation;
         public bool canMove = true;
 
+        // --- Sound ---
+        public AudioSource walkSource;
+
         private Rigidbody rb;
 
         // --- Debug ---
@@ -81,6 +84,7 @@ namespace TruthAndShadows.Player
         // --- Unity Lifecycle ---
 
         private CharacterAnimation characterAnimation;
+
         void Start()
         {
             if (cameraTransform == null)
@@ -98,6 +102,7 @@ namespace TruthAndShadows.Player
             if (InputManager.Instance == null)
                 return;
             UpdatePlayerState();
+
             // Movement and animation in FixedUpdate for physics consistency
         }
 
@@ -106,22 +111,8 @@ namespace TruthAndShadows.Player
 #if ENABLE_LEGACY_INPUT_MANAGER
             if (InputManager.Instance != null)
             {
-                input = InputManager.Instance.MoveInput;
-                if (!InputContextProvider.Instance.CanMove || !_currentPermissions.AllowMovement)
-                {
-                    input = Vector2.zero;
-                    if (showDebugInfo)
-                    {
-                        Debug.Log("Movement blocked by InputContextProvider or permissions");
-                        InputContextProvider.Instance.LogPermissions();
-                    }
-                }
-                if (InputManager.Instance.PickupHeld && input.magnitude < 0.1f)
-                {
-                    input = InputManager.Instance.MoveInputRaw;
-                    if (input.magnitude > 0.1f && Time.frameCount % 120 == 0)
-                        Debug.Log($"Using raw input during pickup: {input}");
-                }
+                input = InputManager.Instance.CharacterMoveInput;
+                // Do not set input = Vector2.zero here!
             }
             // Movement smoothing and speed
             Vector2 targetMovement = input;
@@ -142,27 +133,49 @@ namespace TruthAndShadows.Player
             else
                 direction = 0f;
             UpdateTargetDirection();
-            if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
+            // Only allow movement/rotation if allowed
+            if (
+                canMove
+                && InputContextProvider.Instance.CanMove
+                && _currentPermissions.AllowMovement
+            )
             {
-                Vector3 lookDirection = targetDirection.normalized;
-                freeRotation = Quaternion.LookRotation(lookDirection, transform.up);
-                var diferenceRotation = freeRotation.eulerAngles.y - transform.eulerAngles.y;
-                var eulerY = transform.eulerAngles.y;
-                if (diferenceRotation < 0 || diferenceRotation > 0)
-                    eulerY = freeRotation.eulerAngles.y;
-                var euler = new Vector3(0, eulerY, 0);
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    Quaternion.Euler(euler),
-                    turnSpeed * turnSpeedMultiplier * Time.deltaTime
-                );
+                if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
+                {
+                    Vector3 lookDirection = targetDirection.normalized;
+                    freeRotation = Quaternion.LookRotation(lookDirection, transform.up);
+                    var diferenceRotation = freeRotation.eulerAngles.y - transform.eulerAngles.y;
+                    var eulerY = transform.eulerAngles.y;
+                    if (diferenceRotation < 0 || diferenceRotation > 0)
+                        eulerY = freeRotation.eulerAngles.y;
+                    var euler = new Vector3(0, eulerY, 0);
+                    transform.rotation = Quaternion.Slerp(
+                        transform.rotation,
+                        Quaternion.Euler(euler),
+                        turnSpeed * turnSpeedMultiplier * Time.deltaTime
+                    );
+                }
+                //simple movement by Ian
+                Vector3 forward = transform.forward * speed * sprintSpeed * Time.fixedDeltaTime;
+                rb.MovePosition(rb.position + forward);
+                characterAnimation.updateMovement(forward);
+
+                //Rashai Was Here
+                bool isMoving = input.magnitude > 0.01f;
+                if (isMoving && !walkSource.isPlaying)
+                {
+                    walkSource.Play();
+                }
+                else if (!isMoving && walkSource.isPlaying)
+                {
+                    walkSource.Play();
+                }
             }
-
-            //simple movement by Ian 
-            Vector3 forward = transform.forward * speed * sprintSpeed * Time.fixedDeltaTime;
-            rb.MovePosition(rb.position + forward);
-
-            characterAnimation.updateMovement(forward);
+            else
+            {
+                // Block only player movement, not input
+                characterAnimation.updateMovement(Vector3.zero);
+            }
 #else
             InputSystemHelper.EnableBackendsWarningMessage();
 #endif

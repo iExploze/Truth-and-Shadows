@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TruthAndShadows.CheckpointSystem;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TruthAndShadows.CheckpointSystem
 {
@@ -27,6 +28,8 @@ namespace TruthAndShadows.CheckpointSystem
 
         private List<GameObject> playerObjects = new List<GameObject>();
 
+        // Flag to track if we're using a dev override checkpoint
+        private bool usingDevOverride = false;
 
         private void Awake()
         {
@@ -34,7 +37,6 @@ namespace TruthAndShadows.CheckpointSystem
             if (Instance == null)
             {
                 Instance = this;
-                DontDestroyOnLoad(gameObject);
             }
             else
             {
@@ -44,64 +46,170 @@ namespace TruthAndShadows.CheckpointSystem
 
         private void Start()
         {
+            InitializeCheckpoints();
+        }
+
+        private void InitializeCheckpoints()
+        {
             // Cache all player-tagged objects, including inactive ones, at startup
             playerObjects = new List<GameObject>(
                 GameObject.FindObjectsOfType<GameObject>(true).Where(go => go.CompareTag("Player"))
             );
-            // Sort checkpoints alphabetically by name after all are registered
-            SortCheckpointsAlphabetically();
-            // Set the initial checkpoint to the first one in the list if any exist
-            if (checkpoints.Count > 0)
+
+            Debug.Log($"[CheckpointManager] Found {playerObjects.Count} player objects");
+
+            // Check for dev override checkpoint
+            var devOverride = Checkpoint.GetDevOverrideCheckpoint();
+            if (devOverride != null)
             {
-                currentCheckpoint = checkpoints[0];
-                Debug.Log("Initial spawn point set to: " + currentCheckpoint.name);
-                // Move all players to the initial spawn point
-                MoveAllPlayersToCheckpoint(currentCheckpoint, true);
+                usingDevOverride = true;
+                currentCheckpoint = devOverride.transform;
+                Debug.Log(
+                    "[CheckpointManager] Dev override: using "
+                        + devOverride.gameObject.name
+                        + " as spawn point"
+                );
             }
+            else
+            {
+                usingDevOverride = false;
+                // Only sort checkpoints if any name is not in default Unity naming
+                if (ShouldSortCheckpointsByName())
+                {
+                    SortCheckpointsAlphabetically();
+                }
+
+                // Set the initial checkpoint to the first one in the list if any exist
+                if (checkpoints.Count > 0)
+                {
+                    currentCheckpoint = checkpoints[0];
+                    Debug.Log("Initial spawn point set to: " + currentCheckpoint.name);
+                }
+            }
+
+            // Move all players to the current checkpoint (either dev override or first checkpoint)
+            if (currentCheckpoint != null)
+            {
+                MoveAllPlayersToCheckpoint(currentCheckpoint, true);
+                Debug.Log(
+                    $"[CheckpointManager] Players moved to initial checkpoint: {currentCheckpoint.name}"
+                );
+            }
+            else
+            {
+                Debug.LogWarning("[CheckpointManager] No checkpoint available for initial spawn!");
+            }
+        }
+
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            // Re-initialize checkpoints when a new scene is loaded
+            InitializeCheckpoints();
+        }
+
+        // Returns true if any checkpoint name is not in the default Unity naming pattern
+        private bool ShouldSortCheckpointsByName()
+        {
+            foreach (var cp in checkpoints)
+            {
+                if (cp == null)
+                {
+                    continue;
+                }
+
+                string name = cp.name;
+                if (name == "Checkpoint")
+                {
+                    continue;
+                }
+
+                if (System.Text.RegularExpressions.Regex.IsMatch(name, @"^Checkpoint \(\d+\)$"))
+                {
+                    continue;
+                }
+
+                return false; // Found a non-default name - list was manually managed
+            }
+            return true; // All names are default
         }
 
         // Move all players to a checkpoint, with optional spawn logic
         private void MoveAllPlayersToCheckpoint(Transform checkpoint, bool isSpawn = false)
         {
             if (checkpoint == null)
-                return;
-            foreach (var playerTransform in playerObjects.Select(playerObj => playerObj.transform))
             {
-                Vector3 respawnPosition = checkpoint.position; // 1 unit above
-                if (playerTransform.parent != null)
-                {
-                    playerTransform.localPosition =
-                        respawnPosition - playerTransform.parent.position;
-                    playerTransform.localRotation = Quaternion.Euler(
-                        0,
-                        checkpoint.rotation.eulerAngles.y,
-                        0
-                    );
-                }
-                else
-                {
-                    playerTransform.position = respawnPosition;
-                    playerTransform.rotation = Quaternion.Euler(
-                        0,
-                        checkpoint.rotation.eulerAngles.y,
-                        0
-                    );
-                }
-                Rigidbody rb = playerTransform.GetComponent<Rigidbody>();
-                if (rb != null)
-                {
-                    rb.velocity = Vector3.zero;
-                    rb.angularVelocity = Vector3.zero;
-                    rb.position = playerTransform.position;
-                    rb.rotation = playerTransform.rotation;
-                }
-                Debug.Log($"Player moved to checkpoint: {respawnPosition}");
+                Debug.LogError(
+                    "[CheckpointManager] Attempted to move players to a null checkpoint"
+                );
+                return;
             }
+
+            Debug.Log(
+                $"[CheckpointManager] Moving {playerObjects.Count} players to checkpoint: {checkpoint.name}"
+            );
+
+            foreach (var playerObj in playerObjects)
+            {
+                if (playerObj == null)
+                {
+                    Debug.LogWarning("[CheckpointManager] Null player object found in list");
+                    continue;
+                }
+
+                MovePlayerToCheckpoint(playerObj, checkpoint);
+            }
+
             // If this is the spawn, tell the checkpoint to disable effects
             if (isSpawn && checkpoint.TryGetComponent<Checkpoint>(out var cp))
             {
                 cp.DisableEffectsForSpawn();
             }
+        }
+
+        private void MovePlayerToCheckpoint(GameObject playerObj, Transform checkpoint)
+        {
+            Transform playerTransform = playerObj.transform;
+            Vector3 respawnPosition = checkpoint.position + Vector3.up * 0.2f; // 0.2 units above
+
+            if (playerTransform.parent != null)
+            {
+                playerTransform.localPosition = respawnPosition - playerTransform.parent.position;
+                playerTransform.localRotation = Quaternion.Euler(
+                    0,
+                    checkpoint.rotation.eulerAngles.y,
+                    0
+                );
+            }
+            else
+            {
+                playerTransform.position = respawnPosition;
+                playerTransform.rotation = Quaternion.Euler(
+                    0,
+                    checkpoint.rotation.eulerAngles.y,
+                    0
+                );
+            }
+
+            Rigidbody rb = playerTransform.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.velocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.position = playerTransform.position;
+                rb.rotation = playerTransform.rotation;
+            }
+
+            Debug.Log($"Player {playerObj.name} moved to checkpoint: {respawnPosition}");
         }
 
         /// <summary>
@@ -149,6 +257,14 @@ namespace TruthAndShadows.CheckpointSystem
             RespawnAtCheckpoint();
         }
 
+        /// <summary>
+        /// Call this method when killed by an enemy
+        /// </summary>
+        public void HandleEnemyKill()
+        {
+            RespawnAtCheckpoint();
+        }
+
         // Add a public method to set the current checkpoint from Checkpoint
         public void SetCheckpoint(Transform checkpoint)
         {
@@ -178,6 +294,41 @@ namespace TruthAndShadows.CheckpointSystem
                 "[CheckpointManager] Checkpoints sorted alphabetically: "
                     + string.Join(", ", checkpoints.Select(cp => cp.name))
             );
+        }
+
+        /// <summary>
+        /// Resets all checkpoints in the level (re-enables colliders for non-active checkpoints)
+        /// Use this when restarting a level or for gameplay elements that reset checkpoints
+        /// </summary>
+        public void ResetAllCheckpoints()
+        {
+            Debug.Log("[CheckpointManager] Resetting all checkpoints");
+            
+            foreach (var checkpointTransform in checkpoints)
+            {
+                if (checkpointTransform == null)
+                {
+                    continue;
+                }
+                
+                Checkpoint cp = checkpointTransform.GetComponent<Checkpoint>();
+                if (cp == null)
+                {
+                    continue;
+                }
+                
+                // Skip the current active checkpoint
+                if (checkpointTransform == currentCheckpoint)
+                {
+                    continue;
+                }
+
+                // Reset and enable non-active checkpoints
+                cp.ResetActivation();
+                cp.EnableCollider();
+
+                Debug.Log($"[CheckpointManager] Reset checkpoint: {checkpointTransform.name}");
+            }
         }
     }
 }

@@ -31,46 +31,46 @@ namespace TruthAndShadows.Player
         // Update is called once per frame
         void FixedUpdate()
         {
+#if ENABLE_LEGACY_INPUT_MANAGER
             // Check if InputManager exists
             if (InputManager.Instance == null)
                 return;
 
-            // Block movement where appropriate
-            if (!InputContextProvider.Instance.CanMove)
-            {
-                input = Vector2.zero;
-                Debug.Log("Movement blocked by InputContextProvider");
-                InputContextProvider.Instance.LogPermissions();
-            }
-                
+            // Do not set input = Vector2.zero here!
             // Get horizontal movement from InputManager
-            input.x = InputManager.Instance.MoveInput.x;
+            input.x = InputManager.Instance.CharacterMoveInput.x;
 
-            // Check if direction changes
-            if ((input.x < 0f && !headingleft) || (input.x > 0f && headingleft))
+            // Only block player movement, not input
+            if (InputContextProvider.Instance.CanMove)
             {
-                if (input.x < 0f)
-                    targetrot = Quaternion.Euler(0, 270, 0);
-                if (input.x > 0f)
-                    targetrot = Quaternion.Euler(0, 90, 0);
-                headingleft = !headingleft;
+                // Check if direction changes
+                if ((input.x < 0f && !headingleft) || (input.x > 0f && headingleft))
+                {
+                    if (input.x < 0f)
+                        targetrot = Quaternion.Euler(0, 270, 0);
+                    if (input.x > 0f)
+                        targetrot = Quaternion.Euler(0, 90, 0);
+                    headingleft = !headingleft;
+                }
+                // Rotate player if direction changes
+                transform.rotation = Quaternion.Lerp(
+                    transform.rotation,
+                    targetrot,
+                    Time.deltaTime * 20f
+                );
+                // set speed to horizontal inputs
+                speed = Mathf.Abs(input.x);
+                speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
+                anim.SetFloat("Speed", speed);
+                // set sprinting using InputManager's IsRunning property
+                isSprinting = InputManager.Instance.IsRunning && input.x != 0f;
+                anim.SetBool("isSprinting", isSprinting);
+            } else {
+                // Block only player movement, not input
+                anim.SetFloat("Speed", 0f);
+                anim.SetBool("isSprinting", false);
             }
-            
-            // Rotate player if direction changes
-            transform.rotation = Quaternion.Lerp(
-                transform.rotation,
-                targetrot,
-                Time.deltaTime * 20f
-            );
-
-            // set speed to horizontal inputs
-            speed = Mathf.Abs(input.x);
-            speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
-            anim.SetFloat("Speed", speed);
-
-            // set sprinting using InputManager's IsRunning property
-            isSprinting = InputManager.Instance.IsRunning && input.x != 0f;
-            anim.SetBool("isSprinting", isSprinting);
+#endif
         }
 #endif
 

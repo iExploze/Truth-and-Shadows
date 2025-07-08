@@ -357,7 +357,7 @@ TextureImporter:
         width: 90
         height: 78
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -378,7 +378,7 @@ TextureImporter:
         width: 87
         height: 78
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -399,7 +399,7 @@ TextureImporter:
         width: 46
         height: 91
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -420,7 +420,7 @@ TextureImporter:
         width: 94
         height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -441,7 +441,7 @@ TextureImporter:
         width: 91
         height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -449,6 +449,111 @@ TextureImporter:
       bones: []
       spriteID: 3e5f57beb24b37a4c930ea48986e481f
       internalID: 1508753577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: input l b
+      rect:
+        serializedVersion: 2
+        x: 858
+        y: 251
+        width: 78
+        height: 74
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 98431fec13113574ba5cec220ac103e4
+      internalID: -666860429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: input u b
+      rect:
+        serializedVersion: 2
+        x: 546
+        y: 103
+        width: 78
+        height: 74
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 828a47b3534bb5c4c96a537e26bc3b03
+      internalID: -402196829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: input r b
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 102
+        width: 78
+        height: 75
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8bfef27230e3b5649baf9376374d1075
+      internalID: -1562992099
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LT b
+      rect:
+        serializedVersion: 2
+        x: 712
+        y: 638
+        width: 81
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: abf2861dc60ee9a4cbbbfce2c0355cd1
+      internalID: 1228332286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rt b
+      rect:
+        serializedVersion: 2
+        x: 793
+        y: 638
+        width: 81
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: add68f75695db3f43a3bff3743b8339b
+      internalID: -875025505
       vertices: []
       indices: 
       edges: []
@@ -464,8 +569,12 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
+      LT b: 1228332286
       a b: -1813903968
       b b: 1225244642
+      input l b: -666860429
+      input r b: -1562992099
+      input u b: -402196829
       l joystick b: -1443975020
       lb b: 1577839725
       pause bb: 1206355267
@@ -475,6 +584,7 @@ TextureImporter:
       ps x b: -725510096
       r joysrick b: 12022975
       rb b: 1508753577
+      rt b: -875025505
       x b: -1982136439
       xbox a b: 1528273720
       xbox b b: -858311313

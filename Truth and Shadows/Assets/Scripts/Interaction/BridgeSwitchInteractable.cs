@@ -15,14 +15,15 @@ namespace TruthAndShadows.Bridge
         private Transform bridge; // The bridge to move
         
         [SerializeField]
-        private float raiseAmount = 3f; // How high the bridge moves
+        public float raiseAmount = 3f; // How high the bridge moves
         
         [SerializeField]
         private float moveSpeed = 2f;
 
         [Header("Audio Settings")]
         [SerializeField]
-        private AudioSource bridgeAudioSource;
+        private AudioSource switchAudioSource;
+        public AudioSource bridgeAudioSource;
         
         [SerializeField]
         private float audioFadeTime = 3f;
@@ -45,7 +46,7 @@ namespace TruthAndShadows.Bridge
             if (bridge != null)
             {
                 startBridgePos = bridge.position;
-                targetBridgePos = startBridgePos + Vector3.up * raiseAmount;
+                targetBridgePos = startBridgePos + Vector3.right * raiseAmount;
             }
             else
             {
@@ -80,12 +81,18 @@ namespace TruthAndShadows.Bridge
         {
             isRaising = true;
             
+            // Start switch movement sound
+            if (switchAudioSource != null)
+            {
+                switchAudioSource.Play();
+            }
+
             // Start bridge movement sound
             if (bridgeAudioSource != null)
             {
-                bridgeAudioSource.Play();
+                switchAudioSource.Play();
             }
-            
+
             // Move bridge until reaching target position
             while (bridge != null && Vector3.Distance(bridge.position, targetBridgePos) > 0.01f)
             {

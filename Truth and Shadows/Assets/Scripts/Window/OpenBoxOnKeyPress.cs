@@ -11,7 +11,7 @@ public class SlideWallOnKeyPress : MonoBehaviour
 
     [Header("Movement Settings")]
     public Vector3 localMoveDirection = Vector3.right;
-    public float moveDistance = 3f;
+    public float moveDistance = 2f;
     public float moveSpeed = 2f;
 
     private bool isOpening = false;

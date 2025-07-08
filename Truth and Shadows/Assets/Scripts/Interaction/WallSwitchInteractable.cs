@@ -25,7 +25,8 @@ namespace TruthAndShadows.Bridge
 
         [Header("Audio Settings")]
         [SerializeField]
-        private AudioSource wallSoundSource;
+        public AudioSource switchSoundSource;
+        public AudioSource wallSoundSource;
         
         [SerializeField]
         private float audioFadeTime = 3f;
@@ -84,12 +85,17 @@ namespace TruthAndShadows.Bridge
         {
             isOpening = true;
             
-            // Start wall movement sound
+            // Start switch movement sound
+            if (switchSoundSource != null)
+            {
+                switchSoundSource.Play();
+            }
+
+            // Start switch movement sound
             if (wallSoundSource != null)
             {
                 wallSoundSource.Play();
             }
-            
             // Move wall until reaching target position
             while (wallToSlide != null && Vector3.Distance(wallToSlide.position, openPosition) > 0.01f)
             {

@@ -1,3 +1,4 @@
+using TruthAndShadows.CheckpointSystem;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
@@ -119,7 +120,18 @@ public class EnemyAI : MonoBehaviour
         // Check if close enough to "catch" the player
         if (chasing && Vector3.Distance(transform.position, playerTransform.position) < distanceToKill && canSee)
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            // Instead of reloading the scene, use the CheckpointManager to respawn at checkpoint
+            if (CheckpointManager.Instance != null)
+            {
+                // Use the CheckpointManager's HandleEnemyKill method
+                CheckpointManager.Instance.HandleEnemyKill();
+            }
+            else
+            {
+                // Fallback to scene reload if CheckpointManager isn't available
+                Debug.LogWarning("CheckpointManager not found, falling back to scene reload");
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
         }
     }
 

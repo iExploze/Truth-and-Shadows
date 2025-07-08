@@ -271,7 +271,7 @@ namespace TruthAndShadows.Player
 
             // The InputManager already respects permissions from InputContextProvider
             // So we can just use the input directly
-            Vector2 targetMovement = InputManager.Instance.MoveInput;
+            Vector2 targetMovement = InputManager.Instance.CharacterMoveInput;
 
             // No need for state checks here as the InputContextProvider
             // and InputManager already handle this for us

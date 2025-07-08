@@ -33,6 +33,8 @@ public class SquidControl : MonoBehaviour
     [SerializeField]
     private float climbCheckDistance = 0.2f;
 
+    public AudioSource squidMoveSound;
+
     private void Start()
     {
         mainCamera = Camera.main;
@@ -51,7 +53,7 @@ public class SquidControl : MonoBehaviour
         Vector2 moveInput = Vector2.zero;
         if (InputManager.Instance != null)
         {
-            moveInput = InputManager.Instance.MoveInput; // x = horizontal, y = vertical
+            moveInput = InputManager.Instance.CharacterMoveInput; // x = horizontal, y = vertical
         }
         else
         {
@@ -90,5 +92,16 @@ public class SquidControl : MonoBehaviour
 
         // 4) Apply velocity
         rb.velocity = newVel;
+
+        //Rashai Was Here
+        bool isMoving = rb.velocity.magnitude > 0.01f;
+        if (isMoving && !squidMoveSound.isPlaying)
+        {
+            squidMoveSound.Play();
+        }
+        else if (!isMoving && squidMoveSound.isPlaying)
+        {
+            squidMoveSound.Play();
+        }
     }
 }
