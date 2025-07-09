@@ -44,9 +44,9 @@ namespace TruthAndShadows.Interaction
         /// <summary>
         /// Determines if the interactable can be interacted with based on custom conditions
         /// </summary>
-        /// <param name="player">The player attempting to interact</param>
+        /// <param name="playerPosition">The player attempting to interact</param>
         /// <returns>True if interaction conditions are met, false otherwise</returns>
-        bool CanInteract(MonoBehaviour player);
+        bool CanInteract(Vector3 playerPosition);
 
         // Optional camera that will be used during interaction
         // Returns a Cinemachine camera component (can be any Cinemachine camera type)

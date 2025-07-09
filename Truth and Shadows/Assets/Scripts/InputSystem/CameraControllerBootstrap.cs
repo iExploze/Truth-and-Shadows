@@ -21,7 +21,6 @@ namespace TruthAndShadows.InputSystem
             }
 
             _instance = this;
-            DontDestroyOnLoad(gameObject);
 
             EnsureCameraControllerExists();
         }

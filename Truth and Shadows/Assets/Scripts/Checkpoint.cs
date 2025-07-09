@@ -43,6 +43,14 @@ namespace TruthAndShadows.CheckpointSystem
         private bool isSpawnCheckpoint = false;
         private bool effectsDisabledForSpawn = false;
 
+        [Header("Dev Overrides")]
+        [Tooltip(
+            "If true, this checkpoint will always be used as the spawn point (for development/testing)"
+        )]
+        [SerializeField]
+        private bool devOverrideSpawn = false;
+        public bool DevOverrideSpawn => devOverrideSpawn;
+
         private Material runeMat;
         private bool isActivated = false;
         private Color currentColor;
@@ -50,12 +58,28 @@ namespace TruthAndShadows.CheckpointSystem
         private bool isLerpingToActivated = false;
         private readonly float lerpSpeed = 5f;
 
+        // Reference to the checkpoint's collider
+        private Collider checkpointCollider;
+
         // Make effectsDisabledForSpawn public for checkpoint manager access
         public bool EffectsDisabledForSpawn => effectsDisabledForSpawn;
+
+        // Property to check if the checkpoint is activated
+        public bool IsActivated => isActivated;
 
         void Start()
         {
             Debug.Log($"[Checkpoint] Start: {gameObject.name}");
+
+            // Cache the collider reference
+            checkpointCollider = GetComponent<Collider>();
+            if (checkpointCollider == null)
+            {
+                Debug.LogWarning(
+                    $"[Checkpoint] {gameObject.name} doesn't have a collider component!"
+                );
+            }
+
             // Snap checkpoint to ground using a raycast
             RaycastHit hit;
             if (
@@ -148,10 +172,32 @@ namespace TruthAndShadows.CheckpointSystem
             Debug.Log(
                 $"[Checkpoint] {gameObject.name} activated! Starting lerp to {activatedColor}"
             );
-
             PlayEffect(activationEffect, "activation");
             PlayEffect(secondaryActivationEffect, "secondary activation");
             PlayActivationSound();
+
+            // Disable the collider once activated to prevent triggering again
+            DisableCollider();
+        }
+
+        // Method to disable the checkpoint's collider
+        public void DisableCollider()
+        {
+            if (checkpointCollider != null)
+            {
+                checkpointCollider.enabled = false;
+                Debug.Log($"[Checkpoint] Disabled collider for {gameObject.name}");
+            }
+        }
+
+        // Method to enable the checkpoint's collider (for reusable checkpoints if needed)
+        public void EnableCollider()
+        {
+            if (checkpointCollider != null && !isActivated)
+            {
+                checkpointCollider.enabled = true;
+                Debug.Log($"[Checkpoint] Enabled collider for {gameObject.name}");
+            }
         }
 
         public void ResetActivation()
@@ -233,7 +279,13 @@ namespace TruthAndShadows.CheckpointSystem
             var rend = GetComponent<Renderer>();
             if (rend != null)
                 rend.enabled = false;
-            Debug.Log($"[Checkpoint] {gameObject.name} effects and renderer disabled for spawn");
+
+            // Disable the collider for the spawn checkpoint
+            DisableCollider();
+
+            Debug.Log(
+                $"[Checkpoint] {gameObject.name} effects, renderer, and collider disabled for spawn"
+            );
         }
 
         void UpdateGlow(Color glowColor)
@@ -243,6 +295,18 @@ namespace TruthAndShadows.CheckpointSystem
             Debug.Log(
                 $"[Checkpoint] {gameObject.name} emission color updated to {glowColor * glowIntensity}"
             );
+        }
+
+        public static Checkpoint GetDevOverrideCheckpoint()
+        {
+            // Find all active checkpoints in the scene
+            var allCheckpoints = GameObject.FindObjectsOfType<Checkpoint>(true);
+            foreach (var cp in allCheckpoints)
+            {
+                if (cp.devOverrideSpawn)
+                    return cp;
+            }
+            return null;
         }
     }
 }
