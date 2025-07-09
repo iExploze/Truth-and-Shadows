@@ -20,8 +20,6 @@ public class lightDetection : MonoBehaviour
         {
             Debug.LogError("This script requires a Spot Light assigned.");
         }
-
-        spotLight.innerSpotAngle = spotLight.spotAngle;
     }
 
     void Update()

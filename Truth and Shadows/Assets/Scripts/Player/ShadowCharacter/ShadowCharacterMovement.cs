@@ -1,7 +1,6 @@
-using TruthAndShadows.InputSystem;
 using UnityEngine;
 
-namespace TruthAndShadows.Player
+namespace Cinemachine.Examples
 {
     [AddComponentMenu("")] // Don't display in add component menu
     public class ShadowCharacterMovement : MonoBehaviour
@@ -20,30 +19,21 @@ namespace TruthAndShadows.Player
         private Camera mainCamera;
         private float velocity;
 
-        public bool canMove = true; // Use this for initialization
+        public bool canMove = true;
 
-        private void Start()
+        // Use this for initialization
+        void Start()
         {
             anim = GetComponent<Animator>();
             mainCamera = Camera.main;
-        } // Update is called once per frame
+        }
 
-        private void FixedUpdate()
+        // Update is called once per frame
+        void FixedUpdate()
         {
 #if ENABLE_LEGACY_INPUT_MANAGER
             input.x = Input.GetAxis("Horizontal");
             input.y = Input.GetAxis("Vertical");
-
-            if (InputManager.Instance != null)
-            {
-                input = InputManager.Instance.CharacterMoveInput;
-            }
-
-            // Check if spotlight aiming - block movement if rotating spotlight
-            if (InputManager.Instance.RotateHeld)
-            {
-                input = Vector2.zero;
-            }
 
             // set speed to both vertical and horizontal inputs
             if (useCharacterForward)
@@ -65,8 +55,7 @@ namespace TruthAndShadows.Player
             // Update target direction relative to the camera view (or not if the Keep Direction option is checked)
             UpdateTargetDirection();
 
-            if (!canMove || !InputContextProvider.Instance.CanMove)
-                return;
+            if (!canMove) return;
 
             if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
             {

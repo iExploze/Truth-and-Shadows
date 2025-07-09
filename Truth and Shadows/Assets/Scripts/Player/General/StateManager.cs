@@ -1,158 +1,315 @@
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
-using TruthAndShadows.Player;
+using Cinemachine.Examples; // Add this for CharacterMovement
 using UnityEngine;
-using InteractionManager = TruthAndShadows.Interaction.InteractionManager;
+using InteractionManager = TruthAndShadows.Interaction.InteractionManager; // Adjust namespace as needed
 
 public class StateManager : MonoBehaviour
 {
     [Header("Forms")]
-    public GameObject mainCharacterForm;
-    public GameObject squidForm;
+    public GameObject mainCharacterForm; // Drag in mainCharacterForm child (Shadow)
+    public GameObject squidForm; // Drag in squidForm child (Squid)
+    public GameObject shadowCharacter; // Reference to scene instance instead of prefab
 
     [Header("Camera Rigs")]
+
     [SerializeField]
-    private CinemachineFreeLook mainCharacterCamera;
+    private CinemachineFreeLook mainCharacterFormCameraFreeLook;
+
     [SerializeField]
-    private CinemachineFreeLook squidCamera;
+    private CinemachineFreeLook squidFormCameraFreeLook;
 
-    [Header("Spawn Settings")]
     [SerializeField]
-    private float spawnOffset = 2f;
+    private CinemachineFreeLook shadowCharacterCameraFreeLook;
 
-    private CharacterMovement mainCharMovement;
-    private Rigidbody mainCharRb;
-    private Animator mainCharAnimator;
-    private SquidControl squidMovement;
-    private Rigidbody squidRb;
+    [Header("Shadow Spawn Settings")]
+    [SerializeField]
+    private float spawnOffset = 2f; // Distance to spawn shadow from player
 
-    private enum FormState { MainCharacter, Squid }
-    private FormState currentState = FormState.MainCharacter;
+    [SerializeField] private SquidControl squidControl;
 
-    private InteractionManager mainInteractionManager;
+    // Added for the squid indicator
+    //public GameObject squidHaloIndicator;
+
+    //[SerializeField]
+    //private float haloDebounceTime = 0.2f;
+
+    //private float haloTimer = 0f;
+    //private bool haloCurrentlyActive = false;
+
+    // Added for checking indicator condition
+    private squidShadowInteraction squidLightStatus;
+
+    private enum FormState
+    {
+        mainCharacter,
+        squid,
+        shadowCharacter,
+    }
+
+    private FormState currentState = FormState.mainCharacter;
+    private GameObject currentShadowCharacter;
+
+    private CharacterMovement mainCharacterFormMovement; // Reference to main character's movement script
+    private Rigidbody mainCharacterFormRigidbody; // Add this field
+    private Animator mainCharacterFormAnimator; // Add this field
+
+    // Add squid movement references
+    private SquidControl squidFormMovement;
+    private Rigidbody squidFormRigidbody;
+
+    private InteractionManager interactionManager;
+    private InteractionManager mainFormInteractionManager;
+    private InteractionManager shadowCharacterInteractionManager;
+
+    private void InitializeComponents()
+    {
+        // Get main character components
+        mainCharacterFormMovement = mainCharacterForm.GetComponent<CharacterMovement>();
+        mainCharacterFormRigidbody = mainCharacterForm.GetComponent<Rigidbody>();
+        mainCharacterFormAnimator = mainCharacterForm.GetComponent<Animator>();
+        mainFormInteractionManager = mainCharacterForm.GetComponent<InteractionManager>();
+
+        // Get squid components
+        squidFormMovement = squidForm.GetComponent<SquidControl>();
+        squidFormRigidbody = squidForm.GetComponent<Rigidbody>();
+
+        // Get shadow components
+        shadowCharacterInteractionManager = shadowCharacter.GetComponent<InteractionManager>();
+
+        // Get global interaction manager
+        interactionManager = GetComponent<InteractionManager>();
+
+        // Get the squid shadow interaction
+        squidLightStatus = squidForm.GetComponent<squidShadowInteraction>();
+    }
+
+    private void SetInitialState()
+    {
+        mainCharacterForm.SetActive(true);
+        squidForm.SetActive(false);
+        shadowCharacter.SetActive(false);
+
+        UpdateCameraPriorities(10, 0, 0);
+
+        currentState = FormState.mainCharacter;
+    }
 
     void Start()
     {
-        mainCharMovement = mainCharacterForm.GetComponent<CharacterMovement>();
-        mainCharRb = mainCharacterForm.GetComponent<Rigidbody>();
-        mainCharAnimator = mainCharacterForm.GetComponent<Animator>();
-        squidMovement = squidForm.GetComponent<SquidControl>();
-        squidRb = squidForm.GetComponent<Rigidbody>();
-
-        mainInteractionManager = mainCharacterForm.GetComponent<InteractionManager>();
-
-        SetToHumanForm(); // Always start as human
+        InitializeComponents();
+        SetInitialState();
+        //squidHaloIndicator.SetActive(false);
     }
 
-    // Call this to become a squid
-    public void SwitchToSquidForm()
+    void Update()
     {
-        if (currentState == FormState.Squid) return;
-
-        // Hide human, reset movement, physics
-        mainInteractionManager.DropPickedUpItem();
-        mainCharacterForm.SetActive(false);
-        if (mainCharRb != null)
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            mainCharRb.velocity = Vector3.zero;
-            mainCharRb.angularVelocity = Vector3.zero;
-            mainCharRb.isKinematic = true;
+            HandleEInput();
         }
-        if (mainCharMovement != null) mainCharMovement.enabled = false;
-        if (mainCharAnimator != null)
+        else if (Input.GetKeyDown(KeyCode.Q))
         {
-            mainCharAnimator.SetFloat("Speed", 0);
-            mainCharAnimator.SetFloat("Direction", 0);
+            HandleQInput();
         }
+    }
 
-        // Place and activate squid
-        squidForm.transform.position = mainCharacterForm.transform.position;
-        squidForm.transform.rotation = mainCharacterForm.transform.rotation;
+    void HandleEInput()
+    {
+        switch (currentState)
+        {
+            case FormState.mainCharacter:
+            case FormState.shadowCharacter:
+                EnterSquidForm();
+                break;
+            case FormState.squid:
+                SpawnShadowCharacter();
+                break;
+        }
+    }
+
+    void HandleQInput()
+    {
+        if (currentState != FormState.mainCharacter)
+        {
+            ReturnToNormalForm();
+        }
+    }
+
+    private void DisableCurrentForm()
+    {
+        switch (currentState)
+        {
+            case FormState.mainCharacter:
+                DisableMainCharacter();
+                break;
+            case FormState.squid:
+                DisableSquid();
+                break;
+            case FormState.shadowCharacter:
+                DisableShadowCharacter();
+                break;
+        }
+    }
+
+    private void DisableMainCharacter()
+    {
+        if (mainCharacterFormRigidbody != null)
+        {
+            mainCharacterFormRigidbody.velocity = Vector3.zero;
+            mainCharacterFormRigidbody.angularVelocity = Vector3.zero;
+            mainCharacterFormRigidbody.isKinematic = true;
+        }
+        if (mainCharacterFormMovement != null)
+            mainCharacterFormMovement.enabled = false;
+        if (mainCharacterFormAnimator != null)
+        {
+            mainCharacterFormAnimator.SetFloat("Speed", 0);
+            mainCharacterFormAnimator.SetFloat("Direction", 0);
+        }
+    }
+
+    private void DisableSquid()
+    {
+        if (squidFormRigidbody != null)
+        {
+            squidFormRigidbody.velocity = Vector3.zero;
+            squidFormRigidbody.angularVelocity = Vector3.zero;
+            squidFormRigidbody.isKinematic = true;
+        }
+        if (squidFormMovement != null)
+            squidFormMovement.enabled = false;
+
+        squidForm.SetActive(false);
+    }
+
+    private void DisableShadowCharacter()
+    {
+        if (shadowCharacterInteractionManager != null)
+            shadowCharacterInteractionManager.enabled = false;
+        shadowCharacter.SetActive(false);
+    }
+
+    void EnterSquidForm()
+    {
+        if (interactionManager != null)
+            interactionManager.PreserveInteraction();
+
+        AudioSource audioSouce = squidForm.GetComponent<AudioSource>();
+        if (audioSouce != null) audioSouce.Play();
+
+        GameObject sourceObject =
+            (currentState == FormState.shadowCharacter) ? shadowCharacter : mainCharacterForm;
+        DisableCurrentForm();
+
+        Vector3 spawnPosition = CalculateSpawnPosition(sourceObject);
+        EnableSquid(spawnPosition, sourceObject.transform.rotation);
+
+        UpdateCameraPriorities(0, 10, 0);
+        currentState = FormState.squid;
+    }
+
+    private Vector3 CalculateSpawnPosition(GameObject source)
+    {
+        Vector3 spawnPosition = source.transform.position + source.transform.forward * spawnOffset;
+        if (
+            Physics.Raycast(
+                source.transform.position,
+                source.transform.forward,
+                out RaycastHit hit,
+                spawnOffset
+            )
+        )
+        {
+            spawnPosition = hit.point - source.transform.forward * 0.1f;
+        }
+        return spawnPosition;
+    }
+
+    private void EnableSquid(Vector3 position, Quaternion rotation)
+    {
+        squidForm.transform.position = position;
+        squidForm.transform.rotation = rotation;
         squidForm.SetActive(true);
-        if (squidMovement != null) squidMovement.enabled = true;
-        if (squidRb != null) squidRb.isKinematic = false;
+        if (squidFormMovement != null)
+            squidFormMovement.enabled = true;
+        if (squidFormRigidbody != null)
+            squidFormRigidbody.isKinematic = false;
 
-        // Camera
-        UpdateCameraPriorities(main: 0, squid: 10);
-
-        // Play squid sound if exists
-        PlayAudio(squidForm);
-
-        SyncCameraDirectionOnly(mainCharacterCamera, squidCamera);
-        UpdateCameraPriorities(main: 0, squid: 10);
-
-        currentState = FormState.Squid;
+        //// TEMPORARY: Halo shows up when Squid form is entered
+        //if (squidHaloIndicator != null)
+        //    squidHaloIndicator.SetActive(true);
     }
 
-    // Call this to become human again
-    public void SwitchToHumanForm()
+    private void SetCameraPriority(CinemachineVirtualCameraBase cam, int priority)
     {
-        if (currentState == FormState.MainCharacter) return;
-
-        // Hide squid, reset movement/physics
-        squidForm.SetActive(false);
-        if (squidRb != null)
+        if (cam != null)
         {
-            squidRb.velocity = Vector3.zero;
-            squidRb.angularVelocity = Vector3.zero;
-            squidRb.isKinematic = true;
+            cam.Priority = priority;
         }
-        if (squidMovement != null) squidMovement.enabled = false;
-
-        // Activate human, enable controls
-        mainCharacterForm.transform.position = squidForm.transform.position;
-        mainCharacterForm.transform.rotation = squidForm.transform.rotation;
-        mainCharacterForm.SetActive(true);
-        if (mainCharRb != null) mainCharRb.isKinematic = false;
-        if (mainCharMovement != null) mainCharMovement.enabled = true;
-
-        UpdateCameraPriorities(main: 10, squid: 0);
-
-        currentState = FormState.MainCharacter;
-
-        // Play human sound if exists
-        PlayAudio(mainCharacterForm);
-
-        SyncCameraDirectionOnly(squidCamera, mainCharacterCamera);
-        UpdateCameraPriorities(main: 10, squid: 0);
     }
 
-    // Helper: resets everything for Start()
-    private void SetToHumanForm()
+    private void UpdateCameraPriorities(int main, int squid, int shadow)
     {
-        mainCharacterForm.SetActive(true);
+
+        SetCameraPriority(mainCharacterFormCameraFreeLook, main);
+        SetCameraPriority(squidFormCameraFreeLook, squid);
+        SetCameraPriority(shadowCharacterCameraFreeLook, shadow);
+    }
+
+    void SpawnShadowCharacter()
+    {
+        if (interactionManager != null)
+            interactionManager.PreserveInteraction();
+
+        DisableCurrentForm();
+
+        Vector3 spawnPos = squidForm.transform.position;
+        Quaternion spawnRot = squidForm.transform.rotation;
+
         squidForm.SetActive(false);
-        if (mainCharRb != null) mainCharRb.isKinematic = false;
-        if (mainCharMovement != null) mainCharMovement.enabled = true;
-        if (squidMovement != null) squidMovement.enabled = false;
-        if (squidRb != null) squidRb.isKinematic = true;
-        currentState = FormState.MainCharacter;
-        UpdateCameraPriorities(main: 10, squid: 0);
+
+        shadowCharacter.transform.position = spawnPos;
+        shadowCharacter.transform.rotation = spawnRot;
+        shadowCharacter.SetActive(true);
+
+        AudioSource audioSouce = shadowCharacter.GetComponent<AudioSource>();
+        if (audioSouce != null) audioSouce.Play();
+
+        // Ensure interaction manager is enabled
+        if (shadowCharacterInteractionManager != null)
+        {
+            shadowCharacterInteractionManager.enabled = true;
+            Debug.Log("Enabled shadow character interaction manager");
+        }
+
+        // Update priorities
+        UpdateCameraPriorities(0, 0, 10);
+
+        currentState = FormState.shadowCharacter;
     }
 
-    private void UpdateCameraPriorities(int main, int squid)
+    public void ReturnToNormalForm()
     {
-        if (mainCharacterCamera != null) mainCharacterCamera.Priority = main;
-        if (squidCamera != null) squidCamera.Priority = squid;
+        if (currentState == FormState.shadowCharacter && interactionManager != null)
+            interactionManager.EndCurrentInteraction();
+
+        DisableCurrentForm();
+
+        AudioSource audioSouce = mainCharacterForm.GetComponent<AudioSource>();
+        if (audioSouce != null) audioSouce.Play();
+
+        // Re-enable original character
+        if (mainCharacterFormRigidbody != null)
+            mainCharacterFormRigidbody.isKinematic = false;
+
+        if (mainCharacterFormMovement != null)
+            mainCharacterFormMovement.enabled = true;
+
+        // Only update priorities
+        UpdateCameraPriorities(10, 0, 0);
+
+        currentState = FormState.mainCharacter;
     }
-
-    private void PlayAudio(GameObject obj)
-    {
-        var audio = obj.GetComponent<AudioSource>();
-        if (audio != null) audio.Play();
-    }
-
-    public bool isHumanForm()
-    {
-        return currentState == FormState.MainCharacter;
-    }
-
-    private void SyncCameraDirectionOnly(CinemachineFreeLook source, CinemachineFreeLook target)
-    {
-        target.m_XAxis.Value = source.m_XAxis.Value;
-        target.m_YAxis.Value = source.m_YAxis.Value;
-    }
-
-
 }
