@@ -22,6 +22,7 @@ namespace TruthAndShadows.InputSystem
             public bool CanRun { get; set; }
             public bool CanHint { get; set; }
             public bool CanReset { get; set; }
+            public bool CanMenu { get; set; }
         }
 
         /// <summary>
@@ -44,6 +45,7 @@ namespace TruthAndShadows.InputSystem
                         CanRun = true,
                         CanHint = true,
                         CanReset = true,
+                        CanMenu = true,
                     };
 
                 case PlayerState.Aiming:
@@ -57,6 +59,7 @@ namespace TruthAndShadows.InputSystem
                         CanRun = true,
                         CanHint = true,
                         CanReset = true,
+                        CanMenu = true,
                     };
 
                 case PlayerState.Pickup:
@@ -70,6 +73,7 @@ namespace TruthAndShadows.InputSystem
                         CanRun = true,
                         CanHint = true,
                         CanReset = true,
+                        CanMenu = true,
                     };
 
                 case PlayerState.Interacting:
@@ -83,46 +87,50 @@ namespace TruthAndShadows.InputSystem
                         CanRun = true,
                         CanHint = true,
                         CanReset = true,
+                        CanMenu = true,
                     };
 
                 case PlayerState.InUI:
                     return new Permissions
                     {
-                        CanMove = true,
-                        CanCameraLook = true,
-                        CanInteract = true,
-                        CanPickup = true,
-                        CanRotate = true,
-                        CanRun = true,
-                        CanHint = true,
-                        CanReset = true,
+                        CanMove = false,
+                        CanCameraLook = false,
+                        CanInteract = false,
+                        CanPickup = false,
+                        CanRotate = false,
+                        CanRun = false,
+                        CanHint = false,
+                        CanReset = false,
+                        CanMenu = true,
                     };
 
                 case PlayerState.Cutscene:
                     return new Permissions
                     {
-                        CanMove = true,
-                        CanCameraLook = true,
-                        CanInteract = true,
-                        CanPickup = true,
-                        CanRotate = true,
-                        CanRun = true,
-                        CanHint = true,
-                        CanReset = true,
+                        CanMove = false,
+                        CanCameraLook = false,
+                        CanInteract = false,
+                        CanPickup = false,
+                        CanRotate = false,
+                        CanRun = false,
+                        CanHint = false,
+                        CanReset = false,
+                        CanMenu = false,
                     };
 
                 case PlayerState.Disabled:
                 default:
                     return new Permissions
                     {
-                        CanMove = true,
-                        CanCameraLook = true,
-                        CanInteract = true,
-                        CanPickup = true,
-                        CanRotate = true,
-                        CanRun = true,
-                        CanHint = true,
-                        CanReset = true,
+                        CanMove = false,
+                        CanCameraLook = false,
+                        CanInteract = false,
+                        CanPickup = false,
+                        CanRotate = false,
+                        CanRun = false,
+                        CanHint = false,
+                        CanReset = false,
+                        CanMenu = false,
                     };
             }
         }

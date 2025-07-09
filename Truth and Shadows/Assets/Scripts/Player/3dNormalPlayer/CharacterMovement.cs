@@ -185,11 +185,7 @@ namespace TruthAndShadows.Player
         {
             PlayerState previousState = _currentState;
             _currentState = PlayerState.Normal;
-            if (UnityEngine.EventSystems.EventSystem.current?.IsPointerOverGameObject() ?? false)
-            {
-                _currentState = PlayerState.InUI;
-            }
-            else if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
+            if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
             {
                 // Keep the current state if it's a cutscene or disabled
             }

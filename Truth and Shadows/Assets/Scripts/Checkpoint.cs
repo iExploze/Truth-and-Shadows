@@ -67,9 +67,13 @@ namespace TruthAndShadows.CheckpointSystem
         // Property to check if the checkpoint is activated
         public bool IsActivated => isActivated;
 
+        private CheckpointManager _checkpointManager;
+
         void Start()
         {
             Debug.Log($"[Checkpoint] Start: {gameObject.name}");
+
+            _checkpointManager = CheckpointManager.Instance;
 
             // Cache the collider reference
             checkpointCollider = GetComponent<Collider>();
@@ -101,24 +105,35 @@ namespace TruthAndShadows.CheckpointSystem
                 Debug.LogWarning($"[Checkpoint] {gameObject.name} could not find ground below");
             }
             // Auto-register with checkpoint manager if enabled
-            if (autoRegister && CheckpointManager.Instance != null)
+            if (autoRegister && _checkpointManager != null)
             {
                 Debug.Log(
                     $"[Checkpoint] Auto-registering {gameObject.name} with CheckpointManager"
                 );
-                CheckpointManager.Instance.AddCheckpoint(transform);
+                _checkpointManager.AddCheckpoint(transform);
             }
             runeMat = GetComponent<Renderer>().material;
             runeMat.EnableKeyword("_EMISSION");
             currentColor = farColor;
             UpdateGlow(currentColor);
             Debug.Log($"[Checkpoint] Initial color set to {farColor}");
+
             // Find player by tag
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj != null)
                 player = playerObj.transform;
             else
                 Debug.LogWarning($"[Checkpoint] Player not found in scene for {gameObject.name}");
+
+            // If this is a spawn checkpoint, disable effects and collider
+            if (isSpawnCheckpoint)
+            {
+                Debug.Log(
+                    $"[Checkpoint] {gameObject.name} is a spawn checkpoint, disabling effects"
+                );
+                DisableEffectsForSpawn();
+                return; // Skip further initialization for spawn checkpoints
+            }
         }
 
         void Update()
@@ -147,14 +162,14 @@ namespace TruthAndShadows.CheckpointSystem
             if (
                 !isActivated
                 && other.CompareTag("Player")
-                && CheckpointManager.Instance != null
-                && CheckpointManager.Instance.GetCurrentCheckpoint() != transform
+                && _checkpointManager != null
+                && _checkpointManager.GetCurrentCheckpoint() != transform
             )
             {
                 Debug.Log(
                     $"[Checkpoint] Notifying CheckpointManager of activation for {gameObject.name} via trigger"
                 );
-                CheckpointManager.Instance.SetCheckpoint(transform);
+                _checkpointManager.SetCheckpoint(transform);
             }
         }
 

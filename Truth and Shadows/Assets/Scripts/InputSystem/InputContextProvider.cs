@@ -14,7 +14,7 @@ namespace TruthAndShadows.InputSystem
         public static InputContextProvider Instance => _instance;
 
         [SerializeField]
-        private bool logInputPermissionChanges = false;
+        private bool logInputPermissionChanges = true;
 
         // Current player state
         private PlayerState _currentPlayerState = PlayerState.Normal;
@@ -167,6 +167,9 @@ namespace TruthAndShadows.InputSystem
                 case "hint":
                     _canHint = allowed;
                     break;
+                case "menu":
+                    _canMenu = allowed;
+                    break;
                 default:
                     Debug.LogWarning($"Unknown permission name: {permissionName}");
                     break;
@@ -201,6 +204,7 @@ namespace TruthAndShadows.InputSystem
             _canRun = permissions.CanRun;
             _canReset = permissions.CanReset;
             _canHint = permissions.CanHint;
+            _canMenu = permissions.CanMenu;
         }
 
         public void LogPermissions()
@@ -215,6 +219,7 @@ namespace TruthAndShadows.InputSystem
                     + $"\n Run: {_canRun}"
                     + $"\n Reset: {_canReset}"
                     + $"\n Hint: {_canHint}"
+                    + $"\n Menu: {_canMenu}"
             );
         }
         #endregion
