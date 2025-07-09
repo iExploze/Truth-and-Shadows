@@ -11,6 +11,7 @@ using UnityEngine.UI;
 
 public class MainMenuController : MonoBehaviour
 {
+    public static MainMenuController Instance;
     private Gamepad gamepad;
     private bool _usingController = false;
     public bool UsingController => _usingController;
@@ -24,6 +25,9 @@ public class MainMenuController : MonoBehaviour
     private Slider _sliderBrightness;
     [SerializeField]
     private Image _blackOverlay;
+
+    public static float brightness;
+    
     // Start is called before the 
     void Start()
     {
@@ -33,8 +37,23 @@ public class MainMenuController : MonoBehaviour
         {
             EventSystem.current.SetSelectedGameObject(firstMenuButton);
         }
+
+        brightness = 1;
     }
 
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) 
+        { 
+            Destroy(this); 
+        } 
+        else 
+        { 
+            Instance = this; 
+        } 
+    }
+
+    
     void Update()
     {
         if (gamepad != null)
@@ -106,9 +125,11 @@ public class MainMenuController : MonoBehaviour
 
     public void AdjustBrightness(float value)
     {
-        var tempColor = _blackOverlay.color;
-        tempColor.a = _sliderBrightness.value;
-        _blackOverlay.color = tempColor;
+        brightness = value;
+        Debug.Log("Adjusting brightness to " + brightness);
+        // var tempColor = _blackOverlay.color;
+        // tempColor.a = _sliderBrightness.value;
+        // _blackOverlay.color = tempColor;
     }
 
     public void Back()
