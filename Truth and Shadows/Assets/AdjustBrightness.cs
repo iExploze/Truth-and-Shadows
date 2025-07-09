@@ -28,7 +28,6 @@ public class AdjustBrightness : MonoBehaviour
     void Update()
     {
         _brightness = MainMenuController.brightness;
-        Debug.Log(_brightness);
         spotLight.shadowStrength = _brightness;
     }
 }

@@ -134,7 +134,6 @@ namespace TruthAndShadows.Interaction
             if (spotLight != null)
             {
                 _brightness = MainMenuController.brightness;
-                Debug.Log(_brightness);
                 spotLight.shadowStrength = _brightness;
             }
 

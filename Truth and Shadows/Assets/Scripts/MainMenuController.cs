@@ -26,7 +26,7 @@ public class MainMenuController : MonoBehaviour
     [SerializeField]
     private Image _blackOverlay;
 
-    public static float brightness;
+    public static float brightness = 1;
     
     // Start is called before the 
     void Start()
@@ -126,7 +126,6 @@ public class MainMenuController : MonoBehaviour
     public void AdjustBrightness(float value)
     {
         brightness = value;
-        Debug.Log("Adjusting brightness to " + brightness);
         // var tempColor = _blackOverlay.color;
         // tempColor.a = _sliderBrightness.value;
         // _blackOverlay.color = tempColor;
