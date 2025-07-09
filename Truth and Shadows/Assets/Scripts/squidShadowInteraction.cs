@@ -1,4 +1,5 @@
 using System.Collections;
+using MagicPigGames;
 using TruthAndShadows.CheckpointSystem; // For CheckpointManager
 using UnityEngine;
 using UnityEngine.SceneManagement; // For scene reset
@@ -11,12 +12,15 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
 
     private bool hasTransformed = false;
 
+    [SerializeField] private ProgressBar progressBar;
+
     // --- New for dark timer and camera effect ---
     public float maxTimeInDark = 10f; // Max seconds allowed in darkness
     private float timeInDark = 0f;
 
     [Header("UI")]
-    public Image darknessOverlay; // Assign a UI Image with black color and alpha 0 initially
+    [SerializeField] private Image darknessOverlay; // Assign a UI Image with black color and alpha 0 initially
+    [SerializeField] private Image darknessOverlay2;
 
     void Start()
     {
@@ -24,6 +28,12 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
             playerStateManager = FindObjectOfType<StateManager>();
         if (darknessOverlay != null)
             SetDarknessAlpha(0f);
+        if (darknessOverlay2 != null)
+            darknessOverlay2.gameObject.SetActive(false);
+        if (progressBar != null) 
+        {
+            progressBar.gameObject.SetActive(false);
+        }
     }
 
     public void OnLightEnter(Light lightSource)
@@ -43,6 +53,7 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
         // Reset darkness timer and effect
         timeInDark = 0f;
         SetDarknessAlpha(0f);
+        setProgressBar(0f);
 
         if (!hasTransformed)
         {
@@ -69,9 +80,13 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
     {
         if (!isInLight)
         {
+            darknessOverlay2.gameObject.SetActive(true);
+            progressBar.gameObject.SetActive(true);
             timeInDark += Time.deltaTime;
             float darknessAmount = Mathf.Clamp01(timeInDark / maxTimeInDark);
-            SetDarknessAlpha(darknessAmount * 1f);
+
+            SetDarknessAlpha(darknessAmount * 1.5f);
+            setProgressBar(darknessAmount);
 
             if (timeInDark >= maxTimeInDark)
             {
@@ -97,6 +112,9 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
             // In light, reset darkness timer and effect
             timeInDark = 0f;
             SetDarknessAlpha(0f);
+            setProgressBar(0f);
+            progressBar.gameObject.SetActive(false);
+            darknessOverlay2.gameObject.SetActive(false);
         }
     }
 
@@ -113,6 +131,14 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
             var color = darknessOverlay.color;
             color.a = alpha;
             darknessOverlay.color = color;
+        }
+    }
+
+    private void setProgressBar(float alpha)
+    {
+        if (progressBar != null)
+        {
+            progressBar.SetProgress(alpha);
         }
     }
 }

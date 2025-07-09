@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using TruthAndShadows.Player;
+using Cinemachine.Examples;
 using UnityEngine;
 
 public class shadowCharacterDetection : MonoBehaviour, ILightHittable
@@ -11,7 +11,7 @@ public class shadowCharacterDetection : MonoBehaviour, ILightHittable
     private int positionIndex = 0;
     private int validPositions = 0;
 
-    // Whether the player is currently considered ï¿½in lightï¿½
+    // Whether the player is currently considered “in light”
     private bool isInLight = false;
 
     // Timer to measure how long the player has stayed in light
@@ -37,7 +37,7 @@ public class shadowCharacterDetection : MonoBehaviour, ILightHittable
     {
         if (!isInLight) 
         {
-            // If not in light, keep ï¿½rollingï¿½ the circular buffer of safe positions
+            // If not in light, keep “rolling” the circular buffer of safe positions
             lastSafePositions[positionIndex] = transform.position;
             positionIndex = (positionIndex + 1) % bufferSize;
 
@@ -78,6 +78,7 @@ public class shadowCharacterDetection : MonoBehaviour, ILightHittable
         // If the player has been in light for more than 0.5s, force return to normal form
         if (timeInLight >= maxTimeInLight)
         {
+            playerStateManager.ReturnToNormalForm();
 
             // Re-enable movement and reset light state
             shadowMovement.canMove = true;

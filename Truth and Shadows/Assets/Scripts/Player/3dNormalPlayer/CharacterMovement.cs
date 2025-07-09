@@ -1,269 +1,104 @@
-﻿using TruthAndShadows.InputSystem;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace TruthAndShadows.Player
+namespace Cinemachine.Examples
 {
-    /// <summary>
-    /// Handles player movement, animation, state, and input permissions.
-    /// Integrates state management and input permission logic from PlayerController.
-    /// </summary>
-    [AddComponentMenu("")] // Don't display in add component menu
-    public class CharacterMovement : MonoBehaviour
-    {
-        // --- Movement Settings ---
-        public bool useCharacterForward = false;
-        public bool lockToCameraForward = false;
-        public float turnSpeed = 10f;
 
-        [SerializeField]
-        private float sprintSpeed = 4f;
+[AddComponentMenu("")] // Don't display in add component menu
+public class CharacterMovement : MonoBehaviour
+{
+    public bool useCharacterForward = false;
+    public bool lockToCameraForward = false;
+    public float turnSpeed = 10f;
 
-        [SerializeField]
-        private float rotationSpeed = 10f;
+    private float turnSpeedMultiplier;
+    private float speed = 0f;
+    private float direction = 0f;
+    private Animator anim;
+    private Vector3 targetDirection;
+    private Vector2 input;
+    private Quaternion freeRotation;
+    private Camera mainCamera;
+    private float velocity;
 
-        // --- State & Permissions ---
-        private PlayerState _currentState = PlayerState.Normal;
-        private InputPermissions _currentPermissions;
-        private float _movementSmoothTime = 0.1f;
-        private Vector2 _moveVelocity;
-        private float _speedVelocity;
+        public bool canMove;
 
-        // --- Camera ---
-        private Camera mainCamera;
+	// Use this for initialization
+	void Start ()
+	{
+	    anim = GetComponent<Animator>();
+	    mainCamera = Camera.main;
+	}
 
-        [SerializeField]
-        private Transform cameraTransform;
-
-        // --- Movement ---
-        private float turnSpeedMultiplier;
-        private float speed = 0f;
-        private float direction = 0f;
-        private Vector3 targetDirection;
-        private Vector2 input;
-        private Quaternion freeRotation;
-        public bool canMove = true;
-
-        // --- Sound ---
-        public AudioSource walkSource;
-
-        private Rigidbody rb;
-
-        // --- Debug ---
-        [SerializeField]
-        private bool showDebugInfo = false;
-
-        // --- Input Permissions Helper ---
-        [System.Serializable]
-        private class InputPermissions
-        {
-            public bool AllowMovement;
-            public bool AllowCameraLook;
-            public bool AllowInteract;
-            public bool AllowPickup;
-            public bool AllowRotate;
-            public bool AllowRun;
-            public bool AllowHint;
-            public bool AllowReset;
-
-            public static InputPermissions GetPermissionsForState(PlayerState state)
-            {
-                var centralPermissions = InputPermissionsProvider.GetPermissionsForState(state);
-                var result = new InputPermissions();
-                result.AllowMovement = centralPermissions.CanMove;
-                result.AllowCameraLook = centralPermissions.CanCameraLook;
-                result.AllowInteract = centralPermissions.CanInteract;
-                result.AllowPickup = centralPermissions.CanPickup;
-                result.AllowRotate = centralPermissions.CanRotate;
-                result.AllowRun = centralPermissions.CanRun;
-                result.AllowHint = centralPermissions.CanHint;
-                result.AllowReset = centralPermissions.CanReset;
-                return result;
-            }
-        }
-
-        // --- Unity Lifecycle ---
-
-        private CharacterAnimation characterAnimation;
-
-        void Start()
-        {
-            if (cameraTransform == null)
-                cameraTransform = Camera.main?.transform;
-            mainCamera = Camera.main;
-            _currentPermissions = InputPermissions.GetPermissionsForState(_currentState);
-            OnStateChanged(_currentState, _currentState);
-
-            rb = GetComponent<Rigidbody>();
-            characterAnimation = rb.GetComponent<CharacterAnimation>();
-        }
-
-        void Update()
-        {
-            if (InputManager.Instance == null)
-                return;
-            UpdatePlayerState();
-
-            // Movement and animation in FixedUpdate for physics consistency
-        }
-
-        void FixedUpdate()
-        {
+	// Update is called once per frame
+	void FixedUpdate ()
+	{
 #if ENABLE_LEGACY_INPUT_MANAGER
-            if (InputManager.Instance != null)
-            {
-                input = InputManager.Instance.CharacterMoveInput;
-                // Do not set input = Vector2.zero here!
-            }
-            // Movement smoothing and speed
-            Vector2 targetMovement = input;
-            Vector2 _smoothedMovement = Vector2.SmoothDamp(
-                Vector2.zero, // always smooth from zero for simplicity
-                targetMovement,
-                ref _moveVelocity,
-                _movementSmoothTime
-            );
-            // set speed to both vertical and horizontal inputs
-            if (useCharacterForward)
-                speed = Mathf.Abs(input.x) + input.y;
-            else
-                speed = Mathf.Abs(input.x) + Mathf.Abs(input.y);
-            speed = Mathf.Clamp(speed, 0f, 1f);
-            if (input.y < 0f && useCharacterForward)
-                direction = input.y;
-            else
-                direction = 0f;
-            UpdateTargetDirection();
-            // Only allow movement/rotation if allowed
-            if (
-                canMove
-                && InputContextProvider.Instance.CanMove
-                && _currentPermissions.AllowMovement
-            )
-            {
-                if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
-                {
-                    Vector3 lookDirection = targetDirection.normalized;
-                    freeRotation = Quaternion.LookRotation(lookDirection, transform.up);
-                    var diferenceRotation = freeRotation.eulerAngles.y - transform.eulerAngles.y;
-                    var eulerY = transform.eulerAngles.y;
-                    if (diferenceRotation < 0 || diferenceRotation > 0)
-                        eulerY = freeRotation.eulerAngles.y;
-                    var euler = new Vector3(0, eulerY, 0);
-                    transform.rotation = Quaternion.Slerp(
-                        transform.rotation,
-                        Quaternion.Euler(euler),
-                        turnSpeed * turnSpeedMultiplier * Time.deltaTime
-                    );
-                }
-                //simple movement by Ian
-                Vector3 forward = transform.forward * speed * sprintSpeed * Time.fixedDeltaTime;
-                rb.MovePosition(rb.position + forward);
-                characterAnimation.updateMovement(forward);
+	    input.x = Input.GetAxis("Horizontal");
+	    input.y = Input.GetAxis("Vertical");
 
-                //Rashai Was Here
-                bool isMoving = input.magnitude > 0.01f;
-                if (isMoving && !walkSource.isPlaying)
-                {
-                    walkSource.Play();
-                }
-                else if (!isMoving && walkSource.isPlaying)
-                {
-                    walkSource.Play();
-                }
-            }
-            else
-            {
-                // Block only player movement, not input
-                characterAnimation.updateMovement(Vector3.zero);
-            }
+		// set speed to both vertical and horizontal inputs
+        if (useCharacterForward)
+            speed = Mathf.Abs(input.x) + input.y;
+        else
+            speed = Mathf.Abs(input.x) + Mathf.Abs(input.y);
+
+        speed = Mathf.Clamp(speed, 0f, 1f);
+        speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
+        anim.SetFloat("Speed", speed);
+
+	    if (input.y < 0f && useCharacterForward)
+            direction = input.y;
+	    else
+            direction = 0f;
+
+        anim.SetFloat("Direction", direction);
+
+        // Update target direction relative to the camera view (or not if the Keep Direction option is checked)
+        UpdateTargetDirection();
+
+            if (!canMove) return;
+        if (input != Vector2.zero && targetDirection.magnitude > 0.1f)
+        {
+            Vector3 lookDirection = targetDirection.normalized;
+            freeRotation = Quaternion.LookRotation(lookDirection, transform.up);
+            var diferenceRotation = freeRotation.eulerAngles.y - transform.eulerAngles.y;
+            var eulerY = transform.eulerAngles.y;
+
+            if (diferenceRotation < 0 || diferenceRotation > 0) eulerY = freeRotation.eulerAngles.y;
+            var euler = new Vector3(0, eulerY, 0);
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(euler), turnSpeed * turnSpeedMultiplier * Time.deltaTime);
+        }
 #else
-            InputSystemHelper.EnableBackendsWarningMessage();
+        InputSystemHelper.EnableBackendsWarningMessage();
 #endif
-        }
+	}
 
-        private void UpdatePlayerState()
+    public virtual void UpdateTargetDirection()
+    {
+        if (!useCharacterForward)
         {
-            PlayerState previousState = _currentState;
-            _currentState = PlayerState.Normal;
-            if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
-            {
-                // Keep the current state if it's a cutscene or disabled
-            }
-            else if (InputManager.Instance.RotateHeld)
-            {
-                _currentState = PlayerState.Aiming;
-            }
-            else if (InputManager.Instance.PickupHeld)
-            {
-                _currentState = PlayerState.Pickup;
-            }
-            else if (InputManager.Instance.InteractHeld)
-            {
-                _currentState = PlayerState.Interacting;
-            }
-            if (previousState != _currentState)
-            {
-                OnStateChanged(previousState, _currentState);
-            }
-            if (showDebugInfo && Time.frameCount % 120 == 0)
-            {
-                Debug.Log(
-                    $"[CharacterMovement] State: {_currentState}, Movement: {input}, Speed: {speed}"
-                );
-            }
-        }
+            turnSpeedMultiplier = 1f;
+            var forward = mainCamera.transform.TransformDirection(Vector3.forward);
+            forward.y = 0;
 
-        private void OnStateChanged(PlayerState previousState, PlayerState newState)
-        {
-            _currentPermissions = InputPermissions.GetPermissionsForState(newState);
-            InputContextProvider inputContextProvider = FindObjectOfType<InputContextProvider>();
-            if (inputContextProvider != null)
-            {
-                inputContextProvider.UpdatePlayerState(newState);
-            }
-            if (showDebugInfo)
-            {
-                Debug.Log($"[CharacterMovement] State changed: {previousState} -> {newState}");
-                LogPermissionsChange(newState);
-            }
-            // Add state-specific logic here if needed
-        }
+            //get the right-facing direction of the referenceTransform
+            var right = mainCamera.transform.TransformDirection(Vector3.right);
 
-        private void LogPermissionsChange(PlayerState state)
-        {
-            if (!showDebugInfo)
-                return;
-            Debug.Log(
-                $"[CharacterMovement] Input permissions for state {state}:"
-                    + $"\n Movement: {_currentPermissions.AllowMovement}"
-                    + $"\n Camera: {_currentPermissions.AllowCameraLook}"
-                    + $"\n Interact: {_currentPermissions.AllowInteract}"
-                    + $"\n Pickup: {_currentPermissions.AllowPickup}"
-                    + $"\n Rotate: {_currentPermissions.AllowRotate}"
-                    + $"\n Run: {_currentPermissions.AllowRun}"
-                    + $"\n Hint: {_currentPermissions.AllowHint}"
-                    + $"\n Reset: {_currentPermissions.AllowReset}"
-            );
+            // determine the direction the player will face based on input and the referenceTransform's right and forward directions
+            targetDirection = input.x * right + input.y * forward;
         }
-
-        public virtual void UpdateTargetDirection()
+        else
         {
-            if (!useCharacterForward)
-            {
-                turnSpeedMultiplier = 1f;
-                var forward = mainCamera.transform.TransformDirection(Vector3.forward);
-                forward.y = 0;
-                var right = mainCamera.transform.TransformDirection(Vector3.right);
-                targetDirection = input.x * right + input.y * forward;
-            }
-            else
-            {
-                turnSpeedMultiplier = 0.2f;
-                var forward = transform.TransformDirection(Vector3.forward);
-                forward.y = 0;
-                var right = transform.TransformDirection(Vector3.right);
-                targetDirection = input.x * right + Mathf.Abs(input.y) * forward;
-            }
+            turnSpeedMultiplier = 0.2f;
+            var forward = transform.TransformDirection(Vector3.forward);
+            forward.y = 0;
+
+            //get the right-facing direction of the referenceTransform
+            var right = transform.TransformDirection(Vector3.right);
+            targetDirection = input.x * right + Mathf.Abs(input.y) * forward;
         }
     }
+}
+
 }

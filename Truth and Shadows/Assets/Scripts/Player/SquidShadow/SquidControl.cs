@@ -1,107 +1,196 @@
 ﻿using System;
-using TruthAndShadows.InputSystem;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody), typeof(Collider))]
+[RequireComponent(typeof(Rigidbody))]
 public class SquidControl : MonoBehaviour
 {
     private Camera mainCamera;
-    private Rigidbody rb;
 
     [Header("Move Settings")]
     [Tooltip("Speed (units/sec) that the indicator moves in the horizontal plane.")]
-    [SerializeField]
-    private float moveSpeed = 10f;
+    [SerializeField] private float moveSpeed = 10f;
 
     [Tooltip("Maximum radius from player within which the indicator can be placed.")]
-    [SerializeField]
-    private float maxRadius = 25f;
+    [SerializeField] private float maxRadius = 25f;
 
-    [Tooltip("LayerMask for climbable walls.")]
+    [Header("Raycast Settings")]
+    [Tooltip("How high above the indicator we start the downward ray.")]
+    [SerializeField] private float raycastHeight = 10f;
+
+    [Tooltip("LayerMask for any surface the indicator can snap to (e.g. \"Ground\").")]
     public LayerMask groundMask;
 
     [Header("References")]
     [Tooltip("Drag the player's root Transform here (used for clamping radius).")]
     public Transform playerRoot;
 
-    [Header("Wall-Climb Settings")]
-    [Tooltip("How fast you climb up/down the wall.")]
-    [SerializeField]
-    private float climbSpeed = 5f;
+    [Tooltip("The speed the player must be lower than to toggle wall climbing")]
+    public float wallSensitivity = 0.1f;
 
-    [Tooltip("Max distance to detect a climbable wall.")]
-    [SerializeField]
-    private float climbCheckDistance = 0.2f;
+    private Rigidbody rb;
 
-    public AudioSource squidMoveSound;
+    private Vector3 surfaceNormal = Vector3.up; // default to up
+
+    public float currentSpeed; // in units/sec
+
+    private void Awake()
+    {
+        // Hide the hardware cursor:
+        Cursor.visible = false;
+
+        // (Optional) Lock it to the center if you don't want it wandering
+        Cursor.lockState = CursorLockMode.Locked;
+    }
 
     private void Start()
     {
-        mainCamera = Camera.main;
-        rb = GetComponent<Rigidbody>();
-
-        // Fully dynamic, gravity ON
-        rb.useGravity = true;
-        rb.isKinematic = false;
-
+        // Put this indicator on the Ignore Raycast layer so its own collider never blocks our rays:
         gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
-    }
 
-    private void FixedUpdate()
+        mainCamera = Camera.main;
+
+        // Prevent physics from moving us
+        rb = GetComponent<Rigidbody>();
+        rb.useGravity = false;
+        rb.isKinematic = true;
+    }
+    private bool useVerticalSnap = false;
+    private float snapTimer = 0f;
+    [SerializeField] private float snapHoldDuration = 0.7f; // seconds
+
+    private void Update()
     {
-        // 1) Read input & build flat dir
-        Vector2 moveInput = Vector2.zero;
-        if (InputManager.Instance != null)
+        // 1) Compute movement direction
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+        Vector3 camForward = mainCamera.transform.forward;
+        Vector3 camRight = mainCamera.transform.right;
+        camForward.y = 0f;
+        camRight.y = 0f;
+        camForward.Normalize();
+        camRight.Normalize();
+        Vector3 inputDir = (camForward * v + camRight * h).normalized;
+
+        // 2) Check if indicator is “against” a wall right now
+        bool againstWall = false;
+        if (inputDir.sqrMagnitude > 0f)
         {
-            moveInput = InputManager.Instance.CharacterMoveInput; // x = horizontal, y = vertical
+            Vector3 origin = transform.position;
+            Vector3 dir = new Vector3(inputDir.x, 0f, inputDir.z).normalized;
+            float checkDist = 0.1f;
+
+            Debug.DrawRay(origin, dir * checkDist, Color.red);
+            if (Physics.Raycast(origin, dir, out RaycastHit hit, checkDist, groundMask))
+            {
+                againstWall = true;
+            }
+        }
+
+        // 3) If we just hit a wall, start/refresh the 0.5s snap timer
+        if (againstWall)
+        {
+            useVerticalSnap = true;
+            snapTimer = snapHoldDuration;
+        }
+
+        // 4) If vertical‐snap mode is active, call SnapVerticalDown() and count down
+        if (useVerticalSnap)
+        {
+            SnapVerticalDown();
+            snapTimer -= Time.deltaTime;
+            if (snapTimer <= 0f)
+            {
+                useVerticalSnap = false;
+            }
         }
         else
+        {
+            // 5) Otherwise, do the normal ground snap
+            SnapDirectlyDown();
+        }
+
+        HandleHorizontalMovement();
+    }
+
+    private void HandleHorizontalMovement()
+    {
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+
+        if (Math.Abs(h) < 0.01f && Math.Abs(v) < 0.01f)
         {
             return;
         }
 
-        float h = moveInput.x;
-        float v = moveInput.y;
+        Vector3 camForward = mainCamera.transform.forward;
+        Vector3 camRight = mainCamera.transform.right;
 
-        Vector3 camF = mainCamera.transform.forward;
-        camF.y = 0f;
-        camF.Normalize();
-        Vector3 camR = mainCamera.transform.right;
-        camR.y = 0f;
-        camR.Normalize();
-        Vector3 inputDir = (camF * v + camR * h).normalized;
+        camForward.y = 0f;
+        camRight.y = 0f;
+        camForward.Normalize();
+        camRight.Normalize();
 
-        // 2) Wall check only when pushing forward
-        bool againstWall =
-            inputDir.sqrMagnitude > 0f
-            && Physics.Raycast(transform.position, inputDir, out _, climbCheckDistance, groundMask);
+        Vector3 inputDir = camForward * v + camRight * h;
+        inputDir.Normalize();
 
-        // 3) Compose new velocity
-        Vector3 newVel = rb.velocity;
+        Vector3 rawTarget = transform.position + inputDir * moveSpeed * Time.deltaTime;
 
-        // horizontal movement
-        newVel.x = inputDir.x * moveSpeed;
-        newVel.z = inputDir.z * moveSpeed;
-
-        // vertical: only override when climbing, else let gravity do its job
-        if (againstWall)
+        Vector3 offsetFromPlayer = rawTarget - playerRoot.position;
+        if (offsetFromPlayer.magnitude > maxRadius)
         {
-            newVel.y = climbSpeed;
+            offsetFromPlayer = offsetFromPlayer.normalized * maxRadius;
+            rawTarget = playerRoot.position + offsetFromPlayer;
         }
-        // else leave newVel.y untouched so gravity pulls you down
 
-        // 4) Apply velocity
-        rb.velocity = newVel;
+        Vector3 destination = new Vector3(rawTarget.x, transform.position.y, rawTarget.z);
+        transform.position = destination;
+    }
 
-        //Rashai Was Here
-        bool isMoving = rb.velocity.magnitude > 0.01f;
-        if (isMoving && !squidMoveSound.isPlaying)
+
+    private void SnapVerticalDown()
+    {
+        // Always kinematic—never re-enable physics:
+        rb.isKinematic = true;
+
+        // Temporarily disable our collider so we don’t hit ourselves:
+        Collider selfCol = GetComponent<Collider>();
+        bool wasEnabled = selfCol.enabled;
+        selfCol.enabled = false;
+
+        Vector3 rayStart = transform.position + Vector3.up * raycastHeight;
+        float rayLength = raycastHeight + 100f;
+
+        Debug.DrawRay(rayStart, Vector3.down * rayLength, Color.yellow);
+        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, rayLength, groundMask))
         {
-            squidMoveSound.Play();
+            transform.position = hit.point;
+            Debug.DrawLine(rayStart, hit.point, Color.green);
         }
-        else if (!isMoving && squidMoveSound.isPlaying)
+        else
         {
-            squidMoveSound.Play();
+            Debug.DrawLine(rayStart, rayStart + Vector3.down * rayLength, Color.red);
+        }
+
+        selfCol.enabled = wasEnabled;
+    }
+
+    private void SnapDirectlyDown()
+    {
+        // Keep kinematic true here as well (remove the “false” toggle):
+        rb.isKinematic = false;
+
+        Vector3 rayStart = transform.position + Vector3.up * 1f;
+        float rayLength = raycastHeight + 100f;
+
+        Debug.DrawRay(rayStart, Vector3.down * rayLength, Color.yellow);
+        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, rayLength, groundMask))
+        {
+            transform.position = hit.point;
+            Debug.DrawLine(rayStart, hit.point, Color.green);
+        }
+        else
+        {
+            Debug.DrawLine(rayStart, rayStart + Vector3.down * rayLength, Color.red);
         }
     }
 }
