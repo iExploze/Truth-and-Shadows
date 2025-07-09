@@ -1,5 +1,6 @@
 using TruthAndShadows.Player;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TruthAndShadows.InputSystem
 {
@@ -13,7 +14,7 @@ namespace TruthAndShadows.InputSystem
         public static InputContextProvider Instance => _instance;
 
         [SerializeField]
-        private bool logInputPermissionChanges = false;
+        private bool logInputPermissionChanges = true;
 
         // Current player state
         private PlayerState _currentPlayerState = PlayerState.Normal;
@@ -38,7 +39,23 @@ namespace TruthAndShadows.InputSystem
             }
 
             _instance = this;
-            DontDestroyOnLoad(gameObject);
+            // Removed DontDestroyOnLoad(gameObject);
+        }
+
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            // Optionally reset context or re-initialize if needed
+            // (No scene-dependent references in current code)
         }
 
         #region Public API - Permissions
@@ -150,6 +167,9 @@ namespace TruthAndShadows.InputSystem
                 case "hint":
                     _canHint = allowed;
                     break;
+                case "menu":
+                    _canMenu = allowed;
+                    break;
                 default:
                     Debug.LogWarning($"Unknown permission name: {permissionName}");
                     break;
@@ -184,6 +204,7 @@ namespace TruthAndShadows.InputSystem
             _canRun = permissions.CanRun;
             _canReset = permissions.CanReset;
             _canHint = permissions.CanHint;
+            _canMenu = permissions.CanMenu;
         }
 
         public void LogPermissions()
@@ -198,6 +219,7 @@ namespace TruthAndShadows.InputSystem
                     + $"\n Run: {_canRun}"
                     + $"\n Reset: {_canReset}"
                     + $"\n Hint: {_canHint}"
+                    + $"\n Menu: {_canMenu}"
             );
         }
         #endregion

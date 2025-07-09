@@ -110,19 +110,28 @@ namespace TruthAndShadows.Player
 #if ENABLE_LEGACY_INPUT_MANAGER
             if (InputManager.Instance != null)
             {
-                input = InputManager.Instance.MoveInput;
-                if (!InputContextProvider.Instance.CanMove || !_currentPermissions.AllowMovement)
+                input = InputManager.Instance.CharacterMoveInput;
+                // Block movement if canMove is false
+                if (
+                    !canMove
+                    || !InputContextProvider.Instance.CanMove
+                    || !_currentPermissions.AllowMovement
+                )
                 {
-                    input = Vector2.zero;
+                    // Do NOT zero input, just skip applying movement to the player
                     if (showDebugInfo)
                     {
-                        Debug.Log("Movement blocked by InputContextProvider or permissions");
+                        Debug.Log(
+                            "Movement blocked by canMove or InputContextProvider or permissions"
+                        );
                         InputContextProvider.Instance.LogPermissions();
                     }
+                    // Early return so input is still available for interactables
+                    return;
                 }
                 if (InputManager.Instance.PickupHeld && input.magnitude < 0.1f)
                 {
-                    input = InputManager.Instance.MoveInputRaw;
+                    input = InputManager.Instance.CharacterMoveInput;
                     if (input.magnitude > 0.1f && Time.frameCount % 120 == 0)
                         Debug.Log($"Using raw input during pickup: {input}");
                 }
@@ -189,7 +198,6 @@ namespace TruthAndShadows.Player
                     turnSpeed * turnSpeedMultiplier * Time.deltaTime
                 );
             }
-            // Optionally, apply Rigidbody-based movement here if needed
 #else
             InputSystemHelper.EnableBackendsWarningMessage();
 #endif
@@ -199,11 +207,7 @@ namespace TruthAndShadows.Player
         {
             PlayerState previousState = _currentState;
             _currentState = PlayerState.Normal;
-            if (UnityEngine.EventSystems.EventSystem.current?.IsPointerOverGameObject() ?? false)
-            {
-                _currentState = PlayerState.InUI;
-            }
-            else if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
+            if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
             {
                 // Keep the current state if it's a cutscene or disabled
             }

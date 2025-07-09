@@ -164,12 +164,7 @@ namespace TruthAndShadows.Player
             // 6. Normal
 
             // Check for UI state - highest priority
-            if (UnityEngine.EventSystems.EventSystem.current?.IsPointerOverGameObject() ?? false)
-            {
-                _currentState = PlayerState.InUI;
-            }
-            // Check for cutscene state (this would be set externally by the cutscene manager)
-            else if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
+            if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
             {
                 // Keep the current state if it's a cutscene or disabled
                 // These states would be set from outside this method
@@ -271,7 +266,7 @@ namespace TruthAndShadows.Player
 
             // The InputManager already respects permissions from InputContextProvider
             // So we can just use the input directly
-            Vector2 targetMovement = InputManager.Instance.MoveInput;
+            Vector2 targetMovement = InputManager.Instance.CharacterMoveInput;
 
             // No need for state checks here as the InputContextProvider
             // and InputManager already handle this for us

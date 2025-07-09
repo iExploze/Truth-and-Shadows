@@ -53,7 +53,7 @@ public class SquidControl : MonoBehaviour
         Vector2 moveInput = Vector2.zero;
         if (InputManager.Instance != null)
         {
-            moveInput = InputManager.Instance.MoveInput; // x = horizontal, y = vertical
+            moveInput = InputManager.Instance.CharacterMoveInput; // x = horizontal, y = vertical
         }
         else
         {

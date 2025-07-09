@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Input = UnityEngine.Input;
 
 namespace TruthAndShadows.InputSystem
@@ -20,7 +21,8 @@ namespace TruthAndShadows.InputSystem
         // Other systems should use these rather than querying Input directly
 
         // Movement
-        public Vector2 MoveInput { get; private set; }
+        public Vector2 CharacterMoveInput { get; private set; }
+        public Vector2 InteractableMoveInput { get; private set; }
         public Vector2 MoveInputRaw { get; private set; }
         public bool IsRunning { get; private set; }
 
@@ -90,7 +92,9 @@ namespace TruthAndShadows.InputSystem
         private readonly KeyCode[] menuButtons = new KeyCode[]
         {
             KeyCode.U,
+            KeyCode.Escape,
             KeyCode.JoystickButton3, // Xbox X, PS Square, Switch Y
+            KeyCode.JoystickButton7, // Xbox Menu/Start, PS Options, Switch +
         };
         #endregion
 
@@ -110,7 +114,21 @@ namespace TruthAndShadows.InputSystem
                 return;
             }
             _instance = this;
-            DontDestroyOnLoad(gameObject);
+            // Removed DontDestroyOnLoad(gameObject);
+        }
+
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            // Optionally reset input state or re-initialize if needed
+            // (No scene-dependent references in current code)
         }
 
         private void Update()
@@ -164,7 +182,8 @@ namespace TruthAndShadows.InputSystem
             bool rawSprintHeld = IsSprintHeldInternal();
 
             // Then apply permissions to determine the final input state            // Update all movement inputs (respect movement permission)
-            MoveInput = allowMovement ? GetMovementInputInternal() : Vector2.zero;
+            CharacterMoveInput = allowMovement ? GetMovementInputInternal() : Vector2.zero;
+            InteractableMoveInput = allowInteract ? GetMovementInputInternal() : Vector2.zero;
             MoveInputRaw = allowMovement ? GetMovementInputRawInternal() : Vector2.zero;
             IsRunning = allowRun && rawSprintHeld;
 
@@ -317,7 +336,7 @@ namespace TruthAndShadows.InputSystem
         private bool GetRotateButtonInternal() => AnyKey(rotateButtons);
 
         private bool GetResetButtonDownInternal() => AnyKeyDown(resetButtons);
-        private bool GetMenuButtonDownInternal() => AnyKey(menuButtons);
+        private bool GetMenuButtonDownInternal() => AnyKeyDown(menuButtons);
 
         private bool GetHintButtonDownInternal() => AnyKeyDown(hintButtons);
 

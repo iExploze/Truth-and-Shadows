@@ -4963,6 +4963,7 @@ MonoBehaviour:
   activationSound: {fileID: 0}
   audioSource: {fileID: 0}
   isSpawnCheckpoint: 0
+  devOverrideSpawn: 0
 --- !u!1 &5212751310238113671
 GameObject:
   m_ObjectHideFlags: 0
@@ -6211,7 +6212,7 @@ ParticleSystem:
     curve:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.7853982
+      scalar: 1.0471976
       minScalar: 0.7853982
       maxCurve:
         serializedVersion: 2
@@ -6261,7 +6262,7 @@ ParticleSystem:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-    separateAxes: 0
+    separateAxes: 1
   ColorModule:
     enabled: 0
     gradient:

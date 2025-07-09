@@ -68,6 +68,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -239,6 +246,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -413,6 +427,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -492,6 +513,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -571,6 +599,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -857,6 +892,7 @@ MonoBehaviour:
   playerRoot: {fileID: 6313425234732168925}
   climbSpeed: 4
   climbCheckDistance: 0.2
+  squidMoveSound: {fileID: 0}
 --- !u!114 &1691892617192157103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1508,6 +1544,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bd4c3c49683bce42b9925306c122caf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  intoLightSound: {fileID: 0}
 --- !u!114 &1243363227694474846
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1527,6 +1564,7 @@ MonoBehaviour:
   rotationSpeed: 10
   cameraTransform: {fileID: 0}
   canMove: 0
+  walkSource: {fileID: 2352081898743551892}
   showDebugInfo: 0
 --- !u!114 &59296836044293188
 MonoBehaviour:
@@ -1540,10 +1578,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2daaa24b204f4c345b0e846777ef70f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interactionRange: 2
-  interactionRadius: 0.5
-  interactionSource: {fileID: 0}
-  playerController: {fileID: 0}
+  interactionRange: 5
+  interactionRadius: 5
+  interactionSource: {fileID: 6313425234732168925}
+  playerController: {fileID: 164878953776737366}
   defaultCamera: {fileID: 0}
   logCameraChanges: 1
   showDebugRay: 1
@@ -1615,7 +1653,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2354c9527854c84097e1c266798401e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dontDestroyOnLoad: 1
 --- !u!114 &226534565660803537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1988,6 +2025,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -2067,6 +2111,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -2409,6 +2460,13 @@ MonoBehaviour:
     GateFit: 2
     FocusDistance: 10
     m_SensorSize: {x: 1, y: 1}
+    Iso: 200
+    ShutterSpeed: 0.005
+    Aperture: 16
+    BladeCount: 5
+    Curvature: {x: 2, y: 11}
+    BarrelClipping: 0.25
+    Anamorphism: 0
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -7409,6 +7467,7 @@ Transform:
   - {fileID: 8424437820758143010}
   - {fileID: 4478734516374794109}
   - {fileID: 7794050988043284617}
+  - {fileID: 5847019223977033276}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9070072555299329847
@@ -7470,7 +7529,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -7588,4 +7647,66 @@ Animator:
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5f13ed69d622d204c998542687650f0e, type: 3}
   m_PrefabInstance: {fileID: 7596636259690022587}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &8482758721489368143
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8358582961494803560}
+    m_Modifications:
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5710494227799619320, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+      propertyPath: m_Name
+      value: UltraHand
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+--- !u!4 &5847019223977033276 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2638011091757533811, guid: aa5f13d860113914693a4d08487350ee, type: 3}
+  m_PrefabInstance: {fileID: 8482758721489368143}
   m_PrefabAsset: {fileID: 0}

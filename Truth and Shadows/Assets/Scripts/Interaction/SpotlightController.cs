@@ -101,6 +101,9 @@ namespace TruthAndShadows.Interaction
         // Camera priority cache for proper restoration
         private int originalCameraPriority = 10;
 
+        // Shared parent for all spotlight camera targets to keep the hierarchy clean
+        private static Transform spotlightTargetsParent;
+
         public override bool RequiresContinuousInteraction => true;
         private float _brightness;
 
@@ -112,13 +115,6 @@ namespace TruthAndShadows.Interaction
             // Validate and setup components
             ValidateComponents();
             InitializeRotationValues();
-            InitializePickupBehavior();
-
-            // Verify outline setup
-            VerifyOutlineComponents();
-            Debug.Log(
-                $"SpotlightController initialized - Pickup enabled: {canBePickedUp}, Outline enabled: {enableOutline}"
-            );
         }
 
         private void ValidateComponents()
@@ -143,23 +139,6 @@ namespace TruthAndShadows.Interaction
 
             // CRITICAL: Make sure pickup is enabled
             canBePickedUp = true;
-
-            // Ensure the spotlight has a rigidbody for proper pickup handling
-            rigidBody = GetComponent<Rigidbody>();
-            if (rigidBody == null)
-            {
-                // Add and configure a new rigidbody
-                rigidBody = gameObject.AddComponent<Rigidbody>();
-                ConfigureRigidbody();
-                Debug.Log(
-                    $"Added Rigidbody component to {gameObject.name} for pickup functionality"
-                );
-            }
-            else
-            {
-                // Configure the existing rigidbody
-                ConfigureRigidbody();
-            }
 
             // Validate rotation components
             if (verticallyRotatable == null)
@@ -203,24 +182,6 @@ namespace TruthAndShadows.Interaction
             );
         }
 
-        private void ConfigureRigidbody()
-        {
-            if (rigidBody == null)
-                return;
-
-            // Configure for pickup
-            rigidBody.isKinematic = true;
-            rigidBody.useGravity = false;
-            rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
-            rigidBody.collisionDetectionMode = CollisionDetectionMode.Continuous;
-
-            // No rotation constraints - we want manual control
-            rigidBody.constraints = RigidbodyConstraints.None;
-            // Minimal drag
-            rigidBody.drag = 0;
-            rigidBody.angularDrag = 0.05f;
-        }
-
         private void InitializeRotationValues()
         {
             if (verticallyRotatable != null)
@@ -235,29 +196,6 @@ namespace TruthAndShadows.Interaction
                     accumulatedVerticalInput -= 360f;
                 }
             }
-
-            if (horizontallyRotatable != null)
-            {
-                accumulatedHorizontalInput = horizontallyRotatable.localEulerAngles.y;
-            }
-        }
-
-        private void InitializePickupBehavior()
-        {
-            // Make sure the spotlight uses the Held movement style
-            movementStyle = PickupMovementStyle.Held;
-
-            // Set a higher pickup smoothness for more responsive movement
-            pickupSmoothness = 15f;
-
-            // Ensure outline is enabled
-            enableOutline = true;
-
-            // Set bright blue outline color
-            outlineColor = new Color(0.2f, 0.6f, 1f, 1f);
-
-            // Make sure it can be picked up
-            canBePickedUp = true;
         }
 
         public override void StartInteraction()
@@ -294,8 +232,17 @@ namespace TruthAndShadows.Interaction
                     )
                 )
                 {
+                    // First, disable all other spotlight cameras to prevent interference
+                    DisableAllOtherSpotlightCameras();
+
                     originalCameraPriority = virtualCamera.Priority;
                     virtualCamera.Priority = 100; // High priority to take control
+
+                    // Ensure this camera is fully enabled
+                    spotlightCamera.gameObject.SetActive(true);
+                    spotlightCamera.enabled = true;
+
+                    Debug.Log("Spotlight camera activated with priority 100, all others disabled");
                 }
             }
 
@@ -390,11 +337,22 @@ namespace TruthAndShadows.Interaction
             // Calculate positions along the same line
             float targetDistance = Mathf.Min(spotLight.range / 3f, 2f);
 
+            // Ensure we have a parent object for all spotlight targets
+            if (spotlightTargetsParent == null)
+            {
+                GameObject parentObj = GameObject.Find("SpotlightTargetsParent");
+                if (parentObj == null)
+                {
+                    parentObj = new GameObject("SpotlightTargetsParent");
+                }
+                spotlightTargetsParent = parentObj.transform;
+            }
+
             // Position the look-at target in front of the spotlight along its forward direction
             Vector3 targetPosition =
                 spotLight.transform.position + spotlightForward * targetDistance;
             cameraLookAtTarget.position = targetPosition;
-            cameraLookAtTarget.SetParent(null); // Keep in world space
+            cameraLookAtTarget.SetParent(spotlightTargetsParent); // Parent to our organized container
 
             // Position the follow target behind the spotlight along the same line
             // This ensures the camera, follow target, and look-at target are all along the same line
@@ -404,7 +362,7 @@ namespace TruthAndShadows.Interaction
                 - spotlightForward * followDistance
                 + Vector3.up * 0.5f;
             cameraFollowTarget.position = followPosition;
-            cameraFollowTarget.SetParent(null); // Keep in world space
+            cameraFollowTarget.SetParent(spotlightTargetsParent); // Parent to our organized container
 
             // Set camera targets
             spotlightCamera.Follow = cameraFollowTarget;
@@ -518,9 +476,7 @@ namespace TruthAndShadows.Interaction
                     + Vector3.up * 0.5f;
                 cameraFollowTarget.position = followPosition;
 
-                // Debug visualization to verify alignment (uncomment if needed for testing)
-                // Debug.DrawLine(cameraFollowTarget.position, spotLight.transform.position, Color.blue);
-                // Debug.DrawLine(spotLight.transform.position, cameraLookAtTarget.position, Color.red);
+                // Debug visualization can be added here if needed for testing alignment issues
             }
         }
 
@@ -696,7 +652,7 @@ namespace TruthAndShadows.Interaction
         /// <summary>
         /// Applies rotation around a specific pivot point
         /// </summary>
-        private void ApplyRotationAroundPivot(
+        private static void ApplyRotationAroundPivot(
             Transform objectToRotate,
             Quaternion targetLocalRotation,
             Vector3 pivotPoint,
@@ -740,6 +696,25 @@ namespace TruthAndShadows.Interaction
             // Fully reset the camera state
             ResetSpotlightCamera(true);
 
+            // Ensure the spotlight's GameObject is completely inactive to prevent any unintended camera activation
+            if (spotlightCamera != null)
+            {
+                // Set lowest priority
+                if (
+                    spotlightCamera.TryGetComponent<CinemachineVirtualCameraBase>(
+                        out var virtualCamera
+                    )
+                )
+                {
+                    virtualCamera.Priority = 0;
+                }
+
+                // Fully disable the camera object
+                spotlightCamera.gameObject.SetActive(false);
+
+                Debug.Log("Spotlight camera completely deactivated on EndInteraction");
+            }
+
             // Restore cursor state
             Cursor.visible = wasMouseVisible;
             Cursor.lockState = previousCursorLockState;
@@ -763,23 +738,35 @@ namespace TruthAndShadows.Interaction
                     )
                 )
                 {
-                    // Set to a very low priority (lower than original) to guarantee it won't activate
-                    virtualCamera.Priority = 1; // Use lowest possible priority
-                    Debug.Log($"Force-reset camera priority to 1 (lowest possible)");
+                    // Completely disable the virtual camera to prevent it from interfering
+                    virtualCamera.Priority = 0; // Set to zero (lowest possible)
+                    Debug.Log($"Force-reset camera priority to 0 (disabled)");
+
+                    // Explicitly disable the game object to ensure it can't be activated
+                    if (fullCleanup)
+                    {
+                        spotlightCamera.gameObject.SetActive(false);
+                        Debug.Log("Completely disabled spotlight camera GameObject");
+                    }
                 }
 
-                // Set the Follow and LookAt targets to null first to prevent any camera tracking
-                spotlightCamera.Follow = null;
-                spotlightCamera.LookAt = null;
+                // // Set the Follow and LookAt targets to null first to prevent any camera tracking
+                // spotlightCamera.Follow = null;
+                // spotlightCamera.LookAt = null;
 
                 // Force the spotlight camera to be inactive when picking up
                 if (fullCleanup && spotlightCamera.gameObject != null)
                 {
                     // This is a more aggressive approach to make sure the camera doesn't interfere
                     spotlightCamera.enabled = false;
+                    spotlightCamera.gameObject.SetActive(false);
 
-                    // Schedule re-enabling after a short delay to allow other cameras to take control
-                    StartCoroutine(ReEnableCameraAfterDelay());
+                    // Don't re-enable automatically - leave it fully disabled
+                    // StartCoroutine(ReEnableCameraAfterDelay()); // DISABLED
+
+                    Debug.Log(
+                        "Spotlight camera completely disabled - will not be re-enabled automatically"
+                    );
                 }
             }
 
@@ -792,20 +779,33 @@ namespace TruthAndShadows.Interaction
 
         /// <summary>
         /// Re-enable the camera after a short delay to prevent any transition issues
+        /// This is only used in specific circumstances when we want the camera available but inactive
         /// </summary>
         private System.Collections.IEnumerator ReEnableCameraAfterDelay()
         {
             // Wait for a frame to let other things process
             yield return null;
 
-            // Wait another short time to be safe
-            yield return new WaitForSeconds(0.1f);
+            // Wait longer to ensure default camera has fully taken control
+            yield return new WaitForSeconds(0.5f);
 
-            // Re-enable the camera but keep priority low
+            // Re-enable the camera component but keep priority at zero and GameObject disabled
             if (spotlightCamera != null)
             {
                 spotlightCamera.enabled = true;
-                Debug.Log("Re-enabled spotlight camera with low priority");
+
+                // Ensure priority stays at zero
+                if (
+                    spotlightCamera.TryGetComponent<CinemachineVirtualCameraBase>(
+                        out var virtualCamera
+                    )
+                )
+                {
+                    virtualCamera.Priority = 0;
+                }
+
+                // DO NOT enable the GameObject - this is crucial to prevent it from taking over
+                Debug.Log("Re-enabled spotlight camera component but keeping GameObject disabled");
             }
         }
 
@@ -814,71 +814,71 @@ namespace TruthAndShadows.Interaction
             // Make sure to clean up completely
             try
             {
-                // Set a flag to check if we cleaned anything
-                bool cleanedSomething = false;
+                // // Set a flag to check if we cleaned anything
+                // bool cleanedSomething = false;
 
-                // Clear references from the camera first
-                if (spotlightCamera != null)
-                {
-                    if (spotlightCamera.Follow != null || spotlightCamera.LookAt != null)
-                    {
-                        cleanedSomething = true;
-                    }
-                    spotlightCamera.Follow = null;
-                    spotlightCamera.LookAt = null;
-                }
+                // // Clear references from the camera first
+                // if (spotlightCamera != null)
+                // {
+                //     if (spotlightCamera.Follow != null || spotlightCamera.LookAt != null)
+                //     {
+                //         cleanedSomething = true;
+                //     }
+                //     spotlightCamera.Follow = null;
+                //     spotlightCamera.LookAt = null;
+                // }
 
-                // Destroy follow target
-                if (cameraFollowTarget != null)
-                {
-                    // Detach from parent before destroying
-                    cameraFollowTarget.SetParent(null);
-                    Destroy(cameraFollowTarget.gameObject);
-                    cameraFollowTarget = null;
-                    cleanedSomething = true;
-                }
+                // // Destroy follow target
+                // if (cameraFollowTarget != null)
+                // {
+                //     // Detach from parent before destroying
+                //     cameraFollowTarget.SetParent(null);
+                //     Destroy(cameraFollowTarget.gameObject);
+                //     cameraFollowTarget = null;
+                //     cleanedSomething = true;
+                // }
 
-                // Destroy look-at target
-                if (cameraLookAtTarget != null)
-                {
-                    // Detach from parent before destroying
-                    cameraLookAtTarget.SetParent(null);
-                    Destroy(cameraLookAtTarget.gameObject);
-                    cameraLookAtTarget = null;
-                    cleanedSomething = true;
-                }
+                // // Destroy look-at target
+                // if (cameraLookAtTarget != null)
+                // {
+                //     // Detach from parent before destroying
+                //     cameraLookAtTarget.SetParent(null);
+                //     Destroy(cameraLookAtTarget.gameObject);
+                //     cameraLookAtTarget = null;
+                //     cleanedSomething = true;
+                // }
 
-                // Find and destroy any orphaned targets that might have been created
-                var orphanedTargets = GameObject.FindObjectsOfType<Transform>(true); // Include inactive objects
-                int orphansDestroyed = 0;
+                // // Find and destroy any orphaned targets that might have been created
+                // var orphanedTargets = GameObject.FindObjectsOfType<Transform>(true); // Include inactive objects
+                // int orphansDestroyed = 0;
 
-                foreach (var target in orphanedTargets)
-                {
-                    // Look for any objects that could be camera targets from this spotlight
-                    if (
-                        target != null
-                        && (
-                            (
-                                target.name.Contains("LookAtTarget")
-                                && target.name.Contains(gameObject.name)
-                            )
-                            || (
-                                target.name.Contains("FollowTarget")
-                                && target.name.Contains(gameObject.name)
-                            )
-                        )
-                    )
-                    {
-                        Destroy(target.gameObject);
-                        orphansDestroyed++;
-                        cleanedSomething = true;
-                    }
-                }
+                // foreach (var target in orphanedTargets)
+                // {
+                //     // Look for any objects that could be camera targets from this spotlight
+                //     if (
+                //         target != null
+                //         && (
+                //             (
+                //                 target.name.Contains("LookAtTarget")
+                //                 && target.name.Contains(gameObject.name)
+                //             )
+                //             || (
+                //                 target.name.Contains("FollowTarget")
+                //                 && target.name.Contains(gameObject.name)
+                //             )
+                //         )
+                //     )
+                //     {
+                //         Destroy(target.gameObject);
+                //         orphansDestroyed++;
+                //         cleanedSomething = true;
+                //     }
+                // }
 
-                if (cleanedSomething)
-                {
-                    Debug.Log($"CleanupCameraTargets: Cleaned {orphansDestroyed} orphaned targets");
-                }
+                // if (cleanedSomething)
+                // {
+                //     Debug.Log($"CleanupCameraTargets: Cleaned {orphansDestroyed} orphaned targets");
+                // }
             }
             catch (System.Exception ex)
             {
@@ -1007,211 +1007,57 @@ namespace TruthAndShadows.Interaction
         }
 
         /// <summary>
-        /// Override to ensure pickup functionality works properly with the spotlight
+        /// Find and disable all spotlight cameras in the scene except the active one
+        /// This prevents other spotlight cameras from interfering with the camera system
         /// </summary>
-        public override void StartPickup(Transform playerTransform)
+        /// <param name="activeCamera">The spotlight camera to keep active (can be null to disable all)</param>
+        private void DisableAllOtherSpotlightCameras()
         {
-            // Important: Check if we're currently in interaction mode (spotlight camera active)
-            bool wasInteracting = false; // Check if currently active in a camera
-            if (spotlightCamera != null)
+            // Find all SpotlightController instances in the scene
+            SpotlightController[] allSpotlights = FindObjectsOfType<SpotlightController>();
+
+            Debug.Log($"Found {allSpotlights.Length} spotlight controllers in the scene");
+
+            foreach (SpotlightController spotlight in allSpotlights)
             {
-                // CRITICAL: Disable the camera component immediately to prevent any chance of activation
-                bool wasEnabled = spotlightCamera.enabled;
-                spotlightCamera.enabled = false;
-
-                if (
-                    spotlightCamera.TryGetComponent<CinemachineVirtualCameraBase>(
-                        out var virtualCamera
-                    )
-                )
+                // Skip the current spotlight with the active camera (this is the one we want active)
+                if (spotlight == this)
                 {
-                    // Remember if we were in interaction mode
-                    wasInteracting = virtualCamera.Priority > 10;
-
-                    // Force priority to absolute minimum
-                    virtualCamera.Priority = 0;
+                    // Make sure THIS spotlight camera is fully enabled
+                    if (spotlight.spotlightCamera != null)
+                    {
+                        spotlight.spotlightCamera.gameObject.SetActive(true);
+                        spotlight.spotlightCamera.enabled = true;
+                        Debug.Log(
+                            $"Ensuring THIS spotlight camera is active: {spotlight.gameObject.name}"
+                        );
+                    }
+                    continue;
                 }
 
-                // Use our dedicated method for full camera cleanup with target destruction
-                ResetSpotlightCamera(true);
-
-                // Additional direct camera deactivation steps
-                if (spotlightCamera.gameObject != null)
+                // For all other spotlights, ensure their cameras are fully disabled
+                if (spotlight.spotlightCamera != null)
                 {
-                    // Handle any CinemachineBrain components that might reference this camera
-                    var brains = FindObjectsOfType<CinemachineBrain>();
-                    foreach (var brain in brains)
-                    {
-                        if (
-                            brain.ActiveVirtualCamera != null
-                            && brain.ActiveVirtualCamera.Name == spotlightCamera.gameObject.name
+                    if (
+                        spotlight.spotlightCamera.TryGetComponent<CinemachineVirtualCameraBase>(
+                            out var virtualCamera
                         )
-                        {
-                            // Force the brain to update by disabling/enabling
-                            brain.enabled = false;
-                            brain.enabled = true;
-                        }
-                    }
-
-                    Debug.Log(
-                        $"StartPickup: Fully reset spotlight camera (disabled={!wasEnabled}, wasInteracting={wasInteracting})"
-                    );
-                }
-            }
-
-            // Restore cursor state only if we were interacting
-            if (wasInteracting)
-            {
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
-            }
-
-            // Store the rigidbody reference before base call
-            rigidBody = GetComponent<Rigidbody>();
-            if (rigidBody == null)
-            {
-                // Add a rigidbody if it doesn't have one
-                rigidBody = gameObject.AddComponent<Rigidbody>();
-            }
-
-            // Reset the relationship to the player
-            hasCalculatedRelativePosition = false;
-
-            // Call the base implementation to handle common pickup logic
-            base.StartPickup(playerTransform);
-
-            // CRITICAL: Force the rigidbody settings AFTER base call
-            rigidBody.isKinematic = true;
-            rigidBody.useGravity = false;
-            rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
-
-            // Store current position in base class's protected field
-            originalPosition = transform.position;
-
-            // Display debug information
-            Debug.Log(
-                $"Spotlight picked up by player - Kinematic: {rigidBody.isKinematic}, Was interacting: {wasInteracting}"
-            );
-        }
-
-        /// <summary>
-        /// Override to ensure pickup functionality works properly with the spotlight
-        /// </summary>
-        public override void EndPickup()
-        {
-            // FIRST: Store our current position before base.EndPickup() potentially changes things
-            Vector3 currentPosition = transform.position;
-
-            // Call base implementation
-            base.EndPickup();
-
-            // IMPORTANT: After base.EndPickup, ensure we maintain our exact position
-            transform.position = currentPosition;
-
-            // Re-validate our rigidbody settings
-            if (rigidBody != null)
-            {
-                // FIXED: Allow the spotlight to fall when dropped by turning off kinematic mode and enabling gravity
-                rigidBody.isKinematic = false; // Was set to true, now set to false to allow falling
-                rigidBody.useGravity = true; // Was set to false, now set to true to allow gravity
-                rigidBody.velocity = Vector3.zero;
-                rigidBody.angularVelocity = Vector3.zero;
-
-                // Force position update on rigidbody
-                rigidBody.position = currentPosition;
-
-                rigidBody.constraints = RigidbodyConstraints.FreezeRotation;
-
-                Debug.Log(
-                    $"Spotlight dropped at position {currentPosition} - non-kinematic, gravity enabled"
-                );
-            }
-            else
-            {
-                Debug.LogError("Rigidbody is null during EndPickup! This shouldn't happen.");
-                // Just in case, try to get it again
-                rigidBody = GetComponent<Rigidbody>();
-                if (rigidBody == null)
-                {
-                    rigidBody = gameObject.AddComponent<Rigidbody>();
-                    ConfigureRigidbody();
-
-                    // Ensure it's not kinematic when dropped
-                    rigidBody.isKinematic = false;
-                    rigidBody.useGravity = true;
-                }
-            }
-        } // Override the base property to use kinematic only while being picked up
-
-        // When dropped, we want the spotlight to fall naturally
-        protected override bool PickupIsKinematic => IsPickedUp;
-
-        protected override void UpdatePickupPosition()
-        {
-            // Check essential components
-            if (rigidBody == null || playerTransform == null || !IsPickedUp)
-                return;
-
-            if (!hasCalculatedRelativePosition)
-            {
-                // Calculate position relative to player's forward direction, accounting for the pickup raise amount
-                relativePosition = playerTransform.forward * 1.3f + Vector3.up * pickupRaiseAmount;
-                hasCalculatedRelativePosition = true;
-            }
-
-            // Calculate position by adding relative position to player position
-            Vector3 heldPosition = playerTransform.position + relativePosition;
-
-            // Smooth movement using the base class's pickup smoothing value
-            Vector3 smoothedPosition = Vector3.Lerp(
-                transform.position,
-                heldPosition,
-                Time.deltaTime * pickupSmoothness
-            );
-
-            // Move to follow player with smoothing
-            transform.position = smoothedPosition;
-
-            // Update rigidbody as well
-            if (rigidBody.isKinematic)
-            {
-                rigidBody.position = smoothedPosition;
-            }
-        }
-
-        private void VerifyOutlineComponents()
-        {
-            if (outlineComponents == null || outlineComponents.Length == 0)
-            {
-                Debug.LogWarning("No outline components found on spotlight - outlines won't work!");
-            }
-            else
-            {
-                Debug.Log($"Found {outlineComponents.Length} outline components on spotlight");
-
-                // Check if any of them are visible
-                bool anyOutlineVisible = false;
-                foreach (var outline in outlineComponents)
-                {
-                    if (outline != null && outline.enabled)
+                    )
                     {
-                        anyOutlineVisible = true;
-                        break;
+                        virtualCamera.Priority = 0;
                     }
+
+                    // Disable the camera component
+                    spotlight.spotlightCamera.enabled = false;
+
+                    // Disable the camera GameObject
+                    if (spotlight.spotlightCamera.gameObject != null)
+                    {
+                        spotlight.spotlightCamera.gameObject.SetActive(false);
+                    }
+
+                    Debug.Log($"Disabled camera for other spotlight: {spotlight.gameObject.name}");
                 }
-
-                Debug.Log($"Outline visibility status: {anyOutlineVisible}");
-            }
-
-            if (outlineParticlesInstance == null)
-            {
-                Debug.LogWarning("No outline particle effect found on spotlight");
-            }
-            else
-            {
-                Debug.Log(
-                    $"Outline particle system status: {(outlineParticlesInstance.isPlaying ? "playing" : "not playing")}"
-                );
             }
         }
     }
