@@ -20,6 +20,7 @@ public class AdjustBrightness : MonoBehaviour
             Debug.LogError("This script requires a Spot Light assigned.");
         }
 
+        _brightness = 1; // default until specified otherwise
         // spotLight.innerSpotAngle = spotLight.spotAngle;
     }
 
