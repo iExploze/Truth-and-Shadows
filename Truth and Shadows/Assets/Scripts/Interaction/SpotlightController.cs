@@ -105,6 +105,7 @@ namespace TruthAndShadows.Interaction
         private static Transform spotlightTargetsParent;
 
         public override bool RequiresContinuousInteraction => true;
+        private float _brightness;
 
         protected override void Start()
         {
@@ -128,6 +129,13 @@ namespace TruthAndShadows.Interaction
                         $"SpotlightController on {gameObject.name} requires a Light component!"
                     );
                 }
+            }
+
+            if (spotLight != null)
+            {
+                _brightness = MainMenuController.brightness;
+                Debug.Log(_brightness);
+                spotLight.shadowStrength = _brightness;
             }
 
             // CRITICAL: Make sure pickup is enabled
