@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 using Input = UnityEngine.Input;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
+using UnityEngine.UI;
+
 
 public class MainMenuController : MonoBehaviour
 {
@@ -16,7 +19,12 @@ public class MainMenuController : MonoBehaviour
     public CanvasGroup LevelsPanel;
     public GameObject firstLevelButton;
     public GameObject firstMenuButton; // Added field for the first menu button
-
+    
+    [SerializeField]
+    private Slider _sliderBrightness;
+    [SerializeField]
+    private Image _blackOverlay;
+    // Start is called before the 
     void Start()
     {
         gamepad = Gamepad.current;
@@ -94,6 +102,13 @@ public class MainMenuController : MonoBehaviour
         LevelsPanel.interactable = true;
 
         EventSystem.current.SetSelectedGameObject(firstLevelButton);
+    }
+
+    public void AdjustBrightness(float value)
+    {
+        var tempColor = _blackOverlay.color;
+        tempColor.a = _sliderBrightness.value;
+        _blackOverlay.color = tempColor;
     }
 
     public void Back()
