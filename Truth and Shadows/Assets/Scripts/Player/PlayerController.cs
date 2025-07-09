@@ -164,12 +164,7 @@ namespace TruthAndShadows.Player
             // 6. Normal
 
             // Check for UI state - highest priority
-            if (UnityEngine.EventSystems.EventSystem.current?.IsPointerOverGameObject() ?? false)
-            {
-                _currentState = PlayerState.InUI;
-            }
-            // Check for cutscene state (this would be set externally by the cutscene manager)
-            else if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
+            if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
             {
                 // Keep the current state if it's a cutscene or disabled
                 // These states would be set from outside this method
