@@ -104,7 +104,7 @@ public class MainMenuController : MonoBehaviour
 
     public void PlayGame()
     {
-        LevelManager.Instance.LoadScene("Level Hallway", "CrossFade");
+        LevelManager.Instance.LoadScene("Level1", "CrossFade");
     }
 
     public void Settings()
@@ -155,12 +155,12 @@ public class MainMenuController : MonoBehaviour
 
     public void LoadLevel1()
     {
-        LevelManager.Instance.LoadScene("Level Hallway", "CrossFade");
+        LevelManager.Instance.LoadScene("Level1", "CrossFade");
     }
 
     public void LoadLevel2()
     {
-        LevelManager.Instance.LoadScene("T&S - Level #2 Backup", "CrossFade");
+        LevelManager.Instance.LoadScene("Level2", "CrossFade");
         // Temporary scene, replace with level 2 later
     }
 }

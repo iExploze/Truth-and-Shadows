@@ -167,7 +167,7 @@ public class PauseMenu : MonoBehaviour
     public void MainMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("DavidBMenu");
+        SceneManager.LoadScene("MainMenu");
     }
 
     public void QuitGame()
