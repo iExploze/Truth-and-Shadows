@@ -2,13 +2,13 @@ using System.Collections;
 using TruthAndShadows.Interaction;
 using UnityEngine;
 
-namespace TruthAndShadows.Bridge
+namespace TruthAndShadows.Interaction
 {
     /// <summary>
     /// A switch interactable that raises a bridge when activated.
     /// Supports both keyboard and controller input through the interaction system.
     /// </summary>
-    public class BridgeSwitchInteractable : InteractableBase
+    public class BridgeSwitchInteractable : LeverInteractable
     {
         [Header("Bridge Settings")]
         [SerializeField]
@@ -58,6 +58,9 @@ namespace TruthAndShadows.Bridge
 
         public override void StartInteraction()
         {
+            // Toggle lever mesh state
+            ToggleLever();
+
             if (!activated && bridge != null)
             {
                 activated = true;
