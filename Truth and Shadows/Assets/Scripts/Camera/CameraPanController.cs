@@ -1,14 +1,12 @@
 using System.Collections;
-using System.Collections.Generic;
 using Cinemachine;
-using TruthAndShadows.InputSystem;
 using UnityEngine;
 
 namespace TruthAndShadows.Interaction
 {
     /// <summary>
     /// Allows temporary camera panning to a specific virtual camera for a set duration.
-    /// After the duration, the camera returns to its original state.
+    /// After the duration, the camera returns to its original state by leveraging Cinemachine's priority system.
     /// </summary>
     [AddComponentMenu("Truth and Shadows/Camera/Camera Pan Controller")]
     public class CameraPanController : MonoBehaviour
@@ -20,14 +18,6 @@ namespace TruthAndShadows.Interaction
         [SerializeField]
         [Tooltip("Duration in seconds that the camera pan will last")]
         private float panDuration = 3.0f;
-
-        [SerializeField]
-        [Tooltip("Priority to set for the camera during panning (should be high)")]
-        private int cameraPriority = 100;
-
-        [SerializeField]
-        [Tooltip("Smooth transition time when activating/deactivating the camera pan")]
-        private float blendTime = 0.5f;
 
         [SerializeField]
         [Tooltip("Set to true if you only want this camera pan to happen once")]
@@ -43,18 +33,15 @@ namespace TruthAndShadows.Interaction
 
         // Private variables
         private bool hasBeenActivated = false;
-        private int originalCameraPriority = 10;
         private Coroutine panCoroutine;
-        private Dictionary<CinemachineVirtualCameraBase, int> originalCameraPriorities =
-            new Dictionary<CinemachineVirtualCameraBase, int>();
+        
+        // The very high priority we'll set for the pan camera when active
+        private const int HIGH_PRIORITY = 10000;
 
         private void Start()
         {
-            // Store the original priority
             if (panCamera != null)
             {
-                originalCameraPriority = panCamera.Priority;
-
                 // Start with camera disabled (priority 0)
                 panCamera.Priority = 0;
 
@@ -122,113 +109,44 @@ namespace TruthAndShadows.Interaction
                 panCoroutine = null;
             }
 
-            RestoreOriginalCameras();
-
-            if (showDebugLogs)
+            // Set camera priority to 0 to disable it
+            if (panCamera != null)
             {
-                Debug.Log("[CameraPanController] Camera pan manually deactivated");
+                panCamera.Priority = 0;
+                
+                if (showDebugLogs)
+                {
+                    Debug.Log("[CameraPanController] Camera pan manually deactivated");
+                }
             }
         }
 
         /// <summary>
-        /// Coroutine to handle the camera pan timing and transitions
+        /// Coroutine to handle the camera pan timing
         /// </summary>
         private IEnumerator PanCameraCoroutine()
         {
-            // Store original camera priorities and disable other cameras
-            StoreAndDisableOtherCameras();
-
-            // Activate our camera with high priority
+            // Simply set our pan camera to a very high priority to override all other cameras
             panCamera.gameObject.SetActive(true);
-            panCamera.Priority = cameraPriority;
+            panCamera.Priority = HIGH_PRIORITY;
 
             if (showDebugLogs)
             {
-                Debug.Log(
-                    $"[CameraPanController] Camera {panCamera.name} set to priority {cameraPriority}"
-                );
+                Debug.Log($"[CameraPanController] Camera {panCamera.name} set to priority {HIGH_PRIORITY}");
             }
 
             // Wait for the specified duration
             yield return new WaitForSeconds(panDuration);
 
-            // Restore original camera states
-            RestoreOriginalCameras();
+            // Just set priority to 0 to disable the pan camera
+            // Cinemachine will automatically switch to the next highest priority camera
+            panCamera.Priority = 0;
 
             panCoroutine = null;
 
             if (showDebugLogs)
             {
                 Debug.Log("[CameraPanController] Camera pan completed");
-            }
-        }
-
-        /// <summary>
-        /// Stores original camera priorities and disables all cameras except the pan camera
-        /// </summary>
-        private void StoreAndDisableOtherCameras()
-        {
-            // Clear any previous stored priorities
-            originalCameraPriorities.Clear();
-
-            // Find all virtual cameras in the scene
-            var allCameras = FindObjectsOfType<CinemachineVirtualCameraBase>();
-
-            foreach (var cam in allCameras)
-            {
-                // Skip our pan camera
-                if (cam.gameObject == panCamera.gameObject)
-                {
-                    continue;
-                }
-
-                // Store original priority
-                originalCameraPriorities[cam] = cam.Priority;
-
-                // Disable by setting priority to 0
-                cam.Priority = 0;
-
-                if (showDebugLogs && cam.Priority > 0)
-                {
-                    Debug.Log(
-                        $"[CameraPanController] Stored camera {cam.name} with priority {originalCameraPriorities[cam]}"
-                    );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Restores all cameras to their original priorities
-        /// </summary>
-        private void RestoreOriginalCameras()
-        {
-            // Restore original camera priorities
-            foreach (var cameraPair in originalCameraPriorities)
-            {
-                if (cameraPair.Key != null)
-                {
-                    cameraPair.Key.Priority = cameraPair.Value;
-
-                    if (showDebugLogs)
-                    {
-                        Debug.Log(
-                            $"[CameraPanController] Restored {cameraPair.Key.name} to priority {cameraPair.Value}"
-                        );
-                    }
-                }
-            }
-
-            // Reset our pan camera to its original state
-            if (panCamera != null)
-            {
-                panCamera.Priority = originalCameraPriority;
-
-                if (showDebugLogs)
-                {
-                    Debug.Log(
-                        $"[CameraPanController] Reset pan camera to priority {originalCameraPriority}"
-                    );
-                }
             }
         }
 
