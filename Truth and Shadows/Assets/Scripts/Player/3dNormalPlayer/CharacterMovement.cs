@@ -43,9 +43,6 @@ namespace TruthAndShadows.Player
         private Quaternion freeRotation;
         public bool canMove = true;
 
-        // --- Sound ---
-        public AudioSource walkSource;
-
         private Rigidbody rb;
 
         // --- Debug ---
@@ -159,17 +156,6 @@ namespace TruthAndShadows.Player
                 Vector3 forward = transform.forward * speed * sprintSpeed * Time.fixedDeltaTime;
                 rb.MovePosition(rb.position + forward);
                 characterAnimation.updateMovement(forward);
-
-                //Rashai Was Here
-                bool isMoving = input.magnitude > 0.01f;
-                if (isMoving && !walkSource.isPlaying)
-                {
-                    walkSource.Play();
-                }
-                else if (!isMoving && walkSource.isPlaying)
-                {
-                    walkSource.Play();
-                }
             }
             else
             {
