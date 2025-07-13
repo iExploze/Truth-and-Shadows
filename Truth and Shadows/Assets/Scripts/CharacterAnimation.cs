@@ -12,6 +12,9 @@ public class CharacterAnimation : MonoBehaviour
     // Threshold to prevent flicker from tiny values
     public float movementThreshold = 0.01f;
 
+    //Sound
+    public AudioSource walkSource;
+
     void Start()
     {
         movement = Vector3.zero;
@@ -27,6 +30,16 @@ public class CharacterAnimation : MonoBehaviour
         Vector2 movement2D = new Vector2(movement.x, movement.z);
         bool isMoving = movement2D.magnitude > movementThreshold;
         anim.SetBool("isMoving", isMoving);
+
+        if (isMoving)
+        {
+            walkSource.Play();
+        }
+        else if (!isMoving)
+        {
+            walkSource.Stop();
+        }
+
     }
 
     // Call this from movement script every frame after moving
