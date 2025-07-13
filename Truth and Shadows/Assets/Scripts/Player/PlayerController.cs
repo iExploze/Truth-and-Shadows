@@ -330,19 +330,19 @@ namespace TruthAndShadows.Player
                 animator.SetFloat("Direction", direction);
             }
 
-            // Handle footstep audio
-            if (walkAudioSource != null)
-            {
-                if (_currentSpeed > 0.1f && !walkAudioSource.isPlaying)
-                {
-                    walkAudioSource.loop = true;
-                    walkAudioSource.Play();
-                }
-                else if (_currentSpeed <= 0.1f && walkAudioSource.isPlaying)
-                {
-                    walkAudioSource.Stop();
-                }
-            }
+            // // Handle footstep audio
+            // if (walkAudioSource != null)
+            // {
+            //     if (_currentSpeed > 0.1f && !walkAudioSource.isPlaying)
+            //     {
+            //         walkAudioSource.loop = true;
+            //         walkAudioSource.Play();
+            //     }
+            //     else if (_currentSpeed <= 0.1f && walkAudioSource.isPlaying)
+            //     {
+            //         walkAudioSource.Stop();
+            //     }
+            // }
         }
         #endregion
 

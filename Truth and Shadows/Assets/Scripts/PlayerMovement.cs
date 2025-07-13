@@ -163,18 +163,18 @@ namespace TruthAndShadows.Player
             //speed = Mathf.SmoothDamp(anim.GetFloat("Speed"), speed, ref velocity, 0.1f);
             //anim.SetFloat("Speed", speed);
             // Play walking sound if moving, stop if not
-            if (walkAudioSource != null)
-            {
-                if (_currentSpeed > 0.05f && !walkAudioSource.isPlaying)
-                {
-                    walkAudioSource.loop = true;
-                    walkAudioSource.Play();
-                }
-                else if (_currentSpeed <= 0.05f && walkAudioSource.isPlaying)
-                {
-                    walkAudioSource.Stop();
-                }
-            }
+            // if (walkAudioSource != null)
+            // {
+            //     if (_currentSpeed > 0.05f && !walkAudioSource.isPlaying)
+            //     {
+            //         walkAudioSource.loop = true;
+            //         walkAudioSource.Play();
+            //     }
+            //     else if (_currentSpeed <= 0.05f && walkAudioSource.isPlaying)
+            //     {
+            //         walkAudioSource.Stop();
+            //     }
+            // }
             if (input.y < 0f && useCharacterForward)
                 direction = input.y;
             else

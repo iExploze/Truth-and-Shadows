@@ -112,7 +112,7 @@ public class StateManager : MonoBehaviour
         currentState = FormState.MainCharacter;
 
         // Play human sound if exists
-        PlayAudio(mainCharacterForm);
+        // PlayAudio(mainCharacterForm);
 
         SyncCameraDirectionOnly(squidCamera, mainCharacterCamera);
         UpdateCameraPriorities(main: 10, squid: 0);

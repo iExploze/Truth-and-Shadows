@@ -43,6 +43,13 @@ namespace TruthAndShadows.Player
         private Quaternion freeRotation;
         public bool canMove = true;
 
+        // --- Sound ---
+        [SerializeField]
+        public AudioSource walkSource;
+        private bool isWalkSoundPlaying = false;  // Track sound state
+        private float lastSoundStartTime = 0f;     // Track when we last started playing
+        private const float MIN_SOUND_INTERVAL = 0.1f; // Minimum time between sound triggers
+
         private Rigidbody rb;
 
         // --- Debug ---
@@ -156,11 +163,35 @@ namespace TruthAndShadows.Player
                 Vector3 forward = transform.forward * speed * sprintSpeed * Time.fixedDeltaTime;
                 rb.MovePosition(rb.position + forward);
                 characterAnimation.updateMovement(forward);
+
+                // Handle walk sound with better state management
+                if (walkSource != null)
+                {
+                    bool shouldBePlaying = characterAnimation.IsMoving();
+                    float timeSinceLastStart = Time.time - lastSoundStartTime;
+
+                    if (shouldBePlaying && !isWalkSoundPlaying && timeSinceLastStart >= MIN_SOUND_INTERVAL)
+                    {
+                        walkSource.Play();
+                        isWalkSoundPlaying = true;
+                        lastSoundStartTime = Time.time;
+                    }
+                    else if (!shouldBePlaying && isWalkSoundPlaying)
+                    {
+                        walkSource.Stop();
+                        isWalkSoundPlaying = false;
+                    }
+                }
             }
             else
             {
                 // Block only player movement, not input
                 characterAnimation.updateMovement(Vector3.zero);
+                if (walkSource != null && isWalkSoundPlaying)
+                {
+                    walkSource.Stop();
+                    isWalkSoundPlaying = false;
+                }
             }
 #else
             InputSystemHelper.EnableBackendsWarningMessage();
