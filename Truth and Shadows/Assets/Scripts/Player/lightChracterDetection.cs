@@ -14,6 +14,9 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
     //Audio
     public AudioSource intoLightSound;
 
+    //particles
+    [SerializeField] private ParticleSystem dissolveEffect;
+
     void Start()
     {
         characterMovement = GetComponent<CharacterMovement>();
@@ -50,6 +53,7 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
 
     public void OnLightExit(Light lightSource)
     {
+        dissolveEffect.Play();
         currentLights.Remove(lightSource);
     }
 
