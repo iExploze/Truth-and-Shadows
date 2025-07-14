@@ -303,20 +303,20 @@ namespace TruthAndShadows.CheckpointSystem
         public void ResetAllCheckpoints()
         {
             Debug.Log("[CheckpointManager] Resetting all checkpoints");
-            
+
             foreach (var checkpointTransform in checkpoints)
             {
                 if (checkpointTransform == null)
                 {
                     continue;
                 }
-                
+
                 Checkpoint cp = checkpointTransform.GetComponent<Checkpoint>();
                 if (cp == null)
                 {
                     continue;
                 }
-                
+
                 // Skip the current active checkpoint
                 if (checkpointTransform == currentCheckpoint)
                 {
