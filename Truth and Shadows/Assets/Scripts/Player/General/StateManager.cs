@@ -14,6 +14,7 @@ public class StateManager : MonoBehaviour
     [Header("Camera Rigs")]
     [SerializeField]
     private CinemachineFreeLook mainCharacterCamera;
+    //public CinemachineFreeLook MainCharacterCamera => mainCharacterCamera;
     [SerializeField]
     private CinemachineFreeLook squidCamera;
 
@@ -43,14 +44,15 @@ public class StateManager : MonoBehaviour
         mainInteractionManager = mainCharacterForm.GetComponent<InteractionManager>();
 
         SetToHumanForm(); // Always start as human
+
+        // Align camera after everything is initialized
+        StartCoroutine(AlignCameraBehindPlayer(mainCharacterCamera));
     }
 
-    // Call this to become a squid
     public void SwitchToSquidForm()
     {
         if (currentState == FormState.Squid) return;
 
-        // Hide human, reset movement, physics
         mainInteractionManager.DropPickedUpItem();
         mainCharacterForm.SetActive(false);
         if (mainCharRb != null)
@@ -66,31 +68,27 @@ public class StateManager : MonoBehaviour
             mainCharAnimator.SetFloat("Direction", 0);
         }
 
-        // Place and activate squid
         squidForm.transform.position = mainCharacterForm.transform.position;
         squidForm.transform.rotation = mainCharacterForm.transform.rotation;
         squidForm.SetActive(true);
         if (squidMovement != null) squidMovement.enabled = true;
         if (squidRb != null) squidRb.isKinematic = false;
 
-        // Camera
         UpdateCameraPriorities(main: 0, squid: 10);
-
-        // Play squid sound if exists
         PlayAudio(squidForm);
 
         SyncCameraDirectionOnly(mainCharacterCamera, squidCamera);
         UpdateCameraPriorities(main: 0, squid: 10);
 
+        //StartCoroutine(AlignCameraBehindPlayer(squidCamera));
+
         currentState = FormState.Squid;
     }
 
-    // Call this to become human again
     public void SwitchToHumanForm()
     {
         if (currentState == FormState.MainCharacter) return;
 
-        // Hide squid, reset movement/physics
         squidForm.SetActive(false);
         if (squidRb != null)
         {
@@ -100,7 +98,6 @@ public class StateManager : MonoBehaviour
         }
         if (squidMovement != null) squidMovement.enabled = false;
 
-        // Activate human, enable controls
         mainCharacterForm.transform.position = squidForm.transform.position;
         mainCharacterForm.transform.rotation = squidForm.transform.rotation;
         mainCharacterForm.SetActive(true);
@@ -116,9 +113,10 @@ public class StateManager : MonoBehaviour
 
         SyncCameraDirectionOnly(squidCamera, mainCharacterCamera);
         UpdateCameraPriorities(main: 10, squid: 0);
+
+        //StartCoroutine(AlignCameraBehindPlayer(mainCharacterCamera));
     }
 
-    // Helper: resets everything for Start()
     private void SetToHumanForm()
     {
         mainCharacterForm.SetActive(true);
@@ -154,5 +152,26 @@ public class StateManager : MonoBehaviour
         target.m_YAxis.Value = source.m_YAxis.Value;
     }
 
+    public IEnumerator AlignCameraBehindPlayer(CinemachineFreeLook cam)
+    {
+        yield return null;
 
+        if (cam != null)
+        {
+            cam.m_XAxis.Value = -90f;
+        }
+    }
+
+    public void OnRespawn()
+    {
+        // Only adjust if in main character form
+        if (currentState == FormState.MainCharacter)
+        {
+            StartCoroutine(AlignCameraBehindPlayer(mainCharacterCamera));
+        }
+        else if (currentState == FormState.Squid)
+        {
+            StartCoroutine(AlignCameraBehindPlayer(squidCamera));
+        }
+    }
 }
