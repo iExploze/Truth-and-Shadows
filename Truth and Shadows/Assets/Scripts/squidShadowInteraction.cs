@@ -22,6 +22,9 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
     [SerializeField] private Image darknessOverlay; // Assign a UI Image with black color and alpha 0 initially
     [SerializeField] private Image darknessOverlay2;
 
+    [Header("Particles")]
+    [SerializeField] private ParticleSystem crystalReform;
+
     void Start()
     {
         if (playerStateManager == null)
@@ -40,6 +43,8 @@ public class squidShadowInteraction : MonoBehaviour, ILightHittable
     {
         isInLight = true;
         hasTransformed = false;
+
+        crystalReform.Play();
 
         // Reset darkness
         timeInDark = 0f;
