@@ -15,5 +15,13 @@ public class SpinObject : MonoBehaviour
         // Rotate around local axis
         transform.Rotate(localRotationAxis.normalized * spinSpeed * Time.deltaTime, Space.Self);
     }
+
+    public float getSpinSpeed() {
+        return spinSpeed;
+    }
+
+    public void setSpinSpeed(float newSpeed) {
+        spinSpeed = newSpeed;
+    }
 }
 
