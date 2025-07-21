@@ -40,4 +40,9 @@ public class CharacterAnimation : MonoBehaviour
     {
         anim.SetBool("moveObject", isPushing);
     }
+
+    public bool IsMoving()
+    {
+        return anim.GetBool("isMoving");
+    }
 }

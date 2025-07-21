@@ -209,6 +209,12 @@ namespace TruthAndShadows.CheckpointSystem
                 rb.rotation = playerTransform.rotation;
             }
 
+            var stateManager = playerObj.GetComponent<StateManager>();
+            if (stateManager != null)
+            {
+                stateManager.OnRespawn();
+            }
+
             Debug.Log($"Player {playerObj.name} moved to checkpoint: {respawnPosition}");
         }
 

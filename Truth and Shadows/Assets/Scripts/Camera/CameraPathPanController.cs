@@ -29,14 +29,14 @@ namespace TruthAndShadows.Interaction
         private float moveSpeed = 4f;
 
         [SerializeField]
-        private float speedTransitionTime = 0.5f; // Time to smoothly change speed
+        private float speedTransitionTime = 0.2f; // Time to smoothly change speed
 
         [SerializeField]
         private AnimationCurve speedCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
         [Header("Focus Points")]
         [SerializeField]
-        private float focusHoldTime = 2f;
+        private float focusHoldTime = 0.2f;
 
         [SerializeField]
         private float rollThreshold = 0.99f; // Minimum roll angle to trigger a pause
@@ -44,6 +44,12 @@ namespace TruthAndShadows.Interaction
         [Header("Camera Priority")]
         [SerializeField]
         private int tourPriority = 15;
+
+        [Header("Object Control")]
+        [SerializeField]
+        private SpinObject targetSpinObject;  // Reference to the spinning object
+
+        private float originalSpinSpeed;  // Store original speed
 
         [Header("Playback Settings")]
         [SerializeField]
@@ -115,6 +121,12 @@ namespace TruthAndShadows.Interaction
                 return;
             }
 
+            // Store original spin speed if we have a target object
+            if (targetSpinObject != null)
+            {
+                originalSpinSpeed = targetSpinObject.getSpinSpeed();
+            }
+
             // Set high priority to override other cameras
             vcam.Priority = HIGH_PRIORITY;
             Debug.Log(
@@ -128,6 +140,12 @@ namespace TruthAndShadows.Interaction
         private IEnumerator TourRoutine()
         {
             tourRunning = true;
+
+            // Stop spinning if we have a target object
+            if (targetSpinObject != null)
+            {
+                targetSpinObject.setSpinSpeed(0);
+            }
 
             // Start movement
             SetTargetSpeed(moveSpeed);
@@ -150,6 +168,13 @@ namespace TruthAndShadows.Interaction
             // Reset and disable
             SetTargetSpeed(0);
             vcam.Priority = DISABLED_PRIORITY;
+
+            // Resume spinning if we have a target object
+            if (targetSpinObject != null)
+            {
+                targetSpinObject.setSpinSpeed(originalSpinSpeed);
+            }
+
             tourRunning = false;
             Debug.Log(
                 $"[CameraPathPanController] Tour completed, camera disabled (Priority: {DISABLED_PRIORITY})"

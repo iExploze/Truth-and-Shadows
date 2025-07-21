@@ -805,7 +805,7 @@ namespace TruthAndShadows.Interaction
             //     //	Debug.Log("AAAAAA");
             //     //	GetComponent<CheckpointManager>().enabled = false;
             //     //}
-            //     LevelManager.Instance.LoadScene("DavidBMenu", "CrossFade");
+            //     LevelManager.Instance.LoadScene("MainMenu", "CrossFade");
             //     //LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
             // }
         }

@@ -44,7 +44,11 @@ namespace TruthAndShadows.Player
         public bool canMove = true;
 
         // --- Sound ---
+        [SerializeField]
         public AudioSource walkSource;
+        private bool isWalkSoundPlaying = false;  // Track sound state
+        private float lastSoundStartTime = 0f;     // Track when we last started playing
+        private const float MIN_SOUND_INTERVAL = 0.1f; // Minimum time between sound triggers
 
         private Rigidbody rb;
 
@@ -160,21 +164,34 @@ namespace TruthAndShadows.Player
                 rb.MovePosition(rb.position + forward);
                 characterAnimation.updateMovement(forward);
 
-                //Rashai Was Here
-                bool isMoving = input.magnitude > 0.01f;
-                if (isMoving && !walkSource.isPlaying)
+                // Handle walk sound with better state management
+                if (walkSource != null)
                 {
-                    walkSource.Play();
-                }
-                else if (!isMoving && walkSource.isPlaying)
-                {
-                    walkSource.Play();
+                    bool shouldBePlaying = characterAnimation.IsMoving();
+                    float timeSinceLastStart = Time.time - lastSoundStartTime;
+
+                    if (shouldBePlaying && !isWalkSoundPlaying && timeSinceLastStart >= MIN_SOUND_INTERVAL)
+                    {
+                        walkSource.Play();
+                        isWalkSoundPlaying = true;
+                        lastSoundStartTime = Time.time;
+                    }
+                    else if (!shouldBePlaying && isWalkSoundPlaying)
+                    {
+                        walkSource.Stop();
+                        isWalkSoundPlaying = false;
+                    }
                 }
             }
             else
             {
                 // Block only player movement, not input
                 characterAnimation.updateMovement(Vector3.zero);
+                if (walkSource != null && isWalkSoundPlaying)
+                {
+                    walkSource.Stop();
+                    isWalkSoundPlaying = false;
+                }
             }
 #else
             InputSystemHelper.EnableBackendsWarningMessage();
