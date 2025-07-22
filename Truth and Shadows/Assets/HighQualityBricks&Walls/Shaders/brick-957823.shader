@@ -9,6 +9,7 @@ Shader "High Quality Bricks & Walls/brick-957823" {
         _Metallic ("Metallic", Range(0, 1)) = 0
         _Gloss ("Gloss", Range(0, 1)) = 1
         _node_2354 ("node_2354", 2D) = "white" {}
+        [Enum(UV0,0,UV1,1)] _UVSec ("UV Set for secondary textures", Float) = 0
     }
     SubShader {
         Tags {

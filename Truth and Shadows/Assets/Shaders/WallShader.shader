@@ -6,6 +6,7 @@ Shader "Custom/WallShader"
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
+        [Enum(UV0,0,UV1,1)] _UVSec ("UV Set for secondary textures", Float) = 0
     }
     SubShader
     {

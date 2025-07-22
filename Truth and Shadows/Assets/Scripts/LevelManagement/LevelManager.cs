@@ -38,7 +38,6 @@ public class LevelManager : MonoBehaviour
         //GameObject.Find("CheckpointManager").SetActive(false);
         if (GameObject.Find("CheckpointManager") != null)
         {
-            Debug.Log("AAAAAA");
             GameObject.Find("CheckpointManager").SetActive(false);
         }
         // 1 line for loop. loop thru transitions until name matches transitionName
