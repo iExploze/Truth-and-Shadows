@@ -840,7 +840,14 @@ namespace TruthAndShadows.Interaction
             {
                 Debug.Log("Reseppt button pressed and allowed - reloading scene");
                 //CheckpointManager.Instance.RespawnAtCheckpoint();//
-                LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
+                if (LevelManager.Instance == null || !GameObject.Find("LevelManager").activeInHierarchy)
+                {
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                }
+                else
+                {
+                    LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
+                }
                 Debug.Log("BBBBBBB");
                 //GameObject.Find("CheckpointManager").SetActive(false);
                 if (GameObject.Find("CheckpointManager") != null)
