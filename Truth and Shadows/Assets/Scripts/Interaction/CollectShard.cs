@@ -20,13 +20,13 @@ public class CollectShard : MonoBehaviour
 
     private InputContextProvider _inputContextProvider;
 
-    private bool isWinMenuActive = true;
+    private bool isWinMenuActive = false;
     private float activationTime;
 
     void Start()
     {
         // displayPoem = GetComponent<DisplayPoem>();
-        winMenu.SetActive(true);
+        winMenu.SetActive(false);
         _inputContextProvider = InputContextProvider.Instance;
     }
 
@@ -77,13 +77,13 @@ public class CollectShard : MonoBehaviour
     
     private bool CheckForNextLevelInput()
     {
-        bool down = Input.GetKeyDown(KeyCode.LeftArrow);
+        bool down = Input.GetKeyDown(KeyCode.JoystickButton11);
         if (down)
         {
             Debug.Log("CheckForNextLevelInput");
         }
         if (
-            Input.GetKeyDown(KeyCode.N)
+            Input.GetKeyDown(KeyCode.JoystickButton11)
             || Input.GetKeyDown(KeyCode.LeftArrow)
         ) // left d-pad on controller
         {
@@ -169,6 +169,7 @@ public class CollectShard : MonoBehaviour
                 // Fallback to direct scene loading
                 SceneManager.LoadScene("Level2");
             }
+            Time.timeScale = 1f; // unpause
         } else if (sceneName == "Level2")
         {
             // Use LevelManager if available
@@ -181,6 +182,7 @@ public class CollectShard : MonoBehaviour
                 // Fallback to direct scene loading
                 SceneManager.LoadScene("level 3");
             }
+            Time.timeScale = 1f; // unpause
         }
 
 
