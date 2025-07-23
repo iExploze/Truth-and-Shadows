@@ -162,15 +162,15 @@ public class CollectShard : MonoBehaviour
             // Use LevelManager if available
             if (LevelManager.Instance != null)
             {
-                LevelManager.Instance.LoadScene("Level2", "CrossFade");
+                LevelManager.Instance.LoadScene("Level2New", "CrossFade");
             }
             else
             {
                 // Fallback to direct scene loading
-                SceneManager.LoadScene("Level2");
+                SceneManager.LoadScene("Level2New");
             }
             Time.timeScale = 1f; // unpause
-        } else if (sceneName == "Level2")
+        } else if (sceneName == "Level2New")
         {
             // Use LevelManager if available
             if (LevelManager.Instance != null)
