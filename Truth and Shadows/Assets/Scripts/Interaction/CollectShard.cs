@@ -20,13 +20,13 @@ public class CollectShard : MonoBehaviour
 
     private InputContextProvider _inputContextProvider;
 
-    private bool isWinMenuActive = false;
+    private bool isWinMenuActive = true;
     private float activationTime;
 
     void Start()
     {
         // displayPoem = GetComponent<DisplayPoem>();
-        winMenu.SetActive(false);
+        winMenu.SetActive(true);
         _inputContextProvider = InputContextProvider.Instance;
     }
 
@@ -39,6 +39,11 @@ public class CollectShard : MonoBehaviour
             if (CheckForReturnToMenuInput())
             {
                 ReturnToMainMenu();
+            }
+
+            if (CheckForNextLevelInput())
+            {
+                NextLevel();
             }
         }
     }
@@ -63,6 +68,24 @@ public class CollectShard : MonoBehaviour
             || Input.GetMouseButtonDown(0)
             || Input.GetKeyDown(KeyCode.JoystickButton0)
         ) // A/Cross button on controllers
+        {
+            return true;
+        }
+
+        return false;
+    }
+    
+    private bool CheckForNextLevelInput()
+    {
+        bool down = Input.GetKeyDown(KeyCode.LeftArrow);
+        if (down)
+        {
+            Debug.Log("CheckForNextLevelInput");
+        }
+        if (
+            Input.GetKeyDown(KeyCode.N)
+            || Input.GetKeyDown(KeyCode.LeftArrow)
+        ) // left d-pad on controller
         {
             return true;
         }
@@ -128,6 +151,39 @@ public class CollectShard : MonoBehaviour
             // Fallback to direct scene loading
             SceneManager.LoadScene("MainMenu");
         }
+    }
+
+    public void NextLevel()
+    {
+        var sceneName = SceneManager.GetActiveScene().name;
+        Debug.Log(sceneName);
+        if (sceneName == "Level1" || sceneName == "winscreentesting")
+        {
+            // Use LevelManager if available
+            if (LevelManager.Instance != null)
+            {
+                LevelManager.Instance.LoadScene("Level2", "CrossFade");
+            }
+            else
+            {
+                // Fallback to direct scene loading
+                SceneManager.LoadScene("Level2");
+            }
+        } else if (sceneName == "Level2")
+        {
+            // Use LevelManager if available
+            if (LevelManager.Instance != null)
+            {
+                LevelManager.Instance.LoadScene("level 3", "CrossFade");
+            }
+            else
+            {
+                // Fallback to direct scene loading
+                SceneManager.LoadScene("level 3");
+            }
+        }
+
+
     }
 
     /// <summary>
