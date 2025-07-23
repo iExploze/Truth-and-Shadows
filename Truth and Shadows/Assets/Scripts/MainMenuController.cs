@@ -161,6 +161,10 @@ public class MainMenuController : MonoBehaviour
     public void LoadLevel2()
     {
         LevelManager.Instance.LoadScene("Level2", "CrossFade");
-        // Temporary scene, replace with level 2 later
+    }
+
+    public void LoadLevel3()
+    {
+        LevelManager.Instance.LoadScene("level 3", "CrossFade");
     }
 }
