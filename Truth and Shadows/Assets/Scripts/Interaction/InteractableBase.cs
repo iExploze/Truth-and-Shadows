@@ -834,5 +834,37 @@ namespace TruthAndShadows.Interaction
                 Gizmos.DrawSphere(transform.position, pickupDistance);
             }
         }
+
+        /// <summary>
+        /// Checks if a CameraPanController component exists on this game object and activates it if found.
+        /// Returns true if the controller was found and activated, false otherwise.
+        /// </summary>
+        /// <param name="customDuration">Optional custom duration for the camera pan in seconds. If -1, uses the default duration.</param>
+        /// <returns>True if the camera pan was activated, false if no controller was found.</returns>
+        public bool TryActivateCameraPan(float customDuration = -1)
+        {
+            // Try to get the CameraPanController component
+            var cameraPanController = GetComponent<Interaction.CameraPanController>();
+
+            // Check if we found a controller
+            if (cameraPanController != null)
+            {
+                // If a custom duration was provided, use the CameraPan method
+                if (customDuration > 0)
+                {
+                    cameraPanController.CameraPan(customDuration);
+                }
+                // Otherwise, just activate with default duration
+                else
+                {
+                    cameraPanController.Activate();
+                }
+
+                return true; // Successfully activated
+            }
+
+            // No controller found
+            return false;
+        }
     }
 }

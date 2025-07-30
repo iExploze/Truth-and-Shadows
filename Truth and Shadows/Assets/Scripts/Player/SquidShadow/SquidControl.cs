@@ -94,12 +94,7 @@ public class SquidControl : MonoBehaviour
         rb.velocity = newVel;
 
         //Rashai Was Here
-        bool isMoving = rb.velocity.magnitude > 0.01f;
-        if (isMoving && !squidMoveSound.isPlaying)
-        {
-            squidMoveSound.Play();
-        }
-        else if (!isMoving && squidMoveSound.isPlaying)
+        if (!squidMoveSound.isPlaying)
         {
             squidMoveSound.Play();
         }

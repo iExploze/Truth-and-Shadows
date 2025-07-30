@@ -164,12 +164,7 @@ namespace TruthAndShadows.Player
             // 6. Normal
 
             // Check for UI state - highest priority
-            if (UnityEngine.EventSystems.EventSystem.current?.IsPointerOverGameObject() ?? false)
-            {
-                _currentState = PlayerState.InUI;
-            }
-            // Check for cutscene state (this would be set externally by the cutscene manager)
-            else if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
+            if (_currentState == PlayerState.Cutscene || _currentState == PlayerState.Disabled)
             {
                 // Keep the current state if it's a cutscene or disabled
                 // These states would be set from outside this method
@@ -335,19 +330,19 @@ namespace TruthAndShadows.Player
                 animator.SetFloat("Direction", direction);
             }
 
-            // Handle footstep audio
-            if (walkAudioSource != null)
-            {
-                if (_currentSpeed > 0.1f && !walkAudioSource.isPlaying)
-                {
-                    walkAudioSource.loop = true;
-                    walkAudioSource.Play();
-                }
-                else if (_currentSpeed <= 0.1f && walkAudioSource.isPlaying)
-                {
-                    walkAudioSource.Stop();
-                }
-            }
+            // // Handle footstep audio
+            // if (walkAudioSource != null)
+            // {
+            //     if (_currentSpeed > 0.1f && !walkAudioSource.isPlaying)
+            //     {
+            //         walkAudioSource.loop = true;
+            //         walkAudioSource.Play();
+            //     }
+            //     else if (_currentSpeed <= 0.1f && walkAudioSource.isPlaying)
+            //     {
+            //         walkAudioSource.Stop();
+            //     }
+            // }
         }
         #endregion
 

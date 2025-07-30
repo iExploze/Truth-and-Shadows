@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace TruthAndShadows.CheckpointSystem
@@ -47,8 +48,17 @@ namespace TruthAndShadows.CheckpointSystem
         [Tooltip(
             "If true, this checkpoint will always be used as the spawn point (for development/testing)"
         )]
+        [Header("Camera Path")]
+        [SerializeField]
+        private bool oneTimeCameraPath = true;
+
+        [SerializeField]
+        private int cameraPanPriority = 15; // Higher priority to ensure it overrides other cameras
+        private bool hasPlayedCameraPath = false;
+
         [SerializeField]
         private bool devOverrideSpawn = false;
+
         public bool DevOverrideSpawn => devOverrideSpawn;
 
         private Material runeMat;
@@ -57,6 +67,10 @@ namespace TruthAndShadows.CheckpointSystem
         private Transform player;
         private bool isLerpingToActivated = false;
         private readonly float lerpSpeed = 5f;
+
+        [SerializeField]
+        [Tooltip("Reference to the Runes child object that contains the mesh and collider")]
+        private Transform runesTransform;
 
         // Reference to the checkpoint's collider
         private Collider checkpointCollider;
@@ -67,17 +81,41 @@ namespace TruthAndShadows.CheckpointSystem
         // Property to check if the checkpoint is activated
         public bool IsActivated => isActivated;
 
+        private CheckpointManager _checkpointManager;
+
+        private ParticleSystem activationParticles;
+        private ParticleSystem secondaryActivationParticles;
+
         void Start()
         {
-            Debug.Log($"[Checkpoint] Start: {gameObject.name}");
+            _checkpointManager = CheckpointManager.Instance;
 
-            // Cache the collider reference
-            checkpointCollider = GetComponent<Collider>();
-            if (checkpointCollider == null)
+            if (activationEffect != null)
             {
-                Debug.LogWarning(
-                    $"[Checkpoint] {gameObject.name} doesn't have a collider component!"
+                activationParticles = activationEffect.GetComponentInChildren<ParticleSystem>();
+            }
+
+            if (secondaryActivationEffect != null)
+            {
+                secondaryActivationParticles =
+                    secondaryActivationEffect.GetComponentInChildren<ParticleSystem>();
+            }
+
+            // Validate the Runes reference
+            if (runesTransform == null)
+            {
+                Debug.LogError(
+                    $"[Checkpoint] {gameObject.name} is missing Runes reference! Assign it in the inspector."
                 );
+                return;
+            }
+
+            // Cache and setup the collider reference
+            checkpointCollider = GetComponent<Collider>();
+            if (checkpointCollider != null)
+            {
+                // Ensure the collider is set as a trigger
+                checkpointCollider.isTrigger = true;
             }
 
             // Snap checkpoint to ground using a raycast
@@ -93,90 +131,120 @@ namespace TruthAndShadows.CheckpointSystem
                 )
             )
             {
-                transform.position = hit.point + Vector3.up * 0.0001f; // Slightly above ground
-                Debug.Log($"[Checkpoint] {gameObject.name} snapped to ground at {hit.point}");
+                transform.position = hit.point + Vector3.up * 0.001f;
             }
             else
             {
                 Debug.LogWarning($"[Checkpoint] {gameObject.name} could not find ground below");
             }
             // Auto-register with checkpoint manager if enabled
-            if (autoRegister && CheckpointManager.Instance != null)
+            if (autoRegister && _checkpointManager != null)
             {
                 Debug.Log(
                     $"[Checkpoint] Auto-registering {gameObject.name} with CheckpointManager"
                 );
-                CheckpointManager.Instance.AddCheckpoint(transform);
+                _checkpointManager.AddCheckpoint(transform);
             }
-            runeMat = GetComponent<Renderer>().material;
+            runeMat = runesTransform.GetComponent<Renderer>().material;
             runeMat.EnableKeyword("_EMISSION");
             currentColor = farColor;
             UpdateGlow(currentColor);
-            Debug.Log($"[Checkpoint] Initial color set to {farColor}");
+
             // Find player by tag
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj != null)
                 player = playerObj.transform;
             else
                 Debug.LogWarning($"[Checkpoint] Player not found in scene for {gameObject.name}");
+
+            // If this is a spawn checkpoint, disable effects and collider
+            if (isSpawnCheckpoint)
+            {
+                Debug.Log(
+                    $"[Checkpoint] {gameObject.name} is a spawn checkpoint, disabling effects"
+                );
+                DisableEffectsForSpawn();
+            }
         }
 
         void Update()
         {
-            // Constant rotation
-            transform.Rotate(Vector3.forward, rotationSpeed * Time.deltaTime);
+            // Rotate the Runes child object
+            if (runesTransform != null)
+            {
+                runesTransform.Rotate(Vector3.forward, rotationSpeed * Time.deltaTime);
+            }
             if (isLerpingToActivated)
             {
                 currentColor = Color.Lerp(currentColor, activatedColor, Time.deltaTime * lerpSpeed);
                 UpdateGlow(currentColor);
-                Debug.Log(
-                    $"[Checkpoint] {gameObject.name} lerping to activatedColor: {activatedColor}"
-                );
                 if (Vector4.Distance(currentColor, activatedColor) < 0.01f)
                 {
                     currentColor = activatedColor;
                     UpdateGlow(currentColor);
                     isLerpingToActivated = false;
-                    Debug.Log($"[Checkpoint] {gameObject.name} finished lerping to activatedColor");
                 }
             }
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (
-                !isActivated
-                && other.CompareTag("Player")
-                && CheckpointManager.Instance != null
-                && CheckpointManager.Instance.GetCurrentCheckpoint() != transform
-            )
+
+            if (isActivated)
             {
-                Debug.Log(
-                    $"[Checkpoint] Notifying CheckpointManager of activation for {gameObject.name} via trigger"
-                );
-                CheckpointManager.Instance.SetCheckpoint(transform);
+                return;
             }
+
+            if (!other.CompareTag("Player"))
+            {
+                return;
+            }
+
+            if (_checkpointManager == null)
+            {
+                return;
+            }
+
+            Transform currentCheckpoint = _checkpointManager.GetCurrentCheckpoint();
+            if (currentCheckpoint == transform)
+            {
+                return;
+            }
+
+            // Let the CheckpointManager handle the activation
+            _checkpointManager.SetCheckpoint(transform);
+            TryActivateCameraPathPan();
         }
 
         // Called when this checkpoint becomes the active checkpoint
         public void Activate()
         {
+
             if (isActivated && !effectsDisabledForSpawn)
             {
                 Debug.Log($"[Checkpoint] {gameObject.name} already activated, skipping");
                 return;
             }
+
+            Debug.Log($"[Checkpoint] Beginning activation sequence for {gameObject.name}");
             isActivated = true;
             isLerpingToActivated = true;
             effectsDisabledForSpawn = false;
-            Debug.Log(
-                $"[Checkpoint] {gameObject.name} activated! Starting lerp to {activatedColor}"
-            );
-            PlayEffect(activationEffect, "activation");
-            PlayEffect(secondaryActivationEffect, "secondary activation");
-            PlayActivationSound();
 
-            // Disable the collider once activated to prevent triggering again
+            // Play effects
+            if (activationParticles != null)
+            {
+                activationParticles.gameObject.SetActive(true);
+                PlayEffect(activationEffect, "activation");
+            }
+
+            if (secondaryActivationParticles != null)
+            {
+                secondaryActivationParticles.gameObject.SetActive(true);
+                PlayEffect(secondaryActivationEffect, "secondary activation");
+            }
+
+            PlayActivationSound();
             DisableCollider();
         }
 
@@ -186,7 +254,6 @@ namespace TruthAndShadows.CheckpointSystem
             if (checkpointCollider != null)
             {
                 checkpointCollider.enabled = false;
-                Debug.Log($"[Checkpoint] Disabled collider for {gameObject.name}");
             }
         }
 
@@ -196,7 +263,6 @@ namespace TruthAndShadows.CheckpointSystem
             if (checkpointCollider != null && !isActivated)
             {
                 checkpointCollider.enabled = true;
-                Debug.Log($"[Checkpoint] Enabled collider for {gameObject.name}");
             }
         }
 
@@ -207,26 +273,21 @@ namespace TruthAndShadows.CheckpointSystem
 
         private void PlayEffect(GameObject effectObj, string effectName)
         {
-            if (effectObj != null)
+            ParticleSystem ps =
+                effectName == "activation" ? activationParticles : secondaryActivationParticles;
+
+            if (ps != null)
             {
-                Debug.Log($"[Checkpoint] Playing {effectName} effect for {gameObject.name}");
-                var ps = effectObj.GetComponent<ParticleSystem>();
-                if (ps != null)
+                ps.gameObject.SetActive(true);
+                var main = ps.main;
+                main.loop = false;
+
+                // Make sure the particle system is awake and ready
+                if (!ps.isPlaying)
                 {
-                    ps.Play();
+                    ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                    ps.Play(true);
                 }
-                else
-                {
-                    Debug.LogWarning(
-                        $"[Checkpoint] {effectName}Effect on {gameObject.name} does not have a ParticleSystem component."
-                    );
-                }
-            }
-            else
-            {
-                Debug.LogWarning(
-                    $"[Checkpoint] No {effectName}Effect assigned for {gameObject.name}"
-                );
             }
         }
 
@@ -234,7 +295,6 @@ namespace TruthAndShadows.CheckpointSystem
         {
             if (activationSound != null)
             {
-                Debug.Log($"[Checkpoint] Playing activation sound for {gameObject.name}");
                 if (audioSource != null)
                 {
                     audioSource.PlayOneShot(activationSound);
@@ -243,10 +303,6 @@ namespace TruthAndShadows.CheckpointSystem
                 {
                     AudioSource.PlayClipAtPoint(activationSound, transform.position);
                 }
-            }
-            else
-            {
-                Debug.LogWarning($"[Checkpoint] No activationSound assigned for {gameObject.name}");
             }
         }
 
@@ -262,39 +318,35 @@ namespace TruthAndShadows.CheckpointSystem
                 UpdateGlow(currentColor);
             }
 
-            if (activationEffect != null)
-            {
-                var ps = activationEffect.GetComponent<ParticleSystem>();
-                if (ps != null)
-                    ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            }
-            if (secondaryActivationEffect != null)
-            {
-                var ps2 = secondaryActivationEffect.GetComponent<ParticleSystem>();
-                if (ps2 != null)
-                    ps2.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            }
+            // Stop particle systems using cached references
+            if (activationParticles != null)
+                activationParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
-            // Disable the renderer for the spawn checkpoint
-            var rend = GetComponent<Renderer>();
-            if (rend != null)
-                rend.enabled = false;
+            if (secondaryActivationParticles != null)
+                secondaryActivationParticles.Stop(
+                    true,
+                    ParticleSystemStopBehavior.StopEmittingAndClear
+                );
+
+            // Disable the renderer for the spawn checkpoint's Runes
+            if (runesTransform != null)
+            {
+                var rend = runesTransform.GetComponent<Renderer>();
+                if (rend != null)
+                    rend.enabled = false;
+            }
 
             // Disable the collider for the spawn checkpoint
             DisableCollider();
-
-            Debug.Log(
-                $"[Checkpoint] {gameObject.name} effects, renderer, and collider disabled for spawn"
-            );
         }
 
         void UpdateGlow(Color glowColor)
         {
-            runeMat.SetColor("_EmissionColor", glowColor * glowIntensity);
-            DynamicGI.SetEmissive(GetComponent<Renderer>(), glowColor * glowIntensity);
-            Debug.Log(
-                $"[Checkpoint] {gameObject.name} emission color updated to {glowColor * glowIntensity}"
-            );
+            if (runeMat != null && runesTransform != null)
+            {
+                runeMat.SetColor("_EmissionColor", glowColor * glowIntensity);
+                DynamicGI.SetEmissive(GetComponent<Renderer>(), glowColor * glowIntensity);
+            }
         }
 
         public static Checkpoint GetDevOverrideCheckpoint()
@@ -307,6 +359,18 @@ namespace TruthAndShadows.CheckpointSystem
                     return cp;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Tries to play the camera path tour if a CameraPathPanController is attached
+        /// </summary>
+        private void TryActivateCameraPathPan()
+        {
+            var cameraPathController = GetComponent<Interaction.CameraPathPanController>();
+            if (cameraPathController != null)
+            {
+                cameraPathController.PlayTourIfAble();
+            }
         }
     }
 }

@@ -92,7 +92,9 @@ namespace TruthAndShadows.InputSystem
         private readonly KeyCode[] menuButtons = new KeyCode[]
         {
             KeyCode.U,
+            KeyCode.Escape,
             KeyCode.JoystickButton3, // Xbox X, PS Square, Switch Y
+            KeyCode.JoystickButton7, // Xbox Menu/Start, PS Options, Switch +
         };
         #endregion
 
@@ -334,7 +336,7 @@ namespace TruthAndShadows.InputSystem
         private bool GetRotateButtonInternal() => AnyKey(rotateButtons);
 
         private bool GetResetButtonDownInternal() => AnyKeyDown(resetButtons);
-        private bool GetMenuButtonDownInternal() => AnyKey(menuButtons);
+        private bool GetMenuButtonDownInternal() => AnyKeyDown(menuButtons);
 
         private bool GetHintButtonDownInternal() => AnyKeyDown(hintButtons);
 
