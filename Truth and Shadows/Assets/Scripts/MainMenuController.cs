@@ -59,6 +59,11 @@ public class MainMenuController : MonoBehaviour
         if (gamepad != null)
         {
             ProcessInputs();
+            //
+            // if (gamepad is DualShockGamepad)
+            // {
+            //     print("Playstation gamepad");
+            // }
         }
     }
 
