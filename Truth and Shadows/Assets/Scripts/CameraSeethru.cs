@@ -10,19 +10,26 @@ public class CameraSeethru : MonoBehaviour
 
     private Dictionary<Renderer, float> seeThruObjects = new Dictionary<Renderer, float>();
 
+    // Angle in degrees for side rays
+    public float sideRayAngle = 5f; // small angle, increase for wider fan
+
     void Update()
     {
         Transform target = stateManager.isHumanForm() ? playerTransform : squidTransform;
         if (target == null) return;
 
-        float centerDistance = Vector3.Distance(transform.position, target.position) - 1f;
+        Vector3 toTarget = (target.position - transform.position).normalized;
+        float distanceToTarget = Vector3.Distance(transform.position, target.position) - 1f;
 
-        // Main ray in the center, edge rays much closer to center (0.4 and 0.6)
-        Vector3[] viewportPoints = new Vector3[]
+        // Create side directions by rotating the main direction a bit left/right around the Y axis
+        Vector3 leftDir = Quaternion.AngleAxis(-sideRayAngle, Vector3.up) * toTarget;
+        Vector3 rightDir = Quaternion.AngleAxis(sideRayAngle, Vector3.up) * toTarget;
+
+        Vector3[] directions = new Vector3[]
         {
-            new Vector3(0.5f, 0.5f, 0), // center
-            new Vector3(0.4f, 0.5f, 0), // left (closer)
-            new Vector3(0.6f, 0.5f, 0)  // right (closer)
+            toTarget,   // center
+            leftDir,    // left
+            rightDir    // right
         };
 
         HashSet<Renderer> hitRenderers = new HashSet<Renderer>();
@@ -31,11 +38,10 @@ public class CameraSeethru : MonoBehaviour
 
         // --- MAIN RAY (always casts) ---
         {
-            Ray ray = Camera.main.ViewportPointToRay(viewportPoints[0]);
-            float maxRayDistance = centerDistance;
-            Debug.DrawRay(ray.origin, ray.direction * maxRayDistance, Color.green);
+            Ray ray = new Ray(transform.position, directions[0]);
+            Debug.DrawRay(ray.origin, ray.direction * distanceToTarget, Color.green);
 
-            RaycastHit[] hits = Physics.RaycastAll(ray, maxRayDistance);
+            RaycastHit[] hits = Physics.RaycastAll(ray, distanceToTarget);
             mainRayHit = hits.Length > 0;
 
             foreach (var hit in hits)
@@ -72,19 +78,15 @@ public class CameraSeethru : MonoBehaviour
             }
         }
 
-        // --- EDGE RAYS (only if main ray hit something) ---
+        // --- SIDE RAYS (only if main ray hit something) ---
         if (mainRayHit)
         {
             for (int i = 1; i <= 2; i++)
             {
-                Ray ray = Camera.main.ViewportPointToRay(viewportPoints[i]);
-                float cosTheta = Vector3.Dot(ray.direction.normalized, Camera.main.transform.forward);
-                if (Mathf.Abs(cosTheta) < 0.01f) cosTheta = 0.01f * Mathf.Sign(cosTheta);
-                float maxRayDistance = centerDistance / Mathf.Abs(cosTheta);
+                Ray ray = new Ray(transform.position, directions[i]);
+                Debug.DrawRay(ray.origin, ray.direction * distanceToTarget, Color.yellow);
 
-                Debug.DrawRay(ray.origin, ray.direction * maxRayDistance, Color.green);
-
-                RaycastHit[] hits = Physics.RaycastAll(ray, maxRayDistance);
+                RaycastHit[] hits = Physics.RaycastAll(ray, distanceToTarget);
 
                 foreach (var hit in hits)
                 {
