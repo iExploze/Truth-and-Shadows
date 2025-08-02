@@ -28,6 +28,7 @@ public class DisplayButton : MonoBehaviour
         PSkey.SetActive(false);
         XBOXkey.SetActive(false);
         Switchkey.SetActive(false);
+        UpdateButton(ControllerDetection.InputMode.Keyboard); // open with default
     }
 
     // Start is called before the first frame update
@@ -46,28 +47,32 @@ public class DisplayButton : MonoBehaviour
             XBOXkey.SetActive(false);
             Switchkey.SetActive(false);
         }
+        var gamepad = Gamepad.current;
+        if (gamepad == null)
+            return; // do nothing
+        keyboardKey.SetActive(false);
+        PSkey.SetActive(false);
+        XBOXkey.SetActive(false);
+        Switchkey.SetActive(false);
 
-        if (mode == ControllerDetection.InputMode.Gamepad)
+        if (mode == ControllerDetection.InputMode.PS)
         {
-            var gamepad = Gamepad.current;
-            if (gamepad == null)
-                return; // do nothing
-            keyboardKey.SetActive(false);
+            PSkey.SetActive(true);
+        }
+        else if (mode == ControllerDetection.InputMode.XBOX) 
+        {
+            XBOXkey.SetActive(true);
+        }
+        else if (mode == ControllerDetection.InputMode.Switch) 
+        {
+            Switchkey.SetActive(true);
+        }
+        else // default to keyboard
+        {
+            keyboardKey.SetActive(true);
             PSkey.SetActive(false);
             XBOXkey.SetActive(false);
             Switchkey.SetActive(false);
-            if (gamepad is DualShockGamepad)
-            {
-                PSkey.SetActive(true);
-            }
-            else if (gamepad is XInputController) 
-            {
-                XBOXkey.SetActive(true);
-            }
-            else if (gamepad is SwitchProControllerHID)
-            {
-                Switchkey.SetActive(true);
-            }
         }
     }
 

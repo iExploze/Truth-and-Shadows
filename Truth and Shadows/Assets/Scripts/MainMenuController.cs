@@ -90,14 +90,14 @@ public class MainMenuController : MonoBehaviour
         // // Gamepad: Circle/B to Back or Quit
         if (gamepad.buttonEast.wasPressedThisFrame)
         {
-            if (!IsAnyPanelOpen())
-            {
-                QuitGame();
-            }
-            else
+            if (IsAnyPanelOpen())
             {
                 Back();
             }
+            // else
+            // {
+            //     Back();
+            // }
         }
     }
 
