@@ -115,19 +115,20 @@ public class ControllerDetection : MonoBehaviour
             
         }
 
-        if (Input.anyKey)
-        {
-            // unity only recognizes input.anykey for keyboard presses
-            if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
-            {
-                return InputMode.Keyboard;
-            }
-        }
+        // if (Input.anyKey)
+        // {
+        //     // unity only recognizes input.anykey for keyboard presses
+        //     if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
+        //     {
+        //         return InputMode.Keyboard;
+        //     }
+        // }
         if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0 || Input.GetAxisRaw("Horizontal2") != 0 || Input.GetAxisRaw("Vertical2") != 0
             || Input.GetAxisRaw("HorizontalD") != 0 || Input.GetAxisRaw("VerticalD") != 0 
             // || Input.GetAxisRaw("LeftTrigger") < 0 || Input.GetAxisRaw("RightTrigger") < 0
             )
         {
+            
             var gamepad = Gamepad.current;
             if (gamepad == null)
                 return InputMode.Keyboard;
@@ -142,6 +143,10 @@ public class ControllerDetection : MonoBehaviour
             else if (gamepad is SwitchProControllerHID)
             {
                 return InputMode.Switch;
+            }
+            else if (Input.anyKey)
+            {
+                return InputMode.Keyboard;
             }
             else // default to keyboard
             {

@@ -1378,6 +1378,7 @@ GameObject:
   - component: {fileID: 7657277945731672504}
   - component: {fileID: 3974644254540267291}
   - component: {fileID: 6775676579803280035}
+  - component: {fileID: 4203210593329439485}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -1451,6 +1452,22 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4203210593329439485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6254257129671552198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c652dae595ab480883ac3cb116b0c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyboardKey: {fileID: 1822816959506670844}
+  PSkey: {fileID: 3977532043634273646}
+  XBOXkey: {fileID: 5732927860539067686}
+  Switchkey: {fileID: 1683112920855943866}
 --- !u!1 &7644469593636199383
 GameObject:
   m_ObjectHideFlags: 0
@@ -1924,7 +1941,6 @@ GameObject:
   - component: {fileID: 1953438537356394790}
   - component: {fileID: 3040492030760926410}
   - component: {fileID: 8106980369206906486}
-  - component: {fileID: 7615853460274304929}
   m_Layer: 5
   m_Name: WinScreen
   m_TagString: Untagged
@@ -2016,22 +2032,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &7615853460274304929
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8221898279112206012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c652dae595ab480883ac3cb116b0c6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  keyboardKey: {fileID: 1822816959506670844}
-  PSkey: {fileID: 3977532043634273646}
-  XBOXkey: {fileID: 5732927860539067686}
-  Switchkey: {fileID: 1683112920855943866}
 --- !u!1 &8602181856105878354
 GameObject:
   m_ObjectHideFlags: 0
