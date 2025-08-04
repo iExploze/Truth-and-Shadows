@@ -84,7 +84,7 @@ public class CollectShard : MonoBehaviour
         }
         if (
             Input.GetKeyDown(KeyCode.JoystickButton11)
-            || Input.GetKeyDown(KeyCode.LeftArrow)
+            || Input.GetKeyDown(KeyCode.RightArrow)
         ) // left d-pad on controller
         {
             return true;
@@ -107,7 +107,7 @@ public class CollectShard : MonoBehaviour
             activationTime = Time.unscaledTime;
 
             // Pause the game
-            Time.timeScale = 0f;
+            // Time.timeScale = 0f;
 
             // Show cursor for menu navigation
             Cursor.visible = true;
