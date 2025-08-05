@@ -30,6 +30,11 @@ public class MainMenuController : MonoBehaviour
     public static float brightness = 1;
     [SerializeField]
     private Slider _sliderVolume; // Reference to your volume slider
+    [SerializeField]
+    private Slider _sliderSens; // Sensitivity slider
+
+    // Make sensitivity accessible globally:
+    public static float Sensitivity = 1f;
 
     // Start is called before the 
     void Start()
@@ -50,6 +55,15 @@ public class MainMenuController : MonoBehaviour
 
             // Listen to slider changes
             _sliderVolume.onValueChanged.AddListener(AdjustVolume);
+        }
+
+        // --- Sensitivity Setup ---
+        if (_sliderSens != null)
+        {
+            float savedSens = PlayerPrefs.GetFloat("Sensitivity", 1f);
+            _sliderSens.value = savedSens;
+            AdjustSensitivity(savedSens);
+            _sliderSens.onValueChanged.AddListener(AdjustSensitivity);
         }
     }
 
@@ -153,6 +167,13 @@ public class MainMenuController : MonoBehaviour
     {
         AudioListener.volume = value;
         PlayerPrefs.SetFloat("MasterVolume", value);
+    }
+
+    // === Sensitivity Handler ===
+    public void AdjustSensitivity(float value)
+    {
+        Sensitivity = value;
+        PlayerPrefs.SetFloat("Sensitivity", value);
     }
 
     public void Back()
