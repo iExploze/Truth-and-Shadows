@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
+using UnityEngine.Audio; // At the top
 
 
 public class MainMenuController : MonoBehaviour
@@ -27,19 +28,45 @@ public class MainMenuController : MonoBehaviour
     private Image _blackOverlay;
 
     public static float brightness = 1;
-    
+    [SerializeField]
+    private Slider _sliderVolume; // Reference to your volume slider
+    [SerializeField]
+    private Slider _sliderSens; // Sensitivity slider
+
+    // Make sensitivity accessible globally:
+    public static float Sensitivity = 1f;
+
     // Start is called before the 
     void Start()
     {
         gamepad = Gamepad.current;
-        // Set initial selected button for joystick navigation
         if (firstMenuButton != null && !IsAnyPanelOpen())
         {
             EventSystem.current.SetSelectedGameObject(firstMenuButton);
         }
-
         brightness = 1;
+
+        // Restore saved volume, or use 1 as default
+        if (_sliderVolume != null)
+        {
+            float savedVol = PlayerPrefs.GetFloat("MasterVolume", 1f);
+            _sliderVolume.value = savedVol;
+            AdjustVolume(savedVol);
+
+            // Listen to slider changes
+            _sliderVolume.onValueChanged.AddListener(AdjustVolume);
+        }
+
+        // --- Sensitivity Setup ---
+        if (_sliderSens != null)
+        {
+            float savedSens = PlayerPrefs.GetFloat("Sensitivity", 1f);
+            _sliderSens.value = savedSens;
+            AdjustSensitivity(savedSens);
+            _sliderSens.onValueChanged.AddListener(AdjustSensitivity);
+        }
     }
+
 
     private void Awake()
     {
@@ -134,6 +161,19 @@ public class MainMenuController : MonoBehaviour
         // var tempColor = _blackOverlay.color;
         // tempColor.a = _sliderBrightness.value;
         // _blackOverlay.color = tempColor;
+    }
+
+    public void AdjustVolume(float value)
+    {
+        AudioListener.volume = value;
+        PlayerPrefs.SetFloat("MasterVolume", value);
+    }
+
+    // === Sensitivity Handler ===
+    public void AdjustSensitivity(float value)
+    {
+        Sensitivity = value;
+        PlayerPrefs.SetFloat("Sensitivity", value);
     }
 
     public void Back()

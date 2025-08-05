@@ -86,6 +86,7 @@ GameObject:
   - component: {fileID: 7879570546290547017}
   - component: {fileID: 8513257188952329541}
   - component: {fileID: 5092549483113863752}
+  - component: {fileID: 1746489717078380411}
   m_Layer: 0
   m_Name: FreeLookSquid
   m_TagString: Untagged
@@ -253,6 +254,20 @@ MonoBehaviour:
   m_Damping: 0
   m_DampingWhenOccluded: 0
   m_OptimalTargetDistance: 0
+--- !u!114 &1746489717078380411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990568899627781147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bff03eeb6f43e94a9a32563b0c9b7e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseXSens: 200
+  baseYSens: 2
 --- !u!1 &1309500905612964039
 GameObject:
   m_ObjectHideFlags: 0
@@ -264,6 +279,7 @@ GameObject:
   - component: {fileID: 3278195318550940990}
   - component: {fileID: 8831269792830432328}
   - component: {fileID: 8863499589440741769}
+  - component: {fileID: 1139702528133320403}
   m_Layer: 0
   m_Name: FreeLookMainCharacter
   m_TagString: Untagged
@@ -431,6 +447,20 @@ MonoBehaviour:
   m_Damping: 0
   m_DampingWhenOccluded: 0
   m_OptimalTargetDistance: 0
+--- !u!114 &1139702528133320403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1309500905612964039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bff03eeb6f43e94a9a32563b0c9b7e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseXSens: 200
+  baseYSens: 2
 --- !u!1 &1628623294447064235
 GameObject:
   m_ObjectHideFlags: 3
@@ -456,7 +486,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1628623294447064235}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0000000101337845, y: 0.9727554, z: -0.23183396, w: -0.000000042520487}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -5516,7 +5546,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2391948647226931353}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0000000041034762, y: 0.99558383, z: -0.09387659, w: -0.00000004351835}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -12746,7 +12776,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7077183709464209158}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000008579415, y: 0.9805491, z: -0.19627413, w: -0.000000042861164}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -12820,7 +12850,6 @@ GameObject:
   - component: {fileID: 1624709803384924552}
   - component: {fileID: 4776008584672826574}
   - component: {fileID: 3053383403830208237}
-  - component: {fileID: 5966038600394136214}
   m_Layer: 0
   m_Name: MainCamera
   m_TagString: MainCamera
@@ -12837,7 +12866,7 @@ Transform:
   m_GameObject: {fileID: 7363988107442017495}
   serializedVersion: 2
   m_LocalRotation: {x: -0.0000000073325133, y: 0.9903485, z: -0.1385996, w: -0.00000005239368}
-  m_LocalPosition: {x: -306.13855, y: 4.7853594, z: 2.9340706}
+  m_LocalPosition: {x: 21.871422, y: 4.7853575, z: 6.7940707}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12944,18 +12973,6 @@ MonoBehaviour:
   m_CameraActivatedEvent:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &5966038600394136214
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7363988107442017495}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e08811fb2884d346a3a52739ad29be1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &7489824646994668618
 GameObject:
   m_ObjectHideFlags: 0
@@ -18179,10 +18196,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75cf2db617ee745a7acd80aee6445bb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xboxButtons: {fileID: 0}
-  psButtons: {fileID: 0}
-  switchButtons: {fileID: 0}
-  keyboardButtons: {fileID: 0}
 --- !u!1 &9070072555299329847
 GameObject:
   m_ObjectHideFlags: 0
