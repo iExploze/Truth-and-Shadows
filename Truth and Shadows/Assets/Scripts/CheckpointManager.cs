@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TruthAndShadows.CheckpointSystem;
+using TruthAndShadows.Interaction;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -30,6 +31,18 @@ namespace TruthAndShadows.CheckpointSystem
 
         // Flag to track if we're using a dev override checkpoint
         private bool usingDevOverride = false;
+
+        // Interactable position tracking
+        [System.Serializable]
+        private class InteractableSpawnInfo
+        {
+            public Transform interactableTransform;
+            public Vector3 originalPosition;
+            public Quaternion originalRotation;
+            public Transform originalParent;
+        }
+
+        private List<InteractableSpawnInfo> interactableSpawnPositions = new List<InteractableSpawnInfo>();
 
         private void Awake()
         {
@@ -99,6 +112,9 @@ namespace TruthAndShadows.CheckpointSystem
             {
                 Debug.LogWarning("[CheckpointManager] No checkpoint available for initial spawn!");
             }
+
+            // Track all interactable spawn positions for reset functionality
+            TrackInteractableSpawnPositions();
         }
 
         private void OnEnable()
@@ -335,6 +351,85 @@ namespace TruthAndShadows.CheckpointSystem
 
                 Debug.Log($"[CheckpointManager] Reset checkpoint: {checkpointTransform.name}");
             }
+        }
+
+        /// <summary>
+        /// Tracks the spawn positions of all interactables in the scene for reset functionality
+        /// Call this during scene initialization to store original positions
+        /// </summary>
+        private void TrackInteractableSpawnPositions()
+        {
+            interactableSpawnPositions.Clear();
+            
+            // Find all interactables in the scene
+            InteractableBase[] allInteractables = FindObjectsOfType<InteractableBase>();
+            
+            foreach (InteractableBase interactable in allInteractables)
+            {
+                if (interactable != null)
+                {
+                    InteractableSpawnInfo spawnInfo = new InteractableSpawnInfo
+                    {
+                        interactableTransform = interactable.transform,
+                        originalPosition = interactable.transform.position,
+                        originalRotation = interactable.transform.rotation,
+                        originalParent = interactable.transform.parent
+                    };
+                    
+                    interactableSpawnPositions.Add(spawnInfo);
+                }
+            }
+            
+            Debug.Log($"[CheckpointManager] Tracked {interactableSpawnPositions.Count} interactables for reset functionality");
+        }
+
+        /// <summary>
+        /// Resets all tracked interactables to their original spawn positions and states
+        /// Call this when performing a soft reset to checkpoint functionality
+        /// </summary>
+        public void ResetAllInteractablesToSpawn()
+        {
+            Debug.Log("[CheckpointManager] Resetting all interactables to spawn positions");
+            
+            int resetCount = 0;
+            
+            foreach (InteractableSpawnInfo spawnInfo in interactableSpawnPositions)
+            {
+                if (spawnInfo.interactableTransform != null)
+                {
+                    Transform interactableTransform = spawnInfo.interactableTransform;
+                    
+                    // Get the InteractableBase component to safely reset pickup state
+                    InteractableBase interactableBase = interactableTransform.GetComponent<InteractableBase>();
+                    if (interactableBase != null)
+                    {
+                        // End pickup if it's currently being held
+                        if (interactableBase.IsPickedUp)
+                        {
+                            interactableBase.EndPickup();
+                        }
+                    }
+                    
+                    // Reset position, rotation, and parent
+                    interactableTransform.SetParent(spawnInfo.originalParent);
+                    interactableTransform.position = spawnInfo.originalPosition;
+                    interactableTransform.rotation = spawnInfo.originalRotation;
+                    
+                    // Reset physics if there's a rigidbody
+                    Rigidbody rb = interactableTransform.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.velocity = Vector3.zero;
+                        rb.angularVelocity = Vector3.zero;
+                        rb.isKinematic = false;
+                        rb.useGravity = true;
+                    }
+                    
+                    resetCount++;
+                }
+            }
+            
+            Debug.Log($"[CheckpointManager] Reset {resetCount} interactables to their spawn positions");
         }
     }
 }

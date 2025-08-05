@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TruthAndShadows.InputSystem;
 using TruthAndShadows.Player;
+using TruthAndShadows.CheckpointSystem;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -172,7 +173,26 @@ public class PauseMenu : MonoBehaviour
 
     public void QuitGame()
     {
-        Application.Quit();
+        // Soft reset: respawn at the most recent checkpoint instead of quitting
+        if (CheckpointManager.Instance != null)
+        {
+            Debug.Log("Soft reset: Resetting interactables and respawning at checkpoint");
+            
+            // First, reset all interactables to their spawn positions
+            CheckpointManager.Instance.ResetAllInteractablesToSpawn();
+            
+            // Then respawn players at the checkpoint
+            CheckpointManager.Instance.RespawnAtCheckpoint();
+            
+            // Resume the game after respawning
+            ResumeGame();
+        }
+        else
+        {
+            Debug.LogWarning("CheckpointManager not found! Cannot perform soft reset.");
+            // Fallback to quitting if no checkpoint system
+            Application.Quit();
+        }
     }
 
     void OnEnable()
