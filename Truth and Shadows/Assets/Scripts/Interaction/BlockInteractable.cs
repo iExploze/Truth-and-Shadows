@@ -1,3 +1,4 @@
+using System.Linq;
 using TruthAndShadows.InputSystem;
 using UnityEngine;
 
@@ -127,39 +128,44 @@ namespace TruthAndShadows.Interaction
 
         protected override void Update()
         {
-            // Handle the smooth color transition
-            if (isColorChanging && cubeRenderer != null)
-            {
-                currentColor = Color.Lerp(
-                    currentColor,
-                    targetColor,
-                    Time.deltaTime * colorChangeSpeed
-                );
-                var mats = cubeRenderer.materials;
-                if (mats.Length > 0)
-                {
-                    mats[0].color = currentColor;
-                }
-                cubeRenderer.materials = mats;
+            // // Handle the smooth color transition
+            // if (isColorChanging && cubeRenderer != null)
+            // {
+            //     currentColor = Color.Lerp(
+            //         currentColor,
+            //         targetColor,
+            //         Time.deltaTime * colorChangeSpeed
+            //     );
+                
+            //     // Modify the material color without replacing the materials array
+            //     // This preserves the outline materials that were added by the Outline component
+            //     var mats = cubeRenderer.materials;
+            //     if (mats.Length > 0 && mats[0].color != currentColor)
+            //     {
+            //         // Create a new material instance to avoid modifying the shared material
+            //         mats[0] = new Material(mats[0]) { color = currentColor };
+            //         cubeRenderer.materials = mats;
+            //     }
 
-                if (
-                    Vector3.Distance(
-                        new Vector3(currentColor.r, currentColor.g, currentColor.b),
-                        new Vector3(targetColor.r, targetColor.g, targetColor.b)
-                    ) < 0.01f
-                )
-                {
-                    currentColor = targetColor;
-                    if (mats.Length > 0)
-                    {
-                        mats[0].color = currentColor;
-                    }
-                    cubeRenderer.materials = mats;
-                    isColorChanging = false;
-                }
-            }
+            //     if (
+            //         Vector3.Distance(
+            //             new Vector3(currentColor.r, currentColor.g, currentColor.b),
+            //             new Vector3(targetColor.r, targetColor.g, targetColor.b)
+            //         ) < 0.01f
+            //     )
+            //     {
+            //         currentColor = targetColor;
+            //         var finalMats = cubeRenderer.materials;
+            //         if (finalMats.Length > 0)
+            //         {
+            //             finalMats[0] = new Material(finalMats[0]) { color = currentColor };
+            //             cubeRenderer.materials = finalMats;
+            //         }
+            //         isColorChanging = false;
+            //     }
+            // }
 
-            // Call base update for outline effects
+            // // Call base update for outline effects
             base.Update();
         }
 
@@ -201,8 +207,6 @@ namespace TruthAndShadows.Interaction
 
         private void CheckWallCollisions()
         {
-            isCollidingWithWall = false;
-
             Vector3[] directions = new Vector3[]
             {
                 Vector3.forward,
@@ -211,14 +215,8 @@ namespace TruthAndShadows.Interaction
                 Vector3.left,
             };
 
-            foreach (Vector3 dir in directions)
-            {
-                if (Physics.Raycast(transform.position, dir, 0.75f, ~LayerMask.GetMask("Player")))
-                {
-                    isCollidingWithWall = true;
-                    return;
-                }
-            }
+            isCollidingWithWall = directions.Any(dir => 
+                Physics.Raycast(transform.position, dir, 0.75f, ~LayerMask.GetMask("Player")));
         }
     }
 }
