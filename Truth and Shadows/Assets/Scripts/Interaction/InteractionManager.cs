@@ -296,11 +296,22 @@ namespace TruthAndShadows.Interaction
                         playerController?.gameObject
                     );
 
-                    // Switch to interactable's camera if it has one
+                    // Switch to interactable's camera if it has one and it's a valid camera type
                     if (currentInteractable.InteractionCamera != null)
                     {
-                        currentInteractionCamera = currentInteractable.InteractionCamera;
-                        SwitchToCamera(currentInteractionCamera);
+                        if (IsValidCameraComponent(currentInteractable.InteractionCamera))
+                        {
+                            currentInteractionCamera = currentInteractable.InteractionCamera;
+                            SwitchToCamera(currentInteractionCamera);
+                        }
+                        else
+                        {
+                            Debug.LogWarning(
+                                $"InteractionCamera on {((MonoBehaviour)interactable).gameObject.name} " +
+                                $"is not a valid camera type ({currentInteractable.InteractionCamera.GetType().Name}). " +
+                                "Expected a Cinemachine camera component."
+                            );
+                        }
                     }
                 }
                 else
@@ -479,6 +490,21 @@ namespace TruthAndShadows.Interaction
         private bool IsValidSource()
         {
             return interactionSource != null;
+        }
+
+        /// <summary>
+        /// Checks if the given component is a valid Cinemachine camera type
+        /// </summary>
+        private bool IsValidCameraComponent(Component camera)
+        {
+            if (camera == null)
+                return false;
+
+            // Check for known Cinemachine camera types
+            return camera is CinemachineVirtualCamera ||
+                   camera is CinemachineFreeLook ||
+                   camera is CinemachineBrain ||
+                   camera.GetType().GetProperty("Priority") != null; // Fallback for other Cinemachine types
         }
 
         private Vector3 GetInteractionOrigin()
