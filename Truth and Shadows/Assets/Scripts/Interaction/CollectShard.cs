@@ -65,7 +65,7 @@ public class CollectShard : MonoBehaviour
             Input.GetKeyDown(KeyCode.Escape)
             || Input.GetKeyDown(KeyCode.Return)
             || Input.GetKeyDown(KeyCode.Space)
-            || Input.GetMouseButtonDown(0)
+            // || Input.GetMouseButtonDown(0)
             || Input.GetKeyDown(KeyCode.JoystickButton0)
         ) // A/Cross button on controllers
         {
@@ -82,8 +82,9 @@ public class CollectShard : MonoBehaviour
         {
             Debug.Log("CheckForNextLevelInput");
         }
-        if (
-            Input.GetKeyDown(KeyCode.JoystickButton11)
+        if (Input.GetKeyDown(KeyCode.JoystickButton11)
+            // || Input.GetKeyDown(KeyCode.JoystickButton0)
+            || Input.GetKeyDown(KeyCode.JoystickButton1)
             || Input.GetKeyDown(KeyCode.RightArrow)
         ) // left d-pad on controller
         {
