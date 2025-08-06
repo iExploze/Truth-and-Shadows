@@ -4955,9 +4955,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 655360
   playerTransform: {fileID: 0}
-  noticedDuration: 0.7
+  noticedDuration: 0
   chaseMusicSource: {fileID: 2957233212869656992}
-  distanceToKill: 2
+  patrolSpeed: 3
+  chaseSpeed: 7
+  distanceToKill: 3
   noticedColor: {r: 0.5377358, g: 0, b: 0, a: 1}
   noticedIntensityMultiplier: 15
 --- !u!82 &2957233212869656992
@@ -5091,8 +5093,8 @@ Light:
   m_Shape: 0
   m_Color: {r: 0.70488894, g: 0.7207546, b: 0.50996786, a: 1}
   m_Intensity: 3
-  m_Range: 15
-  m_SpotAngle: 64.95336
+  m_Range: 10
+  m_SpotAngle: 125
   m_InnerSpotAngle: 1
   m_CookieSize: 10
   m_Shadows:
