@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1557349875765587536}
   - component: {fileID: 6104874410228018143}
   - component: {fileID: 3451743390564173521}
+  - component: {fileID: 7715294016607110957}
   m_Layer: 5
   m_Name: Interaction UI
   m_TagString: Untagged
@@ -123,9 +124,28 @@ MonoBehaviour:
   midRange: 3
   closeRange: 2
   fadeSpeed: 5
-  circleImage: {fileID: 7079934120098880501}
-  keyTMP: {fileID: 5593079134482965364}
+  border: {fileID: 0}
+  keyboardkey: {fileID: 0}
+  xboxkey: {fileID: 0}
+  pskey: {fileID: 0}
+  switchkey: {fileID: 0}
   promptTMP: {fileID: 8861145427213201519}
+--- !u!114 &7715294016607110957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 568522452491071935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c652dae595ab480883ac3cb116b0c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyboardKey: {fileID: 0}
+  PSkey: {fileID: 0}
+  XBOXkey: {fileID: 0}
+  Switchkey: {fileID: 8619542366682447697}
 --- !u!1 &3525166240183408574
 GameObject:
   m_ObjectHideFlags: 0

@@ -17,6 +17,8 @@ public class EnemyAI : MonoBehaviour
     private float noticedTimer = 0f;
     [SerializeField] private float noticedDuration = 2.5f;
     [SerializeField] private AudioSource chaseMusicSource;
+    [SerializeField] private float patrolSpeed = 3f;
+    [SerializeField] private float chaseSpeed = 7f;
 
     [SerializeField] private float distanceToKill = 3f;
 
@@ -32,6 +34,7 @@ public class EnemyAI : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         patrolIndex = 0;
         agent.SetDestination(patrolPoints[patrolIndex].position);
+        agent.speed = patrolSpeed;
 
         playerState = FindAnyObjectByType<StateManager>();
         spotLight = GetComponent<Light>();
@@ -72,6 +75,8 @@ public class EnemyAI : MonoBehaviour
                 {
                     chasing = true;
                     noticed = false;
+
+                    agent.speed = chaseSpeed;
                     // Start chase music
                     if (chaseMusicSource != null && !chaseMusicSource.isPlaying)
                         chaseMusicSource.Play();
@@ -94,6 +99,9 @@ public class EnemyAI : MonoBehaviour
             else
             {
                 chasing = false;
+
+                agent.speed = patrolSpeed;
+
                 // Return to patrol after chase
                 patrolIndex = GetNearestPatrolPointIndex();
                 patrolIndex = (patrolIndex + 1) % patrolPoints.Length;

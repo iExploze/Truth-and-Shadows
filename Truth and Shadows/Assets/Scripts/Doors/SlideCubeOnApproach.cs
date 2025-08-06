@@ -9,24 +9,39 @@ public class SlideDoorOnApproach : MonoBehaviour
     public float moveDistance = 2f;
     public float moveSpeed = 2f;
     public bool moveLeft = true;
+    public float requiredTimeInRange = 2f;
 
     private Vector3 startPos;
     private Vector3 targetPos;
     private bool activated = false;
+    private float timeInRange = 0f;
 
     void Start()
     {
         startPos = transform.position;
-
         Vector3 localDir = moveLeft ? -transform.right : transform.right;
         targetPos = startPos + localDir * moveDistance;
     }
 
     void Update()
     {
-        if (!activated && Vector3.Distance(player.position, transform.position) <= triggerDistance)
+        float distance = Vector3.Distance(player.position, transform.position);
+
+        if (!activated)
         {
-            activated = true;
+            if (distance <= triggerDistance)
+            {
+                timeInRange += Time.deltaTime;
+
+                if (timeInRange >= requiredTimeInRange)
+                {
+                    activated = true;
+                }
+            }
+            else
+            {
+                timeInRange = 0f;
+            }
         }
 
         if (activated)

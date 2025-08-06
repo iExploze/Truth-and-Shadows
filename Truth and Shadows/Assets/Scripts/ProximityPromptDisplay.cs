@@ -15,9 +15,11 @@ public class ProximityPromptDisplay : MonoBehaviour
     [Header("UI Elements")]
     //public Image circleImage;
 
-    public Image keyboardKey;
-    //public Image controllerKey;
-    public TextMeshProUGUI keyTMP;
+    public Image border;
+    public TextMeshProUGUI keyboardkey;
+    public TextMeshProUGUI xboxkey;
+    public TextMeshProUGUI pskey;
+    public TextMeshProUGUI switchkey;
     public TextMeshProUGUI promptTMP;
 
     void Start()
@@ -32,8 +34,11 @@ public class ProximityPromptDisplay : MonoBehaviour
         if (targetObject == null)
             targetObject = transform;
 
-        SetAlpha(keyboardKey, 0f);
-        SetAlpha(keyTMP, 0f);
+        SetAlpha(border, 0f);
+        SetAlpha(keyboardkey, 0f);
+        SetAlpha(xboxkey, 0f);
+        SetAlpha(pskey, 0f);
+        SetAlpha(switchkey, 0f);
         SetAlpha(promptTMP, 0f);
     }
 
@@ -47,9 +52,12 @@ public class ProximityPromptDisplay : MonoBehaviour
         float controllerAlpha = distance <= midRange ? 1f : 0f;
         float promptAlpha = distance <= closeRange ? 1f : 0f;
 
-        FadeGraphic(keyboardKey, keyboardAlpha);
-        FadeGraphic(keyTMP, controllerAlpha);
+        FadeGraphic(border, keyboardAlpha);
+        FadeTMP(xboxkey, controllerAlpha);
+        FadeTMP(pskey, controllerAlpha);
+        FadeTMP(switchkey, controllerAlpha);
         FadeTMP(promptTMP, promptAlpha);
+        FadeTMP(keyboardkey, keyboardAlpha);
     }
 
     void FadeGraphic(Graphic graphic, float targetAlpha)
