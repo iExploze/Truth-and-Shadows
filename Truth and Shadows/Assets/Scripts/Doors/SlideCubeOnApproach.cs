@@ -9,7 +9,7 @@ public class SlideDoorOnApproach : MonoBehaviour
     public float moveDistance = 2f;
     public float moveSpeed = 2f;
     public bool moveLeft = true;
-    public float requiredTimeInRange = 2f;
+    public float requiredTimeInRange = 1f;
 
     private Vector3 startPos;
     private Vector3 targetPos;
