@@ -45,6 +45,11 @@ public class CollectShard : MonoBehaviour
             {
                 NextLevel();
             }
+
+            if (CheckForReset())
+            {
+                Reset();
+            }
         }
     }
 
@@ -65,6 +70,7 @@ public class CollectShard : MonoBehaviour
             Input.GetKeyDown(KeyCode.Escape)
             || Input.GetKeyDown(KeyCode.Return)
             || Input.GetKeyDown(KeyCode.Space)
+            || Input.GetKeyDown(KeyCode.U)
             // || Input.GetMouseButtonDown(0)
             || Input.GetKeyDown(KeyCode.JoystickButton0)
         ) // A/Cross button on controllers
@@ -72,6 +78,16 @@ public class CollectShard : MonoBehaviour
             return true;
         }
 
+        return false;
+    }
+
+    private bool CheckForReset()
+    {
+        if (Input.GetKeyDown(KeyCode.L) || // Keyboard
+            Input.GetKeyDown(KeyCode.JoystickButton8))
+        {
+            return true; 
+        }// Xbox Back/View, PS Share, Switch -
         return false;
     }
     
@@ -131,7 +147,31 @@ public class CollectShard : MonoBehaviour
     }
 
     /// <summary>
-    /// Return to the main menu
+    /// Restart level
+    /// </summary>
+    public void Reset()
+    {
+        // Reset win menu state
+        isWinMenuActive = false;
+        winMenu.SetActive(false);
+
+        // Reset timescale before loading a new scene
+        Time.timeScale = 1f;
+
+        // Use LevelManager if available
+        if (LevelManager.Instance != null || !GameObject.Find("LevelManager").activeInHierarchy)
+        {
+            LevelManager.Instance.LoadScene(SceneManager.GetActiveScene().name, "CrossFade");
+        }
+        else
+        {
+            // Fallback to direct scene loading
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+    }
+    
+    /// <summary>
+    /// Return to main menu
     /// </summary>
     public void ReturnToMainMenu()
     {
@@ -143,7 +183,7 @@ public class CollectShard : MonoBehaviour
         Time.timeScale = 1f;
 
         // Use LevelManager if available
-        if (LevelManager.Instance != null)
+        if (LevelManager.Instance != null || !GameObject.Find("LevelManager").activeInHierarchy)
         {
             LevelManager.Instance.LoadScene("MainMenu", "CrossFade");
         }
@@ -188,6 +228,8 @@ public class CollectShard : MonoBehaviour
 
 
     }
+
+    
 
     /// <summary>
     /// Close the win menu without returning to the main menu
