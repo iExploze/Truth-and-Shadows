@@ -136,7 +136,7 @@ public class MainMenuController : MonoBehaviour
 
     public void PlayGame()
     {
-        LevelManager.Instance.LoadScene("Level1", "CrossFade");
+        LevelManager.Instance.LoadScene("Intro Scene", "CrossFade");
     }
 
     public void Settings()
@@ -200,7 +200,7 @@ public class MainMenuController : MonoBehaviour
 
     public void LoadLevel1()
     {
-        LevelManager.Instance.LoadScene("Level1", "CrossFade");
+        LevelManager.Instance.LoadScene("Intro Scene", "CrossFade");
     }
 
     public void LoadLevel2()

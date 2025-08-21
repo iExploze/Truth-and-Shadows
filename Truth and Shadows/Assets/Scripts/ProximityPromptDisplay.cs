@@ -22,6 +22,9 @@ public class ProximityPromptDisplay : MonoBehaviour
     public TextMeshProUGUI switchkey;
     public TextMeshProUGUI promptTMP;
 
+    [Header("Rotation Settings")]
+    [SerializeField] private bool facePlayer = false;
+
     void Start()
     {
         if (player == null)
@@ -58,6 +61,14 @@ public class ProximityPromptDisplay : MonoBehaviour
         FadeTMP(switchkey, controllerAlpha);
         FadeTMP(promptTMP, promptAlpha);
         FadeTMP(keyboardkey, keyboardAlpha);
+
+        if (facePlayer)
+        {
+            Vector3 direction = player.position - transform.position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude > 0.001f)
+                transform.rotation = Quaternion.LookRotation(direction) * Quaternion.Euler(0, 180f, 0);
+        }
     }
 
     void FadeGraphic(Graphic graphic, float targetAlpha)
