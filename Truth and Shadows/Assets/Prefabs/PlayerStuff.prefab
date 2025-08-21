@@ -11555,6 +11555,7 @@ GameObject:
   - component: {fileID: 1978598679689779218}
   - component: {fileID: 160907020142995454}
   - component: {fileID: 2418571057393997432}
+  - component: {fileID: 4723923605605667052}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -11714,7 +11715,7 @@ CapsuleCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Radius: 0.42
   m_Height: 1.6
@@ -12319,6 +12320,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &4723923605605667052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4625399318641512768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f504465ff18af64d9723b5d7a58c2e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainCollider: {fileID: 469353319886764710}
+  lightCollider: {fileID: 1972901435558351747}
+  SesomRig: {fileID: 7326729580425788394}
+  SesomAnimator: {fileID: 3269843519878000264}
+  lightDetection: {fileID: 4302168620722703651}
 --- !u!1 &5982592653077961606
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,6 +2,7 @@ using TruthAndShadows.CheckpointSystem;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class EnemyAI : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class EnemyAI : MonoBehaviour
     private int patrolIndex;
     [SerializeField] private Transform playerTransform;
     private StateManager playerState;
+    private RagdollOnOff playerRagdoll;
+
     private bool chasing = false;
     private bool noticed = false;
     private float noticedTimer = 0f;
@@ -37,6 +40,8 @@ public class EnemyAI : MonoBehaviour
         agent.speed = patrolSpeed;
 
         playerState = FindAnyObjectByType<StateManager>();
+        playerRagdoll = FindAnyObjectByType<RagdollOnOff>();
+
         spotLight = GetComponent<Light>();
 
         if (spotLight == null || spotLight.type != LightType.Spot)
@@ -132,7 +137,8 @@ public class EnemyAI : MonoBehaviour
             if (CheckpointManager.Instance != null)
             {
                 // Use the CheckpointManager's HandleEnemyKill method
-                CheckpointManager.Instance.HandleEnemyKill();
+                //CheckpointManager.Instance.HandleEnemyKill();
+                StartCoroutine(KillPlayerSequence());
             }
             else
             {
@@ -141,6 +147,29 @@ public class EnemyAI : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
+    }
+
+    private IEnumerator KillPlayerSequence()
+    {
+        //Trigger ragdoll if available
+        if (playerRagdoll != null)
+        {
+            //playerRagdoll.SendMessage("RagdollModeOn", SendMessageOptions.DontRequireReceiver);
+            playerRagdoll.RagdollModeOn();
+        }
+
+        //Wait for 2 seconds
+        yield return new WaitForSeconds(2f);
+
+        //Trigger ragdoll if available
+        if (playerRagdoll != null)
+        {
+            playerRagdoll.RagdollModeOff();
+        }
+
+        //Respawn player
+        CheckpointManager.Instance.HandleEnemyKill();
+
     }
 
     void ResetNotice()
