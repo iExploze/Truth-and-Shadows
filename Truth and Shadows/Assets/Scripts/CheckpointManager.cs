@@ -32,6 +32,8 @@ namespace TruthAndShadows.CheckpointSystem
         // Flag to track if we're using a dev override checkpoint
         private bool usingDevOverride = false;
 
+        //private RagdollOnOff playerRagdoll;
+
         // Interactable position tracking
         [System.Serializable]
         private class InteractableSpawnInfo
@@ -68,6 +70,8 @@ namespace TruthAndShadows.CheckpointSystem
             playerObjects = new List<GameObject>(
                 GameObject.FindObjectsOfType<GameObject>(true).Where(go => go.CompareTag("Player"))
             );
+
+            //playerRagdoll = FindAnyObjectByType<RagdollOnOff>();
 
             Debug.Log($"[CheckpointManager] Found {playerObjects.Count} player objects");
 
@@ -224,6 +228,12 @@ namespace TruthAndShadows.CheckpointSystem
                 rb.position = playerTransform.position;
                 rb.rotation = playerTransform.rotation;
             }
+
+            // Reset ragdoll state if available
+            //if (playerRagdoll != null)
+            //{
+            //    playerRagdoll.SendMessage("RagdollModeOff", SendMessageOptions.DontRequireReceiver);
+            //}
 
             var stateManager = playerObj.GetComponent<StateManager>();
             if (stateManager != null)

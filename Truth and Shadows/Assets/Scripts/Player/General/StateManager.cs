@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
@@ -28,6 +29,8 @@ public class StateManager : MonoBehaviour
     private SquidControl squidMovement;
     private Rigidbody squidRb;
 
+    private RagdollOnOff playerRagdoll;
+
     private enum FormState { MainCharacter, Squid }
     private FormState currentState = FormState.MainCharacter;
 
@@ -42,6 +45,8 @@ public class StateManager : MonoBehaviour
         squidRb = squidForm.GetComponent<Rigidbody>();
 
         mainInteractionManager = mainCharacterForm.GetComponent<InteractionManager>();
+
+        playerRagdoll = GetComponent<RagdollOnOff>();
 
         SetToHumanForm(); // Always start as human
 
@@ -114,6 +119,14 @@ public class StateManager : MonoBehaviour
         SyncCameraDirectionOnly(squidCamera, mainCharacterCamera);
         UpdateCameraPriorities(main: 10, squid: 0);
 
+        Debug.Log("We got here");
+
+        if (playerRagdoll != null)
+        {
+            playerRagdoll.RagdollModeOff(); // now using proper public method
+            Debug.Log("Ragdoll reset called");
+        }
+
         //StartCoroutine(AlignCameraBehindPlayer(mainCharacterCamera));
     }
 
@@ -127,6 +140,12 @@ public class StateManager : MonoBehaviour
         if (squidRb != null) squidRb.isKinematic = true;
         currentState = FormState.MainCharacter;
         UpdateCameraPriorities(main: 10, squid: 0);
+
+        if (playerRagdoll != null)
+        {
+            playerRagdoll.RagdollModeOff(); // now using proper public method
+            Debug.Log("Ragdoll reset called 1");
+        }
     }
 
     private void UpdateCameraPriorities(int main, int squid)
@@ -172,6 +191,11 @@ public class StateManager : MonoBehaviour
         else if (currentState == FormState.Squid)
         {
             StartCoroutine(AlignCameraBehindPlayer(squidCamera));
+        }
+
+        if (playerRagdoll != null)
+        {
+            playerRagdoll.RagdollModeOff(); // now using proper public method
         }
     }
 }
