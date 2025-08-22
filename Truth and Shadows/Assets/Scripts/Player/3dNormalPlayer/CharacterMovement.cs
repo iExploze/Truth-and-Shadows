@@ -46,9 +46,12 @@ namespace TruthAndShadows.Player
         // --- Sound ---
         [SerializeField]
         public AudioSource walkSource;
+        public AudioClip[] walkClips;
+        public AudioClip[] walkSandClips;
+        private bool istouchingSand = false;
         private bool isWalkSoundPlaying = false;  // Track sound state
         private float lastSoundStartTime = 0f;     // Track when we last started playing
-        private const float MIN_SOUND_INTERVAL = 0.1f; // Minimum time between sound triggers
+        private const float MIN_SOUND_INTERVAL = 0.4f; // Minimum time between sound triggers
 
         private Rigidbody rb;
 
@@ -99,6 +102,25 @@ namespace TruthAndShadows.Player
 
             rb = GetComponent<Rigidbody>();
             characterAnimation = rb.GetComponent<CharacterAnimation>();
+            if (walkSource == null)
+            {
+                walkSource = GetComponent<AudioSource>();
+            }
+        }
+
+        void OnCollisionEnter(Collision collision)
+        {
+            if (collision.gameObject.CompareTag("Sand"))
+            {
+                istouchingSand = true;
+            }
+        }
+        void OnCollisionExit(Collision collision)
+        {
+            if (collision.gameObject.CompareTag("Sand"))
+            {
+                istouchingSand = false;
+            }
         }
 
         void Update()
@@ -164,17 +186,34 @@ namespace TruthAndShadows.Player
                 rb.MovePosition(rb.position + forward);
                 characterAnimation.updateMovement(forward);
 
-                // Handle walk sound with better state management
-                if (walkSource != null)
+                // handle walk sound with better state management
+                if (walkClips.Length > 0)
                 {
                     bool shouldBePlaying = characterAnimation.IsMoving();
                     float timeSinceLastStart = Time.time - lastSoundStartTime;
 
                     if (shouldBePlaying && !isWalkSoundPlaying && timeSinceLastStart >= MIN_SOUND_INTERVAL)
                     {
-                        walkSource.Play();
-                        isWalkSoundPlaying = true;
-                        lastSoundStartTime = Time.time;
+                        int randomIndex = Random.Range(0, walkClips.Length);
+                        walkSource.PlayOneShot(walkClips[randomIndex]);                        lastSoundStartTime = Time.time;
+                        walkSource.pitch = Random.Range(1f, 1.05f);
+                    }
+                    else if (!shouldBePlaying && isWalkSoundPlaying)
+                    {
+                        walkSource.Stop();
+                        isWalkSoundPlaying = false;
+                    }
+                }
+                 if (walkSandClips.Length > 0)
+                {
+                    bool shouldBePlaying = characterAnimation.IsMoving();
+                    float timeSinceLastStart = Time.time - lastSoundStartTime;
+
+                    if (shouldBePlaying && !isWalkSoundPlaying && istouchingSand && timeSinceLastStart >= MIN_SOUND_INTERVAL)
+                    {
+                        int randomIndex = Random.Range(0, walkClips.Length);
+                        walkSource.PlayOneShot(walkSandClips[randomIndex]);                        lastSoundStartTime = Time.time;
+                        walkSource.pitch = Random.Range(1f, 1.05f);
                     }
                     else if (!shouldBePlaying && isWalkSoundPlaying)
                     {

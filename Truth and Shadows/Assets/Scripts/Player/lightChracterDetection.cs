@@ -36,11 +36,8 @@ public class lightCharacterDetection : MonoBehaviour, ILightHittable
             isSquid = false;
             characterMovement.canMove = true;
             intoLightSound.Play();
+            intoLightSound.pitch = Random.Range(1f, 1.05f);
             //Debug.Log("Entered light");
-        }
-        else if (intoLightSound.isPlaying )
-        {
-            intoLightSound.Stop();
         }
     }
 
