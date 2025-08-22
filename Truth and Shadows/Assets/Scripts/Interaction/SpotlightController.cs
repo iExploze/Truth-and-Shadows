@@ -247,10 +247,10 @@ namespace TruthAndShadows.Interaction
             }
 
             // Save and update cursor state
-            wasMouseVisible = Cursor.visible;
-            previousCursorLockState = Cursor.lockState;
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            // wasMouseVisible = // Cursor.visible;
+            // previousCursorLockState = // Cursor.lockState;
+            // Cursor.visible = false;
+            // Cursor.lockState = CursorLockMode.Locked;
         }
 
         /// <summary>
@@ -716,8 +716,8 @@ namespace TruthAndShadows.Interaction
             }
 
             // Restore cursor state
-            Cursor.visible = wasMouseVisible;
-            Cursor.lockState = previousCursorLockState;
+            // Cursor.visible = // wasMouseVisible;
+            // Cursor.lockState = // previousCursorLockState;
 
             Debug.Log("Spotlight interaction ended, camera reset and cursor restored");
         }
