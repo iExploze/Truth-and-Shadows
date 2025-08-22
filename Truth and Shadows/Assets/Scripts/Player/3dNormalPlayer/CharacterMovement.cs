@@ -186,7 +186,7 @@ namespace TruthAndShadows.Player
                 rb.MovePosition(rb.position + forward);
                 characterAnimation.updateMovement(forward);
 
-                // Handle walk sound with better state management
+                // handle walk sound with better state management
                 if (walkClips.Length > 0)
                 {
                     bool shouldBePlaying = characterAnimation.IsMoving();

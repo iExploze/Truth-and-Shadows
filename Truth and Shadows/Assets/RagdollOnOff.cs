@@ -9,6 +9,7 @@ public class RagdollOnOff : MonoBehaviour
     public GameObject SesomRig;
     public Animator SesomAnimator;
     public lightCharacterDetection lightDetection;
+    public AudioSource deathSound;
 
     // Start is called before the first frame update
     void Start()
@@ -47,6 +48,8 @@ public class RagdollOnOff : MonoBehaviour
         GetComponent<Rigidbody>().isKinematic = true;
 
         lightDetection.enabled = false;
+
+        deathSound.Play();
 
         Debug.Log("on");
     }
