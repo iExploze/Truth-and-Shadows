@@ -36,20 +36,20 @@ public class CollectShard : MonoBehaviour
         if (isWinMenuActive)
         {
             // Check for keyboard/controller input to return to main menu
-            if (CheckForReturnToMenuInput())
-            {
-                ReturnToMainMenu();
-            }
+            // if (CheckForReturnToMenuInput())
+            // {
+            //     ReturnToMainMenu();
+            // }
 
-            if (CheckForNextLevelInput())
-            {
-                NextLevel();
-            }
+            // if (CheckForNextLevelInput())
+            // {
+            //     NextLevel();
+            // }
 
-            if (CheckForReset())
-            {
-                Reset();
-            }
+            // if (CheckForReset())
+            // {
+            //     Reset();
+            // }
         }
     }
 
