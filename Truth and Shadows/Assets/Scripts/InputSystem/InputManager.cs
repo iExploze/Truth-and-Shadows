@@ -91,10 +91,9 @@ namespace TruthAndShadows.InputSystem
 
         private readonly KeyCode[] menuButtons = new KeyCode[]
         {
-            KeyCode.U,
+            KeyCode.O,
             KeyCode.Escape,
-            KeyCode.JoystickButton3, // Xbox X, PS Square, Switch Y
-            KeyCode.JoystickButton7, // Xbox Menu/Start, PS Options, Switch +
+            KeyCode.JoystickButton9, // Xbox X, PS Square, Switch Y
         };
         #endregion
 
